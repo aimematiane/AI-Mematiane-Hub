@@ -1,0 +1,138 @@
+<script>
+	import { Brain, Menu, X, LogIn, LogOut, User, Shield } from '@lucide/svelte';
+	import { getSupabaseBrowserClient } from '$lib/supabase/client';
+
+	const client = getSupabaseBrowserClient();
+
+	let mobileOpen = $state(false);
+	let user = $state(null);
+	let profile = $state(null);
+
+	$effect(() => {
+		client.auth.getUser().then(({ data }) => { user = data.user; });
+		const { subscription } = client.auth.onAuthStateChange((_event, session) => {
+			user = session?.user ?? null;
+		});
+		return () => subscription.unsubscribe();
+	});
+
+	$effect(() => {
+		if (user) {
+			client.from('profiles').select('role, display_name').eq('id', user.id).single()
+				.then(({ data }) => { profile = data; });
+		} else {
+			profile = null;
+		}
+	});
+
+	async function handleLogout() {
+		await client.auth.signOut();
+		user = null;
+		profile = null;
+	}
+
+	const navLinks = [
+		{ href: '/ai-tools', label: 'AI Showcase' },
+		{ href: '/news', label: 'News' },
+		{ href: '/blog', label: 'Blog' }
+	];
+</script>
+
+<header class="sticky top-0 z-50 border-b border-surface-800 bg-surface-950/80 backdrop-blur-xl">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="flex items-center justify-between h-16">
+			<!-- Logo -->
+			<a href="/" class="flex items-center gap-2 group">
+				<Brain size={28} class="text-accent-400 group-hover:text-accent-500 transition-colors" />
+				<span class="text-lg font-bold text-white tracking-tight">AI Mematiane</span>
+			</a>
+
+			<!-- Desktop Nav -->
+			<nav class="hidden md:flex items-center gap-1">
+				{#each navLinks as link}
+					<a
+						href={link.href}
+						class="px-3 py-2 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800 transition-all"
+					>
+						{link.label}
+					</a>
+				{/each}
+			</nav>
+
+			<!-- Desktop Auth -->
+			<div class="hidden md:flex items-center gap-2">
+				{#if user}
+					{#if profile?.role === 'admin'}
+						<a href="/admin" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-amber-400 hover:bg-amber-500/10 transition-all">
+							<Shield size={14} />
+							Admin
+						</a>
+					{/if}
+					<a href="/profile" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800 transition-all">
+						<User size={14} />
+						Profile
+					</a>
+					<button
+						onclick={handleLogout}
+						class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-surface-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+					>
+						<LogOut size={14} />
+						Logout
+					</button>
+				{:else}
+					<a href="/auth/login" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800 transition-all">
+						<LogIn size={14} />
+						Login
+					</a>
+					<a href="/auth/register" class="px-4 py-2 rounded-lg text-sm font-medium bg-accent-500 hover:bg-accent-600 text-white transition-colors">
+						Sign Up
+					</a>
+				{/if}
+			</div>
+
+			<!-- Mobile Menu Toggle -->
+			<button onclick={() => mobileOpen = !mobileOpen} class="md:hidden p-2 text-surface-400 hover:text-white">
+				{#if mobileOpen}
+					<X size={22} />
+				{:else}
+					<Menu size={22} />
+				{/if}
+			</button>
+		</div>
+	</div>
+
+	<!-- Mobile Menu -->
+	{#if mobileOpen}
+		<div class="md:hidden border-t border-surface-800 bg-surface-950/95 backdrop-blur-xl">
+			<div class="px-4 py-3 space-y-1">
+				{#each navLinks as link}
+					<a href={link.href} onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800 transition-all">
+						{link.label}
+					</a>
+				{/each}
+				<div class="border-t border-surface-800 pt-2 mt-2">
+					{#if user}
+						{#if profile?.role === 'admin'}
+							<a href="/admin" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-amber-400 hover:bg-amber-500/10">
+								Admin Dashboard
+							</a>
+						{/if}
+						<a href="/profile" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800">
+							Profile
+						</a>
+						<button onclick={() => { handleLogout(); mobileOpen = false; }} class="block w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-red-500/10">
+							Logout
+						</button>
+					{:else}
+						<a href="/auth/login" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800">
+							Login
+						</a>
+						<a href="/auth/register" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm font-medium bg-accent-500 hover:bg-accent-600 text-white text-center">
+							Sign Up
+						</a>
+					{/if}
+				</div>
+			</div>
+		</div>
+	{/if}
+</header>
