@@ -16,7 +16,9 @@
 		error = '';
 		const { error: err } = await client.auth.signInWithPassword({ email, password });
 		if (err) {
-			error = err.message;
+			error = err.message === 'Email not confirmed'
+				? 'Your email is not confirmed. Check your inbox or disable email confirmation in Supabase Auth settings.'
+				: err.message;
 		} else {
 			window.location.href = '/profile';
 		}

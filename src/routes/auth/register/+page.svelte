@@ -11,11 +11,13 @@
 	let showPassword = $state(false);
 	let loading = $state(false);
 	let error = $state('');
+	let success = $state('');
 
 	async function handleRegister() {
 		loading = true;
 		error = '';
-		const { error: err } = await client.auth.signUp({
+		success = '';
+		const { data, error: err } = await client.auth.signUp({
 			email,
 			password,
 			options: {
@@ -24,6 +26,8 @@
 		});
 		if (err) {
 			error = err.message;
+		} else if (!data?.session) {
+			success = 'Registration successful. Please confirm your email before signing in.';
 		} else {
 			window.location.href = '/profile';
 		}
@@ -59,6 +63,9 @@
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 space-y-5">
 			{#if error}
 				<div class="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
+			{/if}
+			{#if success}
+				<div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">{success}</div>
 			{/if}
 
 			<!-- Social Login -->

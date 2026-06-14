@@ -3,8 +3,8 @@ import { env } from '$env/dynamic/private';
 
 export async function getSupabaseServerClient(event) {
 	return createServerClient(
-		event.url.origin,
-		env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY,
+		env.VITE_SUPABASE_URL,
+		env.VITE_SUPABASE_ANON_KEY,
 		{
 			cookies: {
 				getAll() {

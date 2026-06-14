@@ -191,7 +191,7 @@
 						</td>
 						<td class="py-3 pr-4"><CategoryBadge category={tool.category} size="xs" /></td>
 						<td class="py-3 pr-4">{#if tool.is_featured}<Star size={14} class="text-amber-400" fill="currentColor" />{/if}</td>
-						}
+
 						<td class="py-3 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button onclick={() => openEdit(tool)} class="p-1.5 rounded hover:bg-surface-800 text-surface-400 hover:text-white"><Pencil size={14} /></button>

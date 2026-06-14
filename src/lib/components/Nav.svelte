@@ -43,7 +43,7 @@
 		<div class="flex items-center justify-between h-16">
 			<!-- Logo -->
 			<a href="/" class="flex items-center gap-2 group">
-				<Brain size={28} class="text-accent-400 group-hover:text-accent-500 transition-colors" />
+				<img src="/logo.png" alt="AI Mematiane" class="w-8 h-8 rounded-md object-cover" />
 				<span class="text-lg font-bold text-white tracking-tight">AI Mematiane</span>
 			</a>
 
