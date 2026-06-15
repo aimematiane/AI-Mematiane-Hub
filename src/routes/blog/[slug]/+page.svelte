@@ -3,7 +3,8 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
-	import { Clock, Bookmark, BookmarkCheck, User, List, ExternalLink } from '@lucide/svelte';
+	import CommentsSection from '$lib/components/CommentsSection.svelte';
+	import { Clock, Bookmark, BookmarkCheck, User, List, ExternalLink, Heart } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -12,6 +13,8 @@
 	const client = getSupabaseBrowserClient();
 	let isBookmarked = $state(false);
 	let tocOpen = $state(false);
+	let upvotesCount = $state(0);
+	let isUpvoted = $state(false);
 
 	$effect(() => {
 		if (data.post) {
@@ -19,8 +22,17 @@
 				if (user) {
 					client.from('bookmarks').select('id').eq('user_id', user.id).eq('item_type', 'post').eq('item_id', data.post.id).maybeSingle()
 						.then(({ data: bm }) => { isBookmarked = !!bm; });
+
+					client.from('upvotes').select('id').eq('user_id', user.id).eq('item_type', 'post').eq('item_id', data.post.id).maybeSingle()
+						.then(({ data: uv }) => { isUpvoted = !!uv; });
 				}
 			});
+
+			client.from('upvotes')
+				.select('id', { count: 'exact', head: true })
+				.eq('item_type', 'post')
+				.eq('item_id', data.post.id)
+				.then(({ count }) => { upvotesCount = count || 0; });
 		}
 	});
 
@@ -33,6 +45,19 @@
 			await client.from('bookmarks').insert({ user_id: user.id, item_type: 'post', item_id: data.post.id });
 		}
 		isBookmarked = !isBookmarked;
+	}
+
+	async function toggleUpvote() {
+		const { data: { user } } = await client.auth.getUser();
+		if (!user) return window.location.href = '/auth/login';
+		if (isUpvoted) {
+			await client.from('upvotes').delete().eq('user_id', user.id).eq('item_type', 'post').eq('item_id', data.post.id);
+			upvotesCount = Math.max(0, upvotesCount - 1);
+		} else {
+			await client.from('upvotes').insert({ user_id: user.id, item_type: 'post', item_id: data.post.id });
+			upvotesCount += 1;
+		}
+		isUpvoted = !isUpvoted;
 	}
 
 	const post = $derived(data.post);
@@ -99,6 +124,11 @@
 							</div>
 						{/if}
 						<div class="flex items-center gap-3">
+							<!-- Upvote Button -->
+							<button onclick={toggleUpvote} class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 {isUpvoted ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-surface-800/50 border border-surface-700 text-surface-400 hover:text-rose-400 hover:border-rose-500/30'}" aria-label="Toggle upvote">
+								<Heart size={16} fill={isUpvoted ? 'currentColor' : 'none'} class="transition-transform {isUpvoted ? 'scale-110' : ''}" />
+								<span class="text-sm font-medium">{upvotesCount}</span>
+							</button>
 							<button onclick={toggleBookmark} class="p-2 rounded-lg hover:bg-surface-800 transition-colors" aria-label="Toggle bookmark">
 								{#if isBookmarked}
 									<BookmarkCheck size={18} class="text-accent-400" />
@@ -163,6 +193,9 @@
 						</div>
 					</div>
 				{/if}
+
+				<!-- Comments Section -->
+				<CommentsSection itemId={post.id} itemType="post" />
 			</div>
 
 			<!-- Table of Contents (Desktop) -->

@@ -3,7 +3,8 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
-	import { ExternalLink, Play, Star, Bookmark, BookmarkCheck, Link } from '@lucide/svelte';
+	import CommentsSection from '$lib/components/CommentsSection.svelte';
+	import { ExternalLink, Play, Star, Bookmark, BookmarkCheck, Heart } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -11,11 +12,14 @@
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
 	let isBookmarked = $state(false);
+	let upvotesCount = $state(0);
+	let isUpvoted = $state(false);
 
 	$effect(() => {
 		if (data.tool) {
 			client.auth.getUser().then(({ data: { user } }) => {
 				if (user) {
+					// Check bookmark
 					client.from('bookmarks')
 						.select('id')
 						.eq('user_id', user.id)
@@ -23,8 +27,24 @@
 						.eq('item_id', data.tool.id)
 						.maybeSingle()
 						.then(({ data: bm }) => { isBookmarked = !!bm; });
+
+					// Check if user already upvoted
+					client.from('upvotes')
+						.select('id')
+						.eq('user_id', user.id)
+						.eq('item_type', 'ai_tool')
+						.eq('item_id', data.tool.id)
+						.maybeSingle()
+						.then(({ data: uv }) => { isUpvoted = !!uv; });
 				}
 			});
+
+			// Get total upvote count
+			client.from('upvotes')
+				.select('id', { count: 'exact', head: true })
+				.eq('item_type', 'ai_tool')
+				.eq('item_id', data.tool.id)
+				.then(({ count }) => { upvotesCount = count || 0; });
 		}
 	});
 
@@ -38,6 +58,20 @@
 			await client.from('bookmarks').insert({ user_id: user.id, item_type: 'ai_tool', item_id: data.tool.id });
 		}
 		isBookmarked = !isBookmarked;
+	}
+
+	async function toggleUpvote() {
+		const { data: { user } } = await client.auth.getUser();
+		if (!user) return window.location.href = '/auth/login';
+
+		if (isUpvoted) {
+			await client.from('upvotes').delete().eq('user_id', user.id).eq('item_type', 'ai_tool').eq('item_id', data.tool.id);
+			upvotesCount = Math.max(0, upvotesCount - 1);
+		} else {
+			await client.from('upvotes').insert({ user_id: user.id, item_type: 'ai_tool', item_id: data.tool.id });
+			upvotesCount += 1;
+		}
+		isUpvoted = !isUpvoted;
 	}
 
 	const tool = $derived(data.tool);
@@ -68,13 +102,21 @@
 
 		<div class="flex items-start justify-between gap-4 mb-4">
 			<h1 class="text-3xl sm:text-4xl font-bold text-white">{tool.name}</h1>
-			<button onclick={toggleBookmark} class="shrink-0 p-2 rounded-lg hover:bg-surface-800 transition-colors" aria-label="Toggle bookmark">
-				{#if isBookmarked}
-					<BookmarkCheck size={22} class="text-accent-400" />
-				{:else}
-					<Bookmark size={22} class="text-surface-500" />
-				{/if}
-			</button>
+			<div class="flex items-center gap-2 shrink-0">
+				<!-- Upvote Button -->
+				<button onclick={toggleUpvote} class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 {isUpvoted ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-surface-800/50 border border-surface-700 text-surface-400 hover:text-rose-400 hover:border-rose-500/30'}" aria-label="Toggle upvote">
+					<Heart size={16} fill={isUpvoted ? 'currentColor' : 'none'} class="transition-transform {isUpvoted ? 'scale-110' : ''}" />
+					<span class="text-sm font-medium">{upvotesCount}</span>
+				</button>
+				<!-- Bookmark Button -->
+				<button onclick={toggleBookmark} class="p-2 rounded-lg hover:bg-surface-800 transition-colors" aria-label="Toggle bookmark">
+					{#if isBookmarked}
+						<BookmarkCheck size={22} class="text-accent-400" />
+					{:else}
+						<Bookmark size={22} class="text-surface-500" />
+					{/if}
+				</button>
+			</div>
 		</div>
 
 		<div class="flex items-center gap-3 mb-6 flex-wrap">
@@ -145,6 +187,9 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- Reviews & Comments Section -->
+		<CommentsSection itemId={tool.id} itemType="ai_tool" />
 	</section>
 {:else}
 	<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">

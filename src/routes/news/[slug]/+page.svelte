@@ -3,7 +3,8 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
-	import { Clock, ExternalLink, Bookmark, BookmarkCheck, User, Link } from '@lucide/svelte';
+	import CommentsSection from '$lib/components/CommentsSection.svelte';
+	import { Clock, ExternalLink, Bookmark, BookmarkCheck, User, Heart } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -11,6 +12,8 @@
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
 	let isBookmarked = $state(false);
+	let upvotesCount = $state(0);
+	let isUpvoted = $state(false);
 
 	const item = $derived(data.item);
 
@@ -31,8 +34,17 @@
 				if (user) {
 					client.from('bookmarks').select('id').eq('user_id', user.id).eq('item_type', 'news').eq('item_id', item.id).maybeSingle()
 						.then(({ data: bm }) => { isBookmarked = !!bm; });
+
+					client.from('upvotes').select('id').eq('user_id', user.id).eq('item_type', 'news').eq('item_id', item.id).maybeSingle()
+						.then(({ data: uv }) => { isUpvoted = !!uv; });
 				}
 			});
+
+			client.from('upvotes')
+				.select('id', { count: 'exact', head: true })
+				.eq('item_type', 'news')
+				.eq('item_id', item.id)
+				.then(({ count }) => { upvotesCount = count || 0; });
 		}
 	});
 
@@ -45,6 +57,19 @@
 			await client.from('bookmarks').insert({ user_id: user.id, item_type: 'news', item_id: item.id });
 		}
 		isBookmarked = !isBookmarked;
+	}
+
+	async function toggleUpvote() {
+		const { data: { user } } = await client.auth.getUser();
+		if (!user) return window.location.href = '/auth/login';
+		if (isUpvoted) {
+			await client.from('upvotes').delete().eq('user_id', user.id).eq('item_type', 'news').eq('item_id', item.id);
+			upvotesCount = Math.max(0, upvotesCount - 1);
+		} else {
+			await client.from('upvotes').insert({ user_id: user.id, item_type: 'news', item_id: item.id });
+			upvotesCount += 1;
+		}
+		isUpvoted = !isUpvoted;
 	}
 
 	function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
@@ -110,6 +135,11 @@
 					{/if}
 				</div>
 				<div class="flex items-center gap-3">
+					<!-- Upvote Button -->
+					<button onclick={toggleUpvote} class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 {isUpvoted ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-surface-800/50 border border-surface-700 text-surface-400 hover:text-rose-400 hover:border-rose-500/30'}" aria-label="Toggle upvote">
+						<Heart size={16} fill={isUpvoted ? 'currentColor' : 'none'} class="transition-transform {isUpvoted ? 'scale-110' : ''}" />
+						<span class="text-sm font-medium">{upvotesCount}</span>
+					</button>
 					<button onclick={toggleBookmark} class="p-2 rounded-lg hover:bg-surface-800 transition-colors" aria-label="Toggle bookmark">
 						{#if isBookmarked}
 							<BookmarkCheck size={18} class="text-accent-400" />
@@ -163,6 +193,9 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- Comments Section -->
+		<CommentsSection itemId={item.id} itemType="news" />
 	</article>
 {:else}
 	<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">

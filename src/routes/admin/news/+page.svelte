@@ -1,6 +1,7 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
+	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
 	import { Plus, Pencil, Trash2, X, Save, Eye, EyeOff } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { estimateReadingTime } from '$lib/utils/marked';
@@ -128,9 +129,8 @@
 							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 					</div>
 					<div>
-						<label class="block text-sm text-surface-300 mb-1">Content (Markdown) *</label>
-						<textarea bind:value={form.content} rows="16" required
-							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 resize-y font-mono"></textarea>
+						<label class="block text-sm text-surface-300 mb-1.5">Content (Markdown) *</label>
+						<MarkdownEditor bind:value={form.content} rows={16} placeholder="Write your news article content..." />
 					</div>
 
 					<!-- Cover Image -->

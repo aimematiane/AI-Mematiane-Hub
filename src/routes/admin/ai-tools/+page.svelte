@@ -2,6 +2,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
+	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
 	import { Plus, Pencil, Trash2, Star, X, Save } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
@@ -143,9 +144,8 @@
 							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 					</div>
 					<div>
-						<label class="block text-sm text-surface-300 mb-1">Long Description (Markdown)</label>
-						<textarea bind:value={form.long_description} rows="6"
-							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 resize-y font-mono"></textarea>
+						<label class="block text-sm text-surface-300 mb-1.5">Long Description (Markdown)</label>
+						<MarkdownEditor bind:value={form.long_description} rows={8} placeholder="Write a detailed description of this AI tool..." />
 					</div>
 
 					<!-- Category, Pricing, Tags -->
