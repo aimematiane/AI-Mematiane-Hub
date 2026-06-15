@@ -183,7 +183,7 @@
 					<!-- Cover Image Upload -->
 					<div>
 						<label class="block text-sm text-surface-300 mb-1.5">Cover Image</label>
-						<FileUpload accept="image/*" bindable:files={coverFiles} path="ai-tools" />
+						<FileUpload accept="image/*" bind:files={coverFiles} path="ai-tools" />
 						<input type="url" bind:value={form.image_url} placeholder="Or paste image URL directly"
 							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 mt-2" />
 					</div>
@@ -215,7 +215,7 @@
 					</div>
 
 					<!-- Additional Attachments -->
-					<FileUpload label="Additional Attachments (screenshots, docs, etc.)" accept="image/*,application/pdf" bindable:files={attachments} path="ai-tools" />
+					<FileUpload label="Additional Attachments (screenshots, docs, etc.)" accept="image/*,application/pdf" bind:files={attachments} path="ai-tools" />
 
 					<label class="flex items-center gap-2 text-sm text-surface-300">
 						<input type="checkbox" bind:checked={form.is_featured} class="rounded" />
@@ -254,8 +254,7 @@
 						</td>
 						<td class="py-3 pr-4"><CategoryBadge category={tool.category} size="xs" /></td>
 						<td class="py-3 pr-4 text-sm text-surface-400">{tool.pricing || 'free'}</td>
-						<td class="py-3 pr-4">{#if tool.is_featured}<Star size={14} class="text-amber-400" fill="currentColor" />{/if}</td>
-						}
+						<td class="py-3 pr-4">{#if tool.is_featured}<Star size={14} class="text-amber-400" fill="currentColor" />{:else}<span class="text-surface-600">-</span>{/if}</td>
 						<td class="py-3 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button onclick={() => openEdit(tool)} class="p-1.5 rounded hover:bg-surface-800 text-surface-400 hover:text-white"><Pencil size={14} /></button>

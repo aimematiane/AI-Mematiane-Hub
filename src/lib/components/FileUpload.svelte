@@ -1,5 +1,5 @@
 <script>
-	import { Upload, X, File, Image, Loader2 } from '@lucide/svelte';
+	import { Upload, X, File, Loader2 } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
 	let { label = 'Upload Files', accept = 'image/*', files = $bindable([]), path = 'misc' } = $props();

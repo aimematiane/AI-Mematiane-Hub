@@ -136,13 +136,13 @@
 					<!-- Cover Image -->
 					<div>
 						<label class="block text-sm text-surface-300 mb-1.5">Cover Image</label>
-						<FileUpload accept="image/*" bindable:files={coverFiles} path="news" />
+						<FileUpload accept="image/*" bind:files={coverFiles} path="news" />
 						<input type="url" bind:value={form.cover_image_url} placeholder="Or paste image URL directly"
 							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 mt-2" />
 					</div>
 
 					<!-- Attachments -->
-					<FileUpload label="Attachments (images, PDFs, etc.)" accept="image/*,application/pdf" bindable:files={attachments} path="news" />
+					<FileUpload label="Attachments (images, PDFs, etc.)" accept="image/*,application/pdf" bind:files={attachments} path="news" />
 
 					<!-- Links -->
 					<div class="grid grid-cols-2 gap-4">

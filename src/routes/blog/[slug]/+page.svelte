@@ -55,7 +55,7 @@
 		type="article"
 		publishedTime={post.published_at}
 		authorName={post.author?.display_name || ''}
-		tags={[post.category, ...post.tags]}
+		tags={[post.category, ...(post.tags || [])]}
 	/>
 
 	<article class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -152,7 +152,7 @@
 					</div>
 				{/if}
 
-				{#if post.tags.length > 0}
+				{#if post.tags?.length > 0}
 					<div class="mt-8 pt-8 border-t border-surface-800">
 						<h3 class="text-sm font-medium text-surface-400 mb-3">Tags</h3>
 						<div class="flex gap-2 flex-wrap">

@@ -49,7 +49,7 @@
 		image={tool.image_url || ''}
 		url="/ai-tools/{tool.slug}"
 		type="website"
-		tags={[tool.category, ...tool.tags]}
+		tags={[tool.category, ...(tool.tags || [])]}
 	/>
 
 	<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -81,7 +81,7 @@
 			{#if tool.is_featured}
 				<span class="inline-flex items-center gap-1 text-sm text-amber-400"><Star size={14} fill="currentColor" /> Featured</span>
 			{/if}
-			{#if tool.tags.length > 0}
+			{#if tool.tags?.length > 0}
 				{#each tool.tags as tag}
 					<span class="text-xs text-surface-500 bg-surface-800 px-2 py-1 rounded">{tag}</span>
 				{/each}

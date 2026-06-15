@@ -64,7 +64,7 @@
 		type="article"
 		publishedTime={item.published_at}
 		authorName={item.author?.display_name || ''}
-		tags={[item.category, ...item.tags]}
+		tags={[item.category, ...(item.tags || [])]}
 	/>
 
 	<article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
