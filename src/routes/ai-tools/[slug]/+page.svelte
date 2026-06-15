@@ -20,7 +20,7 @@
 						.eq('user_id', user.id)
 						.eq('item_type', 'ai_tool')
 						.eq('item_id', data.tool.id)
-						.single()
+						.maybeSingle()
 						.then(({ data: bm }) => { isBookmarked = !!bm; });
 				}
 			});

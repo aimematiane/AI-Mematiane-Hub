@@ -16,7 +16,7 @@
 		if (data.post) {
 			client.auth.getUser().then(({ data: { user } }) => {
 				if (user) {
-					client.from('bookmarks').select('id').eq('user_id', user.id).eq('item_type', 'post').eq('item_id', data.post.id).single()
+					client.from('bookmarks').select('id').eq('user_id', user.id).eq('item_type', 'post').eq('item_id', data.post.id).maybeSingle()
 						.then(({ data: bm }) => { isBookmarked = !!bm; });
 				}
 			});

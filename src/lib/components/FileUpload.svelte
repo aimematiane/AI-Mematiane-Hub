@@ -7,10 +7,12 @@
 	const client = getSupabaseBrowserClient();
 	let uploading = $state(false);
 	let dragOver = $state(false);
+	let uploadError = $state('');
 
 	async function handleUpload(fileList) {
 		if (!fileList || fileList.length === 0) return;
 		uploading = true;
+		uploadError = '';
 
 		for (const file of fileList) {
 			const ext = file.name.split('.').pop();
@@ -25,7 +27,13 @@
 					upsert: false
 				});
 
-			if (!error && data) {
+			if (error) {
+				console.error('Storage upload error:', error);
+				uploadError = `Failed to upload "${file.name}": ${error.message}`;
+				break;
+			}
+
+			if (data) {
 				const { data: urlData } = client.storage.from('uploads').getPublicUrl(data.path);
 				files = [...files, urlData.publicUrl];
 			}
@@ -78,6 +86,15 @@
 			</div>
 		{/if}
 	</div>
+	
+	{#if uploadError}
+		<div class="mt-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 p-2.5 rounded-lg flex items-center justify-between">
+			<span>{uploadError}</span>
+			<button onclick={() => uploadError = ''} class="text-red-400 hover:text-red-300 ml-2" aria-label="Dismiss error">
+				<X size={12} />
+			</button>
+		</div>
+	{/if}
 
 	<!-- Preview uploaded files -->
 	{#if files.length > 0}
