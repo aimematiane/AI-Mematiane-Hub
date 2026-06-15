@@ -17,17 +17,145 @@
 	--color-accent-400: #22d3ee;
 	--color-accent-500: #06b6d4;
 	--color-accent-600: #0891b2;
+	
+	--font-display: 'Outfit', sans-serif;
+	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 html {
 	color-scheme: dark;
+	scroll-behavior: smooth;
 }
 
 body {
 	background-color: var(--color-surface-950);
 	color: var(--color-surface-200);
-	font-family: 'Inter', system-ui, -apple-system, sans-serif;
+	font-family: var(--font-sans);
 	-webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: var(--font-display);
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+
+/* Keyframes for premium animations */
+@keyframes float {
+	0%, 100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
+}
+
+@keyframes float-slow {
+	0%, 100% {
+		transform: translate(0, 0) scale(1);
+	}
+	50% {
+		transform: translate(10px, -20px) scale(1.1);
+	}
+}
+
+@keyframes float-slow-reverse {
+	0%, 100% {
+		transform: translate(0, 0) scale(1.1);
+	}
+	50% {
+		transform: translate(-10px, 15px) scale(1.0);
+	}
+}
+
+@keyframes pulse-slow {
+	0%, 100% {
+		opacity: 0.25;
+	}
+	50% {
+		opacity: 0.45;
+	}
+}
+
+@keyframes fade-in-up {
+	from {
+		opacity: 0;
+		transform: translateY(24px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Utility classes for wow factor UI */
+.animate-float {
+	animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+	animation: float-slow 12s ease-in-out infinite;
+}
+
+.animate-float-slow-reverse {
+	animation: float-slow-reverse 15s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+	animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+	animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered animation delays */
+.delay-100 {
+	animation-delay: 100ms;
+}
+.delay-200 {
+	animation-delay: 200ms;
+}
+.delay-300 {
+	animation-delay: 300ms;
+}
+.delay-500 {
+	animation-delay: 500ms;
+}
+.delay-700 {
+	animation-delay: 700ms;
+}
+
+/* Glassmorphism custom panels */
+.glass-panel {
+	background: rgba(9, 9, 11, 0.75);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card {
+	background: rgba(24, 24, 27, 0.4);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid rgba(255, 255, 255, 0.03);
+	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+	background: rgba(24, 24, 27, 0.6);
+	border-color: rgba(34, 211, 238, 0.2);
+	box-shadow: 0 20px 40px -15px rgba(6, 182, 214, 0.15);
+	transform: translateY(-4px);
+}
+
+/* Glow backgrounds */
+.glow-orb {
+	position: absolute;
+	border-radius: 50%;
+	filter: blur(120px);
+	z-index: 0;
+	pointer-events: none;
 }
 
 .prose {

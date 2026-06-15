@@ -2,6 +2,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { User, Mail, Shield, Bookmark, Calendar } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
+	import { optimizeImageUrl } from '$lib/utils/image';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
@@ -34,7 +35,7 @@
 		<!-- User Info -->
 		<div class="flex items-center gap-4 pb-6 border-b border-surface-800">
 			{#if data.profile?.avatar_url}
-				<img src={data.profile.avatar_url} alt="" class="w-16 h-16 rounded-full" />
+				<img src={optimizeImageUrl(data.profile.avatar_url, { width: 120, quality: 80 })} alt="" class="w-16 h-16 rounded-full object-cover" />
 			{:else}
 				<div class="w-16 h-16 rounded-full bg-accent-500/20 flex items-center justify-center">
 					<User size={28} class="text-accent-400" />

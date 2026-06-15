@@ -6,6 +6,7 @@
 	import { ExternalLink, Play, Star, Bookmark, BookmarkCheck, Link } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
+	import { optimizeImageUrl } from '$lib/utils/image';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
@@ -61,7 +62,7 @@
 
 		{#if tool.image_url}
 			<div class="aspect-video rounded-2xl overflow-hidden bg-surface-800 mb-8">
-				<img src={tool.image_url} alt={tool.name} class="w-full h-full object-cover" />
+				<img src={optimizeImageUrl(tool.image_url, { width: 1200, quality: 85 })} alt={tool.name} class="w-full h-full object-cover" />
 			</div>
 		{/if}
 
@@ -135,7 +136,7 @@
 				<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
 					{#each tool.attachments as url}
 						<a href={url} target="_blank" rel="noopener noreferrer" class="group relative aspect-square rounded-lg overflow-hidden bg-surface-800 hover:bg-surface-700 transition-colors border border-surface-700 hover:border-surface-600">
-							<img src={url} alt="Attachment" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+							<img src={optimizeImageUrl(url, { width: 600, quality: 80 })} alt="Attachment" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
 							<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
 								<ExternalLink size={24} class="text-white" />
 							</div>

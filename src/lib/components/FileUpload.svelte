@@ -1,6 +1,7 @@
 <script>
 	import { Upload, X, File, Loader2 } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
+	import { optimizeImageUrl } from '$lib/utils/image';
 
 	let { label = 'Upload Files', accept = 'image/*', files = $bindable([]), path = 'misc' } = $props();
 
@@ -102,7 +103,7 @@
 			{#each files as fileUrl, i}
 				<div class="flex items-center gap-3 p-2 rounded-lg bg-surface-800 border border-surface-700">
 					{#if isImage(fileUrl)}
-						<img src={fileUrl} alt="Upload" class="w-10 h-10 rounded object-cover" />
+						<img src={optimizeImageUrl(fileUrl, { width: 100, quality: 80 })} alt="Upload" class="w-10 h-10 rounded object-cover" />
 					{:else}
 						<div class="w-10 h-10 rounded bg-surface-700 flex items-center justify-center">
 							<File size={16} class="text-surface-400" />
