@@ -1,6 +1,7 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
+	import FileUpload from '$lib/components/FileUpload.svelte';
 	import { Plus, Pencil, Trash2, Star, X, Save } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
@@ -9,13 +10,25 @@
 
 	let showForm = $state(false);
 	let editingTool = $state(null);
-	let form = $state({ name: '', slug: '', description: '', long_description: '', category: 'text', image_url: '', website_url: '', demo_url: '', is_featured: false, tags: '' });
+	let form = $state({
+		name: '', slug: '', description: '', long_description: '', category: 'text',
+		image_url: '', website_url: '', demo_url: '', github_url: '', paper_url: '',
+		pricing: 'free', is_featured: false, tags: ''
+	});
+	let coverFiles = $state([]);
+	let attachments = $state([]);
 	let saving = $state(false);
 	let error = $state('');
 
 	function openNew() {
 		editingTool = null;
-		form = { name: '', slug: '', description: '', long_description: '', category: 'text', image_url: '', website_url: '', demo_url: '', is_featured: false, tags: '' };
+		form = {
+			name: '', slug: '', description: '', long_description: '', category: 'text',
+			image_url: '', website_url: '', demo_url: '', github_url: '', paper_url: '',
+			pricing: 'free', is_featured: false, tags: ''
+		};
+		coverFiles = [];
+		attachments = [];
 		showForm = true;
 	}
 
@@ -30,9 +43,14 @@
 			image_url: tool.image_url || '',
 			website_url: tool.website_url || '',
 			demo_url: tool.demo_url || '',
+			github_url: tool.github_url || '',
+			paper_url: tool.paper_url || '',
+			pricing: tool.pricing || 'free',
 			is_featured: tool.is_featured,
 			tags: tool.tags?.join(', ') || ''
 		};
+		coverFiles = tool.image_url ? [tool.image_url] : [];
+		attachments = tool.attachments || [];
 		showForm = true;
 	}
 
@@ -44,8 +62,20 @@
 		saving = true;
 		error = '';
 		const payload = {
-			...form,
-			tags: form.tags.split(',').map(t => t.trim()).filter(Boolean)
+			name: form.name,
+			slug: form.slug,
+			description: form.description,
+			long_description: form.long_description || null,
+			category: form.category,
+			image_url: coverFiles.length > 0 ? coverFiles[0] : (form.image_url || null),
+			website_url: form.website_url || null,
+			demo_url: form.demo_url || null,
+			github_url: form.github_url || null,
+			paper_url: form.paper_url || null,
+			pricing: form.pricing,
+			is_featured: form.is_featured,
+			tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+			attachments: attachments
 		};
 
 		let result;
@@ -86,10 +116,9 @@
 		<div class="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-4">{error}</div>
 	{/if}
 
-	<!-- Form Modal -->
 	{#if showForm}
-		<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-20 px-4 overflow-y-auto">
-			<div class="w-full max-w-2xl bg-surface-900 border border-surface-700 rounded-2xl p-6 mb-20">
+		<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-10 px-4 overflow-y-auto">
+			<div class="w-full max-w-3xl bg-surface-900 border border-surface-700 rounded-2xl p-6 mb-20">
 				<div class="flex items-center justify-between mb-6">
 					<h2 class="text-lg font-semibold text-white">{editingTool ? 'Edit' : 'New'} AI Tool</h2>
 					<button onclick={() => showForm = false} class="p-1.5 rounded-lg hover:bg-surface-800 text-surface-400"><X size={18} /></button>
@@ -116,9 +145,11 @@
 					<div>
 						<label class="block text-sm text-surface-300 mb-1">Long Description (Markdown)</label>
 						<textarea bind:value={form.long_description} rows="6"
-							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 resize-y"></textarea>
+							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 resize-y font-mono"></textarea>
 					</div>
-					<div class="grid grid-cols-2 gap-4">
+
+					<!-- Category, Pricing, Tags -->
+					<div class="grid grid-cols-3 gap-4">
 						<div>
 							<label class="block text-sm text-surface-300 mb-1">Category *</label>
 							<select bind:value={form.category}
@@ -133,28 +164,59 @@
 							</select>
 						</div>
 						<div>
+							<label class="block text-sm text-surface-300 mb-1">Pricing</label>
+							<select bind:value={form.pricing}
+								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500">
+								<option value="free">Free</option>
+								<option value="freemium">Freemium</option>
+								<option value="paid">Paid</option>
+								<option value="open_source">Open Source</option>
+							</select>
+						</div>
+						<div>
 							<label class="block text-sm text-surface-300 mb-1">Tags (comma-separated)</label>
 							<input type="text" bind:value={form.tags}
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>
-					<div class="grid grid-cols-3 gap-4">
-						<div>
-							<label class="block text-sm text-surface-300 mb-1">Image URL</label>
-							<input type="url" bind:value={form.image_url}
-								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
-						</div>
+
+					<!-- Cover Image Upload -->
+					<div>
+						<label class="block text-sm text-surface-300 mb-1.5">Cover Image</label>
+						<FileUpload accept="image/*" bindable:files={coverFiles} path="ai-tools" />
+						<input type="url" bind:value={form.image_url} placeholder="Or paste image URL directly"
+							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 mt-2" />
+					</div>
+
+					<!-- Links -->
+					<div class="grid grid-cols-2 gap-4">
 						<div>
 							<label class="block text-sm text-surface-300 mb-1">Website URL</label>
-							<input type="url" bind:value={form.website_url}
+							<input type="url" bind:value={form.website_url} placeholder="https://example.com"
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 						<div>
 							<label class="block text-sm text-surface-300 mb-1">Demo URL</label>
-							<input type="url" bind:value={form.demo_url}
+							<input type="url" bind:value={form.demo_url} placeholder="https://demo.example.com"
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>
+					<div class="grid grid-cols-2 gap-4">
+						<div>
+							<label class="block text-sm text-surface-300 mb-1">GitHub URL</label>
+							<input type="url" bind:value={form.github_url} placeholder="https://github.com/..."
+								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
+						</div>
+						<div>
+							<label class="block text-sm text-surface-300 mb-1">Research Paper URL</label>
+							<input type="url" bind:value={form.paper_url} placeholder="https://arxiv.org/..."
+								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
+						</div>
+					</div>
+
+					<!-- Additional Attachments -->
+					<FileUpload label="Additional Attachments (screenshots, docs, etc.)" accept="image/*,application/pdf" bindable:files={attachments} path="ai-tools" />
+
 					<label class="flex items-center gap-2 text-sm text-surface-300">
 						<input type="checkbox" bind:checked={form.is_featured} class="rounded" />
 						Featured
@@ -178,6 +240,7 @@
 				<tr class="border-b border-surface-800">
 					<th class="text-left text-xs font-medium text-surface-400 pb-3 pr-4">Name</th>
 					<th class="text-left text-xs font-medium text-surface-400 pb-3 pr-4">Category</th>
+					<th class="text-left text-xs font-medium text-surface-400 pb-3 pr-4">Pricing</th>
 					<th class="text-left text-xs font-medium text-surface-400 pb-3 pr-4">Featured</th>
 					<th class="text-right text-xs font-medium text-surface-400 pb-3">Actions</th>
 				</tr>
@@ -190,8 +253,9 @@
 							<p class="text-xs text-surface-500 line-clamp-1">{tool.description}</p>
 						</td>
 						<td class="py-3 pr-4"><CategoryBadge category={tool.category} size="xs" /></td>
+						<td class="py-3 pr-4 text-sm text-surface-400">{tool.pricing || 'free'}</td>
 						<td class="py-3 pr-4">{#if tool.is_featured}<Star size={14} class="text-amber-400" fill="currentColor" />{/if}</td>
-
+						}
 						<td class="py-3 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<button onclick={() => openEdit(tool)} class="p-1.5 rounded hover:bg-surface-800 text-surface-400 hover:text-white"><Pencil size={14} /></button>

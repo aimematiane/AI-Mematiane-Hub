@@ -3,7 +3,7 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
-	import { ExternalLink, Play, Star, Bookmark, BookmarkCheck } from '@lucide/svelte';
+	import { ExternalLink, Play, Star, Bookmark, BookmarkCheck, Link } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 
@@ -88,7 +88,7 @@
 			{/if}
 		</div>
 
-		<div class="flex items-center gap-3 mb-8">
+		<div class="flex items-center gap-3 mb-8 flex-wrap">
 			{#if tool.website_url}
 				<a href={tool.website_url} target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-sm transition-colors">
 					<ExternalLink size={14} />
@@ -101,6 +101,23 @@
 					Try Demo
 				</a>
 			{/if}
+			{#if tool.github_url}
+				<a href={tool.github_url} target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-surface-300 text-sm transition-colors border border-surface-700">
+					<ExternalLink size={14} />
+					GitHub
+				</a>
+			{/if}
+			{#if tool.paper_url}
+				<a href={tool.paper_url} target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-surface-300 text-sm transition-colors border border-surface-700">
+					<ExternalLink size={14} />
+					Research Paper
+				</a>
+			{/if}
+			{#if tool.pricing}
+				<span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-800 text-surface-200 text-sm border border-surface-700">
+					{tool.pricing}
+				</span>
+			{/if}
 			<ShareButtons title={tool.name} url="/ai-tools/{tool.slug}" description={tool.description} />
 		</div>
 
@@ -110,6 +127,22 @@
 			</div>
 		{:else}
 			<p class="text-surface-400 leading-relaxed">{tool.description}</p>
+		{/if}
+
+		{#if tool.attachments && tool.attachments.length > 0}
+			<div class="mt-10 pt-8 border-t border-surface-800">
+				<h3 class="text-lg font-semibold text-white mb-6">Attachments</h3>
+				<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+					{#each tool.attachments as url}
+						<a href={url} target="_blank" rel="noopener noreferrer" class="group relative aspect-square rounded-lg overflow-hidden bg-surface-800 hover:bg-surface-700 transition-colors border border-surface-700 hover:border-surface-600">
+							<img src={url} alt="Attachment" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+							<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+								<ExternalLink size={24} class="text-white" />
+							</div>
+						</a>
+					{/each}
+				</div>
+			</div>
 		{/if}
 	</section>
 {:else}

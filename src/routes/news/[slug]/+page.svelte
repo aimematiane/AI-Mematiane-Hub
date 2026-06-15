@@ -3,7 +3,7 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
-	import { Clock, ExternalLink, Bookmark, BookmarkCheck, User } from '@lucide/svelte';
+	import { Clock, ExternalLink, Bookmark, BookmarkCheck, User, Link } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 
@@ -130,6 +130,38 @@
 		<div class="md-content prose max-w-none text-surface-300 leading-relaxed">
 			{@html renderMarkdown(item.content)}
 		</div>
+
+		{#if item.references_links && item.references_links.length > 0}
+			<div class="mt-10 pt-8 border-t border-surface-800">
+				<h3 class="text-lg font-semibold text-white mb-4">References</h3>
+				<ul class="space-y-2">
+					{#each item.references_links as url}
+						<li>
+							<a href={url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-accent-400 hover:text-accent-300 transition-colors break-all">
+								<ExternalLink size={14} class="shrink-0" />
+								<span class="underline">{url}</span>
+							</a>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
+		{#if item.attachments && item.attachments.length > 0}
+			<div class="mt-8 pt-8 border-t border-surface-800">
+				<h3 class="text-lg font-semibold text-white mb-6">Attachments</h3>
+				<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+					{#each item.attachments as url}
+						<a href={url} target="_blank" rel="noopener noreferrer" class="group relative aspect-square rounded-lg overflow-hidden bg-surface-800 hover:bg-surface-700 transition-colors border border-surface-700 hover:border-surface-600">
+							<img src={url} alt="Attachment" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+							<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+								<ExternalLink size={24} class="text-white" />
+							</div>
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
 	</article>
 {:else}
 	<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">

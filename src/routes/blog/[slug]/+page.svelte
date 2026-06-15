@@ -3,7 +3,7 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
-	import { Clock, Bookmark, BookmarkCheck, User, List } from '@lucide/svelte';
+	import { Clock, Bookmark, BookmarkCheck, User, List, ExternalLink } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 
@@ -120,8 +120,40 @@
 					{@html addHeadingIds(renderMarkdown(post.content))}
 				</div>
 
-				{#if post.tags.length > 0}
+				{#if post.references_links && post.references_links.length > 0}
 					<div class="mt-10 pt-8 border-t border-surface-800">
+						<h3 class="text-lg font-semibold text-white mb-4">References</h3>
+						<ul class="space-y-2">
+							{#each post.references_links as url}
+								<li>
+									<a href={url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-accent-400 hover:text-accent-300 transition-colors break-all">
+										<ExternalLink size={14} class="shrink-0" />
+										<span class="underline">{url}</span>
+									</a>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
+
+				{#if post.attachments && post.attachments.length > 0}
+					<div class="mt-8 pt-8 border-t border-surface-800">
+						<h3 class="text-lg font-semibold text-white mb-6">Attachments</h3>
+						<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+							{#each post.attachments as url}
+								<a href={url} target="_blank" rel="noopener noreferrer" class="group relative aspect-square rounded-lg overflow-hidden bg-surface-800 hover:bg-surface-700 transition-colors border border-surface-700 hover:border-surface-600">
+									<img src={url} alt="Attachment" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+									<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+										<ExternalLink size={24} class="text-white" />
+									</div>
+								</a>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
+				{#if post.tags.length > 0}
+					<div class="mt-8 pt-8 border-t border-surface-800">
 						<h3 class="text-sm font-medium text-surface-400 mb-3">Tags</h3>
 						<div class="flex gap-2 flex-wrap">
 							{#each post.tags as tag}

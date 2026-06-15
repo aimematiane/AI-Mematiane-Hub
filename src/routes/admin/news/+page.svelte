@@ -1,5 +1,6 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import FileUpload from '$lib/components/FileUpload.svelte';
 	import { Plus, Pencil, Trash2, X, Save, Eye, EyeOff } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { estimateReadingTime } from '$lib/utils/marked';
@@ -9,13 +10,17 @@
 
 	let showForm = $state(false);
 	let editingItem = $state(null);
-	let form = $state({ title: '', slug: '', excerpt: '', content: '', cover_image_url: '', category: 'general', tags: '', source_url: '', is_published: false });
+	let form = $state({ title: '', slug: '', excerpt: '', content: '', cover_image_url: '', category: 'general', tags: '', source_url: '', references_links: '', is_published: false });
+	let coverFiles = $state([]);
+	let attachments = $state([]);
 	let saving = $state(false);
 	let error = $state('');
 
 	function openNew() {
 		editingItem = null;
-		form = { title: '', slug: '', excerpt: '', content: '', cover_image_url: '', category: 'general', tags: '', source_url: '', is_published: false };
+		form = { title: '', slug: '', excerpt: '', content: '', cover_image_url: '', category: 'general', tags: '', source_url: '', references_links: '', is_published: false };
+		coverFiles = [];
+		attachments = [];
 		showForm = true;
 	}
 
@@ -30,8 +35,11 @@
 			category: item.category,
 			tags: item.tags?.join(', ') || '',
 			source_url: item.source_url || '',
+			references_links: item.references_links?.join(', ') || '',
 			is_published: item.is_published
 		};
+		coverFiles = item.cover_image_url ? [item.cover_image_url] : [];
+		attachments = item.attachments || [];
 		showForm = true;
 	}
 
@@ -43,10 +51,12 @@
 			slug: form.slug,
 			excerpt: form.excerpt,
 			content: form.content,
-			cover_image_url: form.cover_image_url || null,
+			cover_image_url: coverFiles.length > 0 ? coverFiles[0] : (form.cover_image_url || null),
 			category: form.category,
 			tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
 			source_url: form.source_url || null,
+			references_links: form.references_links.split(',').map(l => l.trim()).filter(Boolean),
+			attachments: attachments,
 			is_published: form.is_published,
 			reading_time_min: estimateReadingTime(form.content),
 			author_id: data.userId,
@@ -122,18 +132,33 @@
 						<textarea bind:value={form.content} rows="16" required
 							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 resize-y font-mono"></textarea>
 					</div>
+
+					<!-- Cover Image -->
+					<div>
+						<label class="block text-sm text-surface-300 mb-1.5">Cover Image</label>
+						<FileUpload accept="image/*" bindable:files={coverFiles} path="news" />
+						<input type="url" bind:value={form.cover_image_url} placeholder="Or paste image URL directly"
+							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 mt-2" />
+					</div>
+
+					<!-- Attachments -->
+					<FileUpload label="Attachments (images, PDFs, etc.)" accept="image/*,application/pdf" bindable:files={attachments} path="news" />
+
+					<!-- Links -->
 					<div class="grid grid-cols-2 gap-4">
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Cover Image URL</label>
-							<input type="url" bind:value={form.cover_image_url}
+							<label class="block text-sm text-surface-300 mb-1">Source URL</label>
+							<input type="url" bind:value={form.source_url} placeholder="https://original-article.com"
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Source URL</label>
-							<input type="url" bind:value={form.source_url}
+							<label class="block text-sm text-surface-300 mb-1">References (comma-separated URLs)</label>
+							<input type="text" bind:value={form.references_links} placeholder="https://..., https://..."
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>
+
+					<!-- Category, Tags -->
 					<div class="grid grid-cols-2 gap-4">
 						<div>
 							<label class="block text-sm text-surface-300 mb-1">Category</label>
@@ -146,6 +171,7 @@
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>
+
 					<label class="flex items-center gap-2 text-sm text-surface-300">
 						<input type="checkbox" bind:checked={form.is_published} class="rounded" />
 						Published
