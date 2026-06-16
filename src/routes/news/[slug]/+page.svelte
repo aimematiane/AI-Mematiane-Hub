@@ -70,12 +70,13 @@
 		title={item.title}
 		description={item.excerpt}
 		image={item.cover_image_url || ''}
-		url="/news/{item.slug}"
+		url={`/news/${item.slug}`}
 		type="article"
 		schemaType="NewsArticle"
 		publishedTime={item.published_at}
 		authorName={item.author?.display_name || ''}
 		tags={[item.category, ...(item.tags || [])]}
+		preloadImage={item.cover_image_url || ''}
 	/>
 
 	<article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -132,7 +133,7 @@
 							<Bookmark size={18} class="text-surface-500" />
 						{/if}
 					</button>
-					<ShareButtons title={item.title} url="/news/{item.slug}" description={item.excerpt} />
+					<ShareButtons title={item.title} url={`/news/${item.slug}`} description={item.excerpt} />
 				</div>
 			</div>
 		</header>

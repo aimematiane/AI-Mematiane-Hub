@@ -36,6 +36,7 @@ export async function GET(event) {
 	<link>${siteUrl}</link>
 	<description>Global directory of AI models, tools, news, and deep-dive analysis</description>
 	<language>en-us</language>
+	<lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 	<atom:link href="${siteUrl}/rss.xml" rel="self" type="application/rss+xml" />
 	${feedItems.map(item => `
 	<item>

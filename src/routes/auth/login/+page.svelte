@@ -1,6 +1,7 @@
 <script>
 	import { goto } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import { Mail, Lock, Eye, EyeOff } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
@@ -47,6 +48,10 @@
 
 <section class="min-h-[80vh] flex items-center justify-center px-4 py-10">
 	<div class="w-full max-w-md">
+		<Breadcrumbs items={[
+			{ label: 'Home', href: '/' },
+			{ label: 'Sign In' }
+		]} />
 		<div class="text-center mb-8">
 			<h1 class="text-2xl font-bold text-white mb-2">Welcome back</h1>
 			<p class="text-surface-400">Sign in to access your bookmarks and profile</p>

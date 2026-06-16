@@ -5,3 +5,6 @@ Disallow: /auth
 Disallow: /profile
 
 Sitemap: https://ai-mematiane.com/sitemap.xml
+
+User-agent: Googlebot
+Allow: /

@@ -78,11 +78,13 @@
 		title={post.title}
 		description={post.excerpt}
 		image={post.cover_image_url || ''}
-		url="/blog/{post.slug}"
+		url={`/blog/${post.slug}`}
 		type="article"
+		schemaType="Article"
 		publishedTime={post.published_at}
 		authorName={post.author?.display_name || ''}
 		tags={[post.category, ...(post.tags || [])]}
+		preloadImage={post.cover_image_url || ''}
 	/>
 
 	<article class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -137,7 +139,7 @@
 									<Bookmark size={18} class="text-surface-500" />
 								{/if}
 							</button>
-							<ShareButtons title={post.title} url="/blog/{post.slug}" description={post.excerpt} />
+							<ShareButtons title={post.title} url={`/blog/${post.slug}`} description={post.excerpt} />
 						</div>
 					</div>
 				</header>

@@ -94,22 +94,16 @@
 	}) : null);
 </script>
 
-<svelte:head>
-	{#if toolSchema}
-		<script type="application/ld+json">
-			{@html toolSchema}
-		</script>
-	{/if}
-</svelte:head>
-
 {#if tool}
 	<SeoHead
 		title={tool.name}
 		description={tool.description}
 		image={tool.image_url || ''}
-		url="/ai-tools/{tool.slug}"
+		url={`/ai-tools/${tool.slug}`}
 		type="website"
 		tags={[tool.category, ...(tool.tags || [])]}
+		customSchema={toolSchema}
+		preloadImage={tool.image_url || ''}
 	/>
 
 	<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -196,7 +190,7 @@
 					{tool.pricing}
 				</span>
 			{/if}
-			<ShareButtons title={tool.name} url="/ai-tools/{tool.slug}" description={tool.description} />
+			<ShareButtons title={tool.name} url={`/ai-tools/${tool.slug}`} description={tool.description} />
 		</div>
 
 		{#if tool.long_description}

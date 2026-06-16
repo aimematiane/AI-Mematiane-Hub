@@ -1,5 +1,6 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import { User, Mail, Shield, Bookmark, Calendar } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -29,6 +30,11 @@
 <SeoHead title="Profile" description="Your AI Mematiane profile" url="/profile" noindex={true} />
 
 <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+	<Breadcrumbs items={[
+		{ label: 'Home', href: '/' },
+		{ label: 'Profile' }
+	]} />
+
 	<h1 class="text-3xl font-bold text-white mb-8">Profile</h1>
 
 	<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 space-y-6">

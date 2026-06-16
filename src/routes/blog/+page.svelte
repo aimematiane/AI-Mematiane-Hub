@@ -49,13 +49,19 @@
 		return () => observer.disconnect();
 	});
 
+	const canonicalUrl = $derived(data.page > 1 ? `/blog?page=${data.page}` : '/blog');
+	const prevUrl = $derived(data.page > 1 ? (data.page > 2 ? `/blog?page=${data.page - 1}` : '/blog') : '');
+	const nextUrl = $derived(data.page < Math.ceil(data.totalCount / data.perPage) ? `/blog?page=${data.page + 1}` : '');
+
 	function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
 </script>
 
 <SeoHead
-	title="Blog - Deep Dives into AI"
+	title={data.page > 1 ? `Blog - Page ${data.page}` : 'Blog - Deep Dives into AI'}
 	description="In-depth articles exploring AI technologies, ethics, applications, and the future of intelligent systems."
-	url="/blog"
+	url={canonicalUrl}
+	prevUrl={prevUrl}
+	nextUrl={nextUrl}
 	tags={['AI blog', 'artificial intelligence articles', 'machine learning deep dives']}
 />
 
