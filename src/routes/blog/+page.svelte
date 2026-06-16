@@ -2,7 +2,8 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
-	import { Clock, User, Loader2 } from '@lucide/svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
+	import { Clock, Loader2 } from '@lucide/svelte';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
@@ -108,13 +109,7 @@
 						<div class="flex items-center justify-between">
 							{#if post.author}
 								<div class="flex items-center gap-2">
-									{#if post.author.avatar_url}
-										<img src={optimizeImageUrl(post.author.avatar_url, { width: 100, quality: 80 })} alt="" class="w-6 h-6 rounded-full object-cover" />
-									{:else}
-										<div class="w-6 h-6 rounded-full bg-surface-700 flex items-center justify-center">
-											<User size={10} class="text-surface-400" />
-										</div>
-									{/if}
+									<Avatar src={post.author.avatar_url} name={post.author.display_name} size={24} />
 									<span class="text-xs text-surface-400">{post.author.display_name}</span>
 								</div>
 							{/if}

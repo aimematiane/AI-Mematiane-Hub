@@ -3,7 +3,8 @@
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
-	import { Plus, Pencil, Trash2, Star, X, Save } from '@lucide/svelte';
+	import Modal from '$lib/components/Modal.svelte';
+	import { Plus, Pencil, Trash2, Star, Save } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
 	let { data } = $props();
@@ -117,14 +118,7 @@
 		<div class="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-4">{error}</div>
 	{/if}
 
-	{#if showForm}
-		<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-10 px-4 overflow-y-auto">
-			<div class="w-full max-w-3xl bg-surface-900 border border-surface-700 rounded-2xl p-6 mb-20">
-				<div class="flex items-center justify-between mb-6">
-					<h2 class="text-lg font-semibold text-white">{editingTool ? 'Edit' : 'New'} AI Tool</h2>
-					<button onclick={() => showForm = false} class="p-1.5 rounded-lg hover:bg-surface-800 text-surface-400"><X size={18} /></button>
-				</div>
-
+	<Modal bind:open={showForm} title="{editingTool ? 'Edit' : 'New'} AI Tool" maxWidth="max-w-3xl">
 				<form onsubmit={(e) => { e.preventDefault(); handleSave(); }} class="space-y-4">
 					<div class="grid grid-cols-2 gap-4">
 						<div>
@@ -229,9 +223,7 @@
 						</button>
 					</div>
 				</form>
-			</div>
-		</div>
-	{/if}
+	</Modal>
 
 	<!-- Table -->
 	<div class="overflow-x-auto">

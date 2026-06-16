@@ -1,15 +1,16 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { parsePage, sanitizeSearch, allowFrom, ALLOWED_CATEGORIES, ALLOWED_PRICING, ALLOWED_SORTS } from '$lib/utils/query.js';
 
 export async function load({ url, cookies, setHeaders }) {
 	setHeaders({
 		'cache-control': 'public, max-age=60, stale-while-revalidate=300'
 	});
 	const client = await getSupabaseServerClient({ cookies, url });
-	const category = url.searchParams.get('category') || '';
-	const search = url.searchParams.get('q') || '';
-	const pricing = url.searchParams.get('pricing') || '';
-	const sort = url.searchParams.get('sort') || 'featured';
-	const page = Math.max(1, parseInt(url.searchParams.get('page')) || 1);
+	const category = allowFrom(url.searchParams.get('category'), ALLOWED_CATEGORIES);
+	const search = sanitizeSearch(url.searchParams.get('q'));
+	const pricing = allowFrom(url.searchParams.get('pricing'), ALLOWED_PRICING);
+	const sort = allowFrom(url.searchParams.get('sort'), ALLOWED_SORTS) || 'featured';
+	const page = parsePage(url.searchParams.get('page'));
 	const perPage = 12;
 
 	let query = client
@@ -43,6 +44,10 @@ export async function load({ url, cookies, setHeaders }) {
 	if (search) query = query.ilike('name', `%${search}%`);
 
 	const { data: tools, count, error } = await query;
+
+	if (error) {
+		console.error('[v0] Failed to load AI tools:', error.message);
+	}
 
 	return {
 		tools: tools || [],

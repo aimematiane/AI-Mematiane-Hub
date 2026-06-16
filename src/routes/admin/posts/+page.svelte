@@ -2,7 +2,8 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
-	import { Plus, Pencil, Trash2, X, Save, Eye, EyeOff } from '@lucide/svelte';
+	import Modal from '$lib/components/Modal.svelte';
+	import { Plus, Pencil, Trash2, Save, Eye, EyeOff } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { estimateReadingTime } from '$lib/utils/marked';
 
@@ -100,14 +101,7 @@
 		<div class="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-4">{error}</div>
 	{/if}
 
-	{#if showForm}
-		<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-10 px-4 overflow-y-auto">
-			<div class="w-full max-w-4xl bg-surface-900 border border-surface-700 rounded-2xl p-6 mb-20">
-				<div class="flex items-center justify-between mb-6">
-					<h2 class="text-lg font-semibold text-white">{editingPost ? 'Edit' : 'New'} Blog Post</h2>
-					<button onclick={() => showForm = false} class="p-1.5 rounded-lg hover:bg-surface-800 text-surface-400"><X size={18} /></button>
-				</div>
-
+	<Modal bind:open={showForm} title="{editingPost ? 'Edit' : 'New'} Blog Post" maxWidth="max-w-4xl">
 				<form onsubmit={(e) => { e.preventDefault(); handleSave(); }} class="space-y-4">
 					<div class="grid grid-cols-2 gap-4">
 						<div>
@@ -173,9 +167,7 @@
 						</button>
 					</div>
 				</form>
-			</div>
-		</div>
-	{/if}
+	</Modal>
 
 	<div class="overflow-x-auto">
 		<table class="w-full">

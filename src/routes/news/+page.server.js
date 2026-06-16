@@ -1,12 +1,13 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { parsePage, allowFrom, ALLOWED_CATEGORIES } from '$lib/utils/query.js';
 
 export async function load({ url, cookies, setHeaders }) {
 	setHeaders({
 		'cache-control': 'public, max-age=60, stale-while-revalidate=300'
 	});
 	const client = await getSupabaseServerClient({ cookies, url });
-	const category = url.searchParams.get('category') || '';
-	const page = Math.max(1, parseInt(url.searchParams.get('page')) || 1);
+	const category = allowFrom(url.searchParams.get('category'), ALLOWED_CATEGORIES);
+	const page = parsePage(url.searchParams.get('page'));
 	const perPage = 9;
 
 	let query = client
@@ -19,6 +20,10 @@ export async function load({ url, cookies, setHeaders }) {
 	if (category) query = query.eq('category', category);
 
 	const { data: newsItems, count, error } = await query;
+
+	if (error) {
+		console.error('[v0] Failed to load news:', error.message);
+	}
 
 	return {
 		newsItems: newsItems || [],

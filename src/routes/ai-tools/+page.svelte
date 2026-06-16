@@ -1,7 +1,8 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
-	import { Loader2 } from '@lucide/svelte';
+	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
+	import { Loader2, Star, ArrowUpRight } from '@lucide/svelte';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
@@ -72,17 +73,34 @@
 	{#if tools.length > 0}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			{#each tools as tool, i}
-				<a href="/ai-tools/{tool.slug}" class="group block rounded-2xl p-4 bg-surface-900 border border-surface-800 hover:shadow-lg transition-shadow">
+				<a
+					href="/ai-tools/{tool.slug}"
+					class="glass-card group flex flex-col rounded-2xl overflow-hidden animate-fade-in-up hover:border-accent-500/20 hover:shadow-accent-500/10"
+					style="animation-delay: {Math.min(i * 80, 600)}ms;"
+				>
 					{#if tool.cover_image_url}
-						<div class="w-full h-40 overflow-hidden rounded-lg mb-3 bg-surface-950/20">
-							<img src={optimizeImageUrl(tool.cover_image_url, { width: 800, quality: 80 })} alt={tool.name} class="w-full h-full object-cover" loading="lazy" />
+						<div class="relative aspect-[16/10] overflow-hidden bg-surface-950/40">
+							<img src={optimizeImageUrl(tool.cover_image_url, { width: 600, quality: 80 })} alt={tool.name} class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" loading="lazy" />
+							<div class="absolute inset-0 bg-gradient-to-t from-surface-950/40 to-transparent pointer-events-none"></div>
+						</div>
+					{:else}
+						<div class="relative aspect-[16/10] bg-gradient-to-br from-accent-950/30 to-surface-900 flex items-center justify-center">
+							<span class="text-4xl font-bold text-surface-700 group-hover:scale-110 transition-transform duration-500">{(tool.name || '?').charAt(0)}</span>
 						</div>
 					{/if}
-					<h3 class="text-lg font-semibold text-white mb-1">{tool.name}</h3>
-					<p class="text-sm text-surface-400 line-clamp-3 mb-3">{tool.description}</p>
-					<div class="flex items-center justify-between text-xs text-surface-500">
-						<span class="uppercase tracking-wider">{tool.category || 'General'}</span>
-						<span>{tool.pricing || 'Free'}</span>
+					<div class="flex flex-col flex-1 p-5">
+						<div class="flex items-center gap-2 mb-3">
+							<CategoryBadge category={tool.category || 'general'} size="xs" />
+							{#if tool.is_featured}
+								<span class="inline-flex items-center gap-1 text-xs text-amber-400"><Star size={11} fill="currentColor" />Featured</span>
+							{/if}
+						</div>
+						<h3 class="text-lg font-bold text-white mb-1.5 tracking-tight group-hover:text-accent-400 transition-colors">{tool.name}</h3>
+						<p class="text-sm text-surface-400 leading-relaxed line-clamp-3 flex-1">{tool.description}</p>
+						<div class="flex items-center justify-between mt-4 pt-4 border-t border-white/5 text-xs text-surface-500">
+							<span class="font-medium text-surface-400">{tool.pricing || 'Free'}</span>
+							<span class="inline-flex items-center gap-1 text-accent-400 opacity-0 group-hover:opacity-100 transition-opacity">View<ArrowUpRight size={12} /></span>
+						</div>
 					</div>
 				</a>
 			{/each}

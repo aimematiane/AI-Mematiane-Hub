@@ -1,9 +1,9 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
-	import { User, Mail, Shield, Bookmark, Calendar, Upload } from '@lucide/svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
+	import { Mail, Shield, Bookmark, Calendar, Upload } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
-	import { optimizeImageUrl } from '$lib/utils/image';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
@@ -34,9 +34,21 @@
 	async function handleAvatarUpload(files) {
 		if (!files || files.length === 0) return;
 		
+		const file = files[0]; // Only use first file
+
+		// Client-side validation: type + size
+		const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+		if (!allowedTypes.includes(file.type)) {
+			avatarUploadError = 'Please upload a JPG, PNG, or WebP image.';
+			return;
+		}
+		if (file.size > 5 * 1024 * 1024) {
+			avatarUploadError = 'Image is too large (max 5MB).';
+			return;
+		}
+
 		uploadingAvatar = true;
 		avatarUploadError = '';
-		const file = files[0]; // Only use first file
 
 		try {
 			const ext = file.name.split('.').pop();
@@ -99,13 +111,7 @@
 	<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 space-y-6">
 		<!-- User Info -->
 		<div class="flex items-center gap-4 pb-6 border-b border-surface-800">
-			{#if data.profile?.avatar_url}
-				<img src={optimizeImageUrl(data.profile.avatar_url, { width: 120, quality: 80 })} alt="" class="w-16 h-16 rounded-full object-cover" />
-			{:else}
-				<div class="w-16 h-16 rounded-full bg-accent-500/20 flex items-center justify-center">
-					<User size={28} class="text-accent-400" />
-				</div>
-			{/if}
+			<Avatar src={avatarUrl || data.profile?.avatar_url} name={displayName || data.profile?.display_name} size={72} />
 			<div>
 				<h2 class="text-lg font-semibold text-white">{data.profile?.display_name || 'User'}</h2>
 				<div class="flex items-center gap-3 text-sm text-surface-400">

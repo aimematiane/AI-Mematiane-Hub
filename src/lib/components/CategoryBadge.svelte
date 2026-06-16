@@ -3,7 +3,7 @@
 
 	const categoryColors = {
 		text: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-		image: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
+		image: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
 		video: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
 		audio: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
 		code: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',

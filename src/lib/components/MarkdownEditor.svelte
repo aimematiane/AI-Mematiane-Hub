@@ -60,6 +60,7 @@
 					onclick={() => wrapText('**')} 
 					class="p-1.5 rounded hover:bg-white/5 text-surface-400 hover:text-white transition-colors"
 					title="Bold"
+					aria-label="Bold"
 				>
 					<Bold size={15} />
 				</button>
@@ -68,6 +69,7 @@
 					onclick={() => wrapText('*')} 
 					class="p-1.5 rounded hover:bg-white/5 text-surface-400 hover:text-white transition-colors"
 					title="Italic"
+					aria-label="Italic"
 				>
 					<Italic size={15} />
 				</button>
@@ -76,6 +78,7 @@
 					onclick={() => insertLinePrefix('### ')} 
 					class="p-1.5 rounded hover:bg-white/5 text-surface-400 hover:text-white transition-colors"
 					title="Heading"
+					aria-label="Heading"
 				>
 					<Heading size={15} />
 				</button>
@@ -84,6 +87,7 @@
 					onclick={() => wrapText('`')} 
 					class="p-1.5 rounded hover:bg-white/5 text-surface-400 hover:text-white transition-colors"
 					title="Code Inline"
+					aria-label="Inline code"
 				>
 					<Code size={15} />
 				</button>
@@ -93,6 +97,7 @@
 					onclick={() => insertFormatting('[', '](url)')} 
 					class="p-1.5 rounded hover:bg-white/5 text-surface-400 hover:text-white transition-colors"
 					title="Link"
+					aria-label="Insert link"
 				>
 					<Link size={15} />
 				</button>
@@ -101,6 +106,7 @@
 					onclick={() => insertFormatting('![alt](', ')') } 
 					class="p-1.5 rounded hover:bg-white/5 text-surface-400 hover:text-white transition-colors"
 					title="Image Link"
+					aria-label="Insert image"
 				>
 					<Image size={15} />
 				</button>
@@ -110,6 +116,7 @@
 					onclick={() => insertLinePrefix('- ')} 
 					class="p-1.5 rounded hover:bg-white/5 text-surface-400 hover:text-white transition-colors"
 					title="Bullet List"
+					aria-label="Bullet list"
 				>
 					<List size={15} />
 				</button>
@@ -118,6 +125,7 @@
 					onclick={() => insertLinePrefix('1. ')} 
 					class="p-1.5 rounded hover:bg-white/5 text-surface-400 hover:text-white transition-colors"
 					title="Numbered List"
+					aria-label="Numbered list"
 				>
 					<ListOrdered size={15} />
 				</button>
@@ -126,6 +134,7 @@
 					onclick={() => insertLinePrefix('> ')} 
 					class="p-1.5 rounded hover:bg-white/5 text-surface-400 hover:text-white transition-colors"
 					title="Blockquote"
+					aria-label="Blockquote"
 				>
 					<Quote size={15} />
 				</button>

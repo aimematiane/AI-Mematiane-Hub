@@ -1,11 +1,12 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { parsePage } from '$lib/utils/query.js';
 
 export async function load({ url, cookies, setHeaders }) {
 	setHeaders({
 		'cache-control': 'public, max-age=60, stale-while-revalidate=300'
 	});
 	const client = await getSupabaseServerClient({ cookies, url });
-	const page = Math.max(1, parseInt(url.searchParams.get('page')) || 1);
+	const page = parsePage(url.searchParams.get('page'));
 	const perPage = 6;
 
 	const { data: posts, count, error } = await client
@@ -14,6 +15,10 @@ export async function load({ url, cookies, setHeaders }) {
 		.eq('is_published', true)
 		.order('published_at', { ascending: false })
 		.range((page - 1) * perPage, page * perPage - 1);
+
+	if (error) {
+		console.error('[v0] Failed to load blog posts:', error.message);
+	}
 
 	return {
 		posts: posts || [],

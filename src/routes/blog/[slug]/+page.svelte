@@ -5,7 +5,8 @@
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
 	import CommentsSection from '$lib/components/CommentsSection.svelte';
-	import { Clock, Bookmark, BookmarkCheck, User, List, ExternalLink, Heart } from '@lucide/svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
+	import { Clock, Bookmark, BookmarkCheck, List, ExternalLink, Heart } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -113,13 +114,7 @@
 					<div class="flex items-center justify-between gap-4 mt-6 flex-wrap">
 						{#if post.author}
 							<div class="flex items-center gap-3">
-								{#if post.author.avatar_url}
-									<img src={optimizeImageUrl(post.author.avatar_url, { width: 100, quality: 80 })} alt="" class="w-10 h-10 rounded-full object-cover" />
-								{:else}
-									<div class="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center">
-										<User size={16} class="text-surface-400" />
-									</div>
-								{/if}
+								<Avatar src={post.author.avatar_url} name={post.author.display_name} size={44} />
 								<div>
 									<p class="text-sm font-medium text-white">{post.author.display_name}</p>
 									<p class="text-xs text-surface-500">Author</p>
@@ -145,22 +140,23 @@
 				</header>
 
 				{#if post.cover_image_url}
-					<div class="rounded-2xl overflow-hidden mb-8">
+					<figure class="relative aspect-[16/9] rounded-2xl overflow-hidden mb-8 ring-1 ring-white/10 bg-surface-900">
 						<img
 							src={optimizeImageUrl(post.cover_image_url, { width: 1200, quality: 85 })}
 							srcset="{optimizeImageUrl(post.cover_image_url, { width: 400, quality: 85 })} 400w, {optimizeImageUrl(post.cover_image_url, { width: 800, quality: 85 })} 800w, {optimizeImageUrl(post.cover_image_url, { width: 1200, quality: 85 })} 1200w"
-							sizes="(max-width: 768px) 100vw, 800px"
+							sizes="(max-width: 1024px) 100vw, 720px"
 							alt={post.title}
-							class="w-full object-cover max-h-96"
+							class="absolute inset-0 w-full h-full object-cover"
 							loading="eager"
 							fetchpriority="high"
 							width="1200"
 							height="675"
 						/>
-					</div>
+						<div class="absolute inset-0 ring-1 ring-inset ring-black/10 pointer-events-none"></div>
+					</figure>
 				{/if}
 
-				<div class="md-content prose max-w-none text-surface-300 leading-relaxed">
+				<div class="md-content prose prose-lg max-w-none text-surface-300 leading-relaxed">
 					{@html addHeadingIds(renderMarkdown(post.content))}
 				</div>
 

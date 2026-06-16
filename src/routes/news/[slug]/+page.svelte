@@ -5,7 +5,8 @@
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
 	import CommentsSection from '$lib/components/CommentsSection.svelte';
-	import { Clock, ExternalLink, Bookmark, BookmarkCheck, User, Heart } from '@lucide/svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
+	import { Clock, ExternalLink, Bookmark, BookmarkCheck, Heart } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -103,13 +104,7 @@
 				<div class="flex items-center gap-4">
 					{#if item.author}
 						<div class="flex items-center gap-2">
-							{#if item.author.avatar_url}
-								<img src={optimizeImageUrl(item.author.avatar_url, { width: 100, quality: 80 })} alt="" class="w-8 h-8 rounded-full object-cover" />
-							{:else}
-								<div class="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center">
-									<User size={14} class="text-surface-400" />
-								</div>
-							{/if}
+							<Avatar src={item.author.avatar_url} name={item.author.display_name} size={32} />
 							<span class="text-sm text-surface-300">{item.author.display_name}</span>
 						</div>
 					{/if}
@@ -139,22 +134,23 @@
 		</header>
 
 		{#if item.cover_image_url}
-			<div class="rounded-2xl overflow-hidden mb-8">
+			<figure class="relative aspect-[16/9] rounded-2xl overflow-hidden mb-8 ring-1 ring-white/10 bg-surface-900">
 				<img
 					src={optimizeImageUrl(item.cover_image_url, { width: 1200, quality: 85 })}
 					srcset="{optimizeImageUrl(item.cover_image_url, { width: 400, quality: 85 })} 400w, {optimizeImageUrl(item.cover_image_url, { width: 800, quality: 85 })} 800w, {optimizeImageUrl(item.cover_image_url, { width: 1200, quality: 85 })} 1200w"
-					sizes="(max-width: 768px) 100vw, 800px"
+					sizes="(max-width: 1024px) 100vw, 760px"
 					alt={item.title}
-					class="w-full object-cover max-h-96"
+					class="absolute inset-0 w-full h-full object-cover"
 					loading="eager"
 					fetchpriority="high"
 					width="1200"
 					height="675"
 				/>
-			</div>
+				<div class="absolute inset-0 ring-1 ring-inset ring-black/10 pointer-events-none"></div>
+			</figure>
 		{/if}
 
-		<div class="md-content prose max-w-none text-surface-300 leading-relaxed">
+		<div class="md-content prose prose-lg max-w-none text-surface-300 leading-relaxed">
 			{@html renderMarkdown(item.content)}
 		</div>
 
