@@ -1,4 +1,5 @@
 <script>
+	import { goto } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
@@ -50,7 +51,7 @@
 
 	async function toggleBookmark() {
 		const { data: { user } } = await client.auth.getUser();
-		if (!user) return window.location.href = '/auth/login';
+		if (!user) return goto('/auth/login');
 
 		if (isBookmarked) {
 			await client.from('bookmarks').delete().eq('user_id', user.id).eq('item_type', 'ai_tool').eq('item_id', data.tool.id);
@@ -62,7 +63,7 @@
 
 	async function toggleUpvote() {
 		const { data: { user } } = await client.auth.getUser();
-		if (!user) return window.location.href = '/auth/login';
+		if (!user) return goto('/auth/login');
 
 		if (isUpvoted) {
 			await client.from('upvotes').delete().eq('user_id', user.id).eq('item_type', 'ai_tool').eq('item_id', data.tool.id);
@@ -75,7 +76,31 @@
 	}
 
 	const tool = $derived(data.tool);
+
+	const toolSchema = $derived(tool ? JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "SoftwareApplication",
+		"name": tool.name,
+		"description": tool.description,
+		"applicationCategory": tool.category,
+		"url": `https://ai-mematiane.com/ai-tools/${tool.slug}`,
+		"image": tool.image_url || "",
+		"offers": {
+			"@type": "Offer",
+			"price": "0",
+			"priceCurrency": "USD",
+			"description": tool.pricing || "Contact for pricing"
+		}
+	}) : null);
 </script>
+
+<svelte:head>
+	{#if toolSchema}
+		<script type="application/ld+json">
+			{@html toolSchema}
+		</script>
+	{/if}
+</svelte:head>
 
 {#if tool}
 	<SeoHead
@@ -96,7 +121,17 @@
 
 		{#if tool.image_url}
 			<div class="aspect-video rounded-2xl overflow-hidden bg-surface-800 mb-8">
-				<img src={optimizeImageUrl(tool.image_url, { width: 1200, quality: 85 })} alt={tool.name} class="w-full h-full object-cover" />
+				<img
+					src={optimizeImageUrl(tool.image_url, { width: 1200, quality: 85 })}
+					srcset="{optimizeImageUrl(tool.image_url, { width: 400, quality: 85 })} 400w, {optimizeImageUrl(tool.image_url, { width: 800, quality: 85 })} 800w, {optimizeImageUrl(tool.image_url, { width: 1200, quality: 85 })} 1200w"
+					sizes="(max-width: 768px) 100vw, 800px"
+					alt={tool.name}
+					class="w-full h-full object-cover"
+					loading="eager"
+					fetchpriority="high"
+					width="1200"
+					height="675"
+				/>
 			</div>
 		{/if}
 

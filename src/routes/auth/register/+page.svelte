@@ -1,4 +1,5 @@
 <script>
+	import { goto } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { Mail, Lock, User, Eye, EyeOff } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
@@ -29,7 +30,7 @@
 		} else if (!data?.session) {
 			success = 'Registration successful. Please confirm your email before signing in.';
 		} else {
-			window.location.href = '/profile';
+			goto('/profile');
 		}
 		loading = false;
 	}
@@ -51,7 +52,7 @@
 	}
 </script>
 
-<SeoHead title="Sign Up" description="Create your AI Mematiane account" url="/auth/register" />
+<SeoHead title="Sign Up" description="Create your AI Mematiane account" url="/auth/register" noindex={true} />
 
 <section class="min-h-[80vh] flex items-center justify-center px-4 py-10">
 	<div class="w-full max-w-md">

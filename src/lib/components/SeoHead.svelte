@@ -2,21 +2,25 @@
 	let {
 		title = 'AI Mematiane',
 		description = 'AI Chronicles - Your global directory of AI models, tools, news, and deep-dive analysis',
-		image = '/favicon.svg',
+		image = '/logo.png',
 		url = '',
 		type = 'website',
 		publishedTime = '',
 		authorName = '',
-		tags = []
+		tags = [],
+		noindex = false,
+		schemaType = ''
 	} = $props();
 
 	const siteUrl = import.meta.env.VITE_SITE_URL || 'https://ai-mematiane.com';
-	const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
-	const fullImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
+	const fullUrl = $derived(url ? `${siteUrl}${url}` : siteUrl);
+	const fullImage = $derived(image.startsWith('http') ? image : `${siteUrl}${image}`);
 
-	const schema = type === 'article' ? JSON.stringify({
+	const activeSchemaType = $derived(schemaType || (type === 'article' ? (authorName ? 'Article' : 'WebPage') : ''));
+
+	const schema = $derived(activeSchemaType ? JSON.stringify({
 		'@context': 'https://schema.org',
-		'@type': authorName ? 'Article' : 'WebPage',
+		'@type': activeSchemaType,
 		headline: title,
 		description: description,
 		image: fullImage,
@@ -26,15 +30,23 @@
 		publisher: {
 			'@type': 'Organization',
 			name: 'AI Mematiane',
-			logo: { '@type': 'ImageObject', url: `${siteUrl}/favicon.svg` }
+			logo: { '@type': 'ImageObject', url: `${siteUrl}/logo.png` }
 		}
-	}) : '';
+	}) : '');
+
+	// Smart title: avoid double branding (e.g. "AI Mematiane | AI Mematiane")
+	const formattedTitle = $derived(title === 'AI Mematiane' || title.includes('AI Mematiane') 
+		? title 
+		: `${title} | AI Mematiane`);
 </script>
 
 <svelte:head>
-	<title>{title} | AI Mematiane</title>
+	<title>{formattedTitle}</title>
 	<meta name="description" content={description} />
-	<meta name="keywords" content={tags.join(', ')} />
+	
+	{#if noindex}
+		<meta name="robots" content="noindex, nofollow" />
+	{/if}
 
 	<meta property="og:type" content={type} />
 	<meta property="og:title" content={title} />
@@ -52,6 +64,8 @@
 	{/if}
 
 	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@AIMematiane" />
+	<meta name="twitter:creator" content="@AIMematiane" />
 	<meta name="twitter:title" content={title} />
 	<meta name="twitter:description" content={description} />
 	<meta name="twitter:image" content={fullImage} />

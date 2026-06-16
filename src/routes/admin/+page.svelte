@@ -5,7 +5,7 @@
 	let { data } = $props();
 </script>
 
-<SeoHead title="Admin Dashboard" description="AI Mematiane admin dashboard" url="/admin" />
+<SeoHead title="Admin Dashboard" description="AI Mematiane admin dashboard" url="/admin" noindex={true} />
 
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	<div class="flex items-center gap-3 mb-8">

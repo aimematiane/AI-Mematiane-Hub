@@ -87,7 +87,7 @@
 	}
 </script>
 
-<SeoHead title="Admin - News" url="/admin/news" />
+<SeoHead title="Admin - News" url="/admin/news" noindex={true} />
 
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	<div class="flex items-center justify-between mb-8">
@@ -113,31 +113,31 @@
 				<form onsubmit={(e) => { e.preventDefault(); handleSave(); }} class="space-y-4">
 					<div class="grid grid-cols-2 gap-4">
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Title *</label>
-							<input type="text" bind:value={form.title} onblur={() => { form.slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }} required
+							<label for="news-title" class="block text-sm text-surface-300 mb-1">Title *</label>
+							<input id="news-title" type="text" bind:value={form.title} onblur={() => { form.slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }} required
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Slug *</label>
-							<input type="text" bind:value={form.slug} required
+							<label for="news-slug" class="block text-sm text-surface-300 mb-1">Slug *</label>
+							<input id="news-slug" type="text" bind:value={form.slug} required
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>
 					<div>
-						<label class="block text-sm text-surface-300 mb-1">Excerpt *</label>
-						<input type="text" bind:value={form.excerpt} required
+						<label for="news-excerpt" class="block text-sm text-surface-300 mb-1">Excerpt *</label>
+						<input id="news-excerpt" type="text" bind:value={form.excerpt} required
 							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 					</div>
 					<div>
-						<label class="block text-sm text-surface-300 mb-1.5">Content (Markdown) *</label>
-						<MarkdownEditor bind:value={form.content} rows={16} placeholder="Write your news article content..." />
+						<label for="news-content" class="block text-sm text-surface-300 mb-1.5">Content (Markdown) *</label>
+						<MarkdownEditor id="news-content" bind:value={form.content} rows={16} placeholder="Write your news article content..." />
 					</div>
 
 					<!-- Cover Image -->
 					<div>
-						<label class="block text-sm text-surface-300 mb-1.5">Cover Image</label>
+						<label for="news-cover-image-url" class="block text-sm text-surface-300 mb-1.5">Cover Image</label>
 						<FileUpload accept="image/*" bind:files={coverFiles} path="news" />
-						<input type="url" bind:value={form.cover_image_url} placeholder="Or paste image URL directly"
+						<input id="news-cover-image-url" type="url" bind:value={form.cover_image_url} placeholder="Or paste image URL directly"
 							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 mt-2" />
 					</div>
 
@@ -147,13 +147,13 @@
 					<!-- Links -->
 					<div class="grid grid-cols-2 gap-4">
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Source URL</label>
-							<input type="url" bind:value={form.source_url} placeholder="https://original-article.com"
+							<label for="news-source-url" class="block text-sm text-surface-300 mb-1">Source URL</label>
+							<input id="news-source-url" type="url" bind:value={form.source_url} placeholder="https://original-article.com"
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">References (comma-separated URLs)</label>
-							<input type="text" bind:value={form.references_links} placeholder="https://..., https://..."
+							<label for="news-references" class="block text-sm text-surface-300 mb-1">References (comma-separated URLs)</label>
+							<input id="news-references" type="text" bind:value={form.references_links} placeholder="https://..., https://..."
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>
@@ -161,13 +161,13 @@
 					<!-- Category, Tags -->
 					<div class="grid grid-cols-2 gap-4">
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Category</label>
-							<input type="text" bind:value={form.category}
+							<label for="news-category" class="block text-sm text-surface-300 mb-1">Category</label>
+							<input id="news-category" type="text" bind:value={form.category}
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Tags (comma-separated)</label>
-							<input type="text" bind:value={form.tags}
+							<label for="news-tags" class="block text-sm text-surface-300 mb-1">Tags (comma-separated)</label>
+							<input id="news-tags" type="text" bind:value={form.tags}
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>

@@ -1,4 +1,5 @@
 <script>
+	import { goto } from '$app/navigation';
 	import { Star, MessageSquare, Trash2, Send, Loader2, User } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -45,7 +46,7 @@
 
 	async function handleSubmit(e) {
 		e.preventDefault();
-		if (!user) return window.location.href = '/auth/login';
+		if (!user) return goto('/auth/login');
 		if (!content.trim()) return;
 		if (itemType === 'ai_tool' && !rating) {
 			alert('Please select a star rating.');

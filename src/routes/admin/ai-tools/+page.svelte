@@ -102,7 +102,7 @@
 	}
 </script>
 
-<SeoHead title="Admin - AI Tools" url="/admin/ai-tools" />
+<SeoHead title="Admin - AI Tools" url="/admin/ai-tools" noindex={true} />
 
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	<div class="flex items-center justify-between mb-8">

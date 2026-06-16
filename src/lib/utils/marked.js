@@ -1,4 +1,5 @@
 import { marked } from 'marked';
+import DOMPurify from 'isomorphic-dompurify';
 
 marked.setOptions({
 	gfm: true,
@@ -6,7 +7,8 @@ marked.setOptions({
 });
 
 export function renderMarkdown(content) {
-	return marked(content);
+	if (!content) return '';
+	return DOMPurify.sanitize(marked(content));
 }
 
 export function extractHeadings(content) {

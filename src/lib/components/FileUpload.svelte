@@ -9,6 +9,7 @@
 	let uploading = $state(false);
 	let dragOver = $state(false);
 	let uploadError = $state('');
+	const inputId = 'file-upload-' + Math.random().toString(36).substring(2, 9);
 
 	async function handleUpload(fileList) {
 		if (!fileList || fileList.length === 0) return;
@@ -58,22 +59,23 @@
 </script>
 
 <div>
-	<label class="block text-sm text-surface-300 mb-1.5">{label}</label>
+	<label for={inputId} class="block text-sm text-surface-300 mb-1.5">{label}</label>
 
 	<!-- Drop zone -->
 	<div
 		class="relative border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer
 			{dragOver ? 'border-accent-500 bg-accent-500/5' : 'border-surface-700 hover:border-surface-600'}"
-		ondragover={(e) => { e.preventDefault(); dragOver = true; }}
-		ondragleave={() => dragOver = false}
-		ondrop={handleDrop}
 	>
 		<input
+			id={inputId}
 			type="file"
 			accept={accept}
 			multiple
 			class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
 			onchange={(e) => handleUpload(e.target.files)}
+			ondragover={(e) => { e.preventDefault(); dragOver = true; }}
+			ondragleave={() => dragOver = false}
+			ondrop={handleDrop}
 		/>
 		{#if uploading}
 			<div class="flex items-center justify-center gap-2 text-accent-400">

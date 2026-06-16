@@ -1,4 +1,5 @@
 <script>
+	import { goto } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { Mail, Lock, Eye, EyeOff } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
@@ -20,7 +21,7 @@
 				? 'Your email is not confirmed. Check your inbox or disable email confirmation in Supabase Auth settings.'
 				: err.message;
 		} else {
-			window.location.href = '/profile';
+			goto('/profile');
 		}
 		loading = false;
 	}
@@ -42,7 +43,7 @@
 	}
 </script>
 
-<SeoHead title="Login" description="Sign in to your AI Mematiane account" url="/auth/login" />
+<SeoHead title="Login" description="Sign in to your AI Mematiane account" url="/auth/login" noindex={true} />
 
 <section class="min-h-[80vh] flex items-center justify-center px-4 py-10">
 	<div class="w-full max-w-md">

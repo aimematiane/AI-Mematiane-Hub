@@ -4,9 +4,52 @@
 </script>
 
 <SeoHead
-	title="Home"
+	title="AI Mematiane — Global Directory of AI Tools, News & Analysis"
 	description="AI Mematiane - Your global directory of AI models, tools, news, and deep-dive analysis"
+	url="/"
 />
+
+<svelte:head>
+	<script type="application/ld+json">
+		{JSON.stringify({
+			"@context": "https://schema.org",
+			"@graph": [
+				{
+					"@type": "Organization",
+					"@id": "https://ai-mematiane.com/#organization",
+					"name": "AI Mematiane",
+					"url": "https://ai-mematiane.com",
+					"logo": {
+						"@type": "ImageObject",
+						"url": "https://ai-mematiane.com/logo.png"
+					},
+					"sameAs": [
+						"https://x.com/AIMematiane",
+						"https://github.com/aimematiane",
+						"https://www.linkedin.com/in/ai-mematiane-879538415/"
+					]
+				},
+				{
+					"@type": "WebSite",
+					"@id": "https://ai-mematiane.com/#website",
+					"url": "https://ai-mematiane.com",
+					"name": "AI Mematiane",
+					"publisher": {
+						"@id": "https://ai-mematiane.com/#organization"
+					},
+					"potentialAction": {
+						"@type": "SearchAction",
+						"target": {
+							"@type": "EntryPoint",
+							"urlTemplate": "https://ai-mematiane.com/ai-tools?q={search_term_string}"
+						},
+						"query-input": "required name=search_term_string"
+					}
+				}
+			]
+		})}
+	</script>
+</svelte:head>
 
 <section class="relative overflow-hidden pt-24 pb-28">
 	<!-- Ambient Glowing Orbs -->

@@ -26,7 +26,7 @@
 	function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
 </script>
 
-<SeoHead title="Profile" description="Your AI Mematiane profile" url="/profile" />
+<SeoHead title="Profile" description="Your AI Mematiane profile" url="/profile" noindex={true} />
 
 <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	<h1 class="text-3xl font-bold text-white mb-8">Profile</h1>

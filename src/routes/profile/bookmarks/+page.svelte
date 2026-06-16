@@ -27,7 +27,7 @@
 	}
 </script>
 
-<SeoHead title="Bookmarks" description="Your saved articles and tools" url="/profile/bookmarks" />
+<SeoHead title="Bookmarks" description="Your saved articles and tools" url="/profile/bookmarks" noindex={true} />
 
 <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	<Breadcrumbs items={[

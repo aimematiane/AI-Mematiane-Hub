@@ -1,4 +1,5 @@
 <script>
+	import { goto } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
@@ -16,17 +17,6 @@
 	let isUpvoted = $state(false);
 
 	const item = $derived(data.item);
-
-	const newsSchema = $derived(item ? JSON.stringify({
-		'@context': 'https://schema.org',
-		'@type': 'NewsArticle',
-		headline: item.title,
-		description: item.excerpt,
-		image: item.cover_image_url,
-		datePublished: item.published_at,
-		author: item.author?.display_name ? { '@type': 'Person', name: item.author.display_name } : undefined,
-		publisher: { '@type': 'Organization', name: 'AI Mematiane' }
-	}) : '');
 
 	$effect(() => {
 		if (item) {
@@ -50,7 +40,7 @@
 
 	async function toggleBookmark() {
 		const { data: { user } } = await client.auth.getUser();
-		if (!user) return window.location.href = '/auth/login';
+		if (!user) return goto('/auth/login');
 		if (isBookmarked) {
 			await client.from('bookmarks').delete().eq('user_id', user.id).eq('item_type', 'news').eq('item_id', item.id);
 		} else {
@@ -61,7 +51,7 @@
 
 	async function toggleUpvote() {
 		const { data: { user } } = await client.auth.getUser();
-		if (!user) return window.location.href = '/auth/login';
+		if (!user) return goto('/auth/login');
 		if (isUpvoted) {
 			await client.from('upvotes').delete().eq('user_id', user.id).eq('item_type', 'news').eq('item_id', item.id);
 			upvotesCount = Math.max(0, upvotesCount - 1);
@@ -75,12 +65,6 @@
 	function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
 </script>
 
-<svelte:head>
-	{#if newsSchema}
-		<script type="application/ld+json">{newsSchema}</script>
-	{/if}
-</svelte:head>
-
 {#if item}
 	<SeoHead
 		title={item.title}
@@ -88,6 +72,7 @@
 		image={item.cover_image_url || ''}
 		url="/news/{item.slug}"
 		type="article"
+		schemaType="NewsArticle"
 		publishedTime={item.published_at}
 		authorName={item.author?.display_name || ''}
 		tags={[item.category, ...(item.tags || [])]}
@@ -154,7 +139,17 @@
 
 		{#if item.cover_image_url}
 			<div class="rounded-2xl overflow-hidden mb-8">
-				<img src={optimizeImageUrl(item.cover_image_url, { width: 1200, quality: 85 })} alt={item.title} class="w-full object-cover max-h-96" />
+				<img
+					src={optimizeImageUrl(item.cover_image_url, { width: 1200, quality: 85 })}
+					srcset="{optimizeImageUrl(item.cover_image_url, { width: 400, quality: 85 })} 400w, {optimizeImageUrl(item.cover_image_url, { width: 800, quality: 85 })} 800w, {optimizeImageUrl(item.cover_image_url, { width: 1200, quality: 85 })} 1200w"
+					sizes="(max-width: 768px) 100vw, 800px"
+					alt={item.title}
+					class="w-full object-cover max-h-96"
+					loading="eager"
+					fetchpriority="high"
+					width="1200"
+					height="675"
+				/>
 			</div>
 		{/if}
 

@@ -2,7 +2,12 @@ import { getSupabaseServerClient } from '$lib/supabase/server.js';
 
 export async function GET({ url, cookies }) {
 	const code = url.searchParams.get('code');
-	const next = url.searchParams.get('next') || '/profile';
+	let next = url.searchParams.get('next') || '/profile';
+
+	// Prevent open redirect — only allow safe relative paths
+	if (!next.startsWith('/') || next.startsWith('//')) {
+		next = '/profile';
+	}
 
 	if (code) {
 		const client = await getSupabaseServerClient({ cookies, url });

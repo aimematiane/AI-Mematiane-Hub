@@ -1,5 +1,8 @@
 <script>
+	import { page } from '$app/stores';
 	let { items = [] } = $props();
+
+	const siteUrl = import.meta.env.VITE_SITE_URL || 'https://ai-mematiane.com';
 
 	const schema = $derived(JSON.stringify({
 		'@context': 'https://schema.org',
@@ -8,7 +11,7 @@
 			'@type': 'ListItem',
 			position: i + 1,
 			name: item.label,
-			...(item.href && { item: item.href })
+			item: `${siteUrl}${item.href || $page.url.pathname}`
 		}))
 	}));
 </script>

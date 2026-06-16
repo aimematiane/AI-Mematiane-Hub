@@ -109,7 +109,7 @@
 				<a
 					href="/news/{item.slug}"
 					class="glass-card group block rounded-2xl overflow-hidden animate-fade-in-up hover:border-rose-500/20 hover:shadow-rose-500/10"
-					style="animation-delay: {Math.min(i * 100, 800)}ms; opacity: 0;"
+					style="animation-delay: {Math.min(i * 100, 800)}ms;"
 				>
 					{#if item.cover_image_url}
 						<div class="aspect-video overflow-hidden bg-surface-950/40 relative">
@@ -145,10 +145,16 @@
 	{/if}
 
 	{#if hasMore}
-		<div bind:this={loadMoreRef} class="flex items-center justify-center py-10 mt-4">
+		<div bind:this={loadMoreRef} class="flex flex-col items-center justify-center py-10 mt-4">
 			{#if loading}
 				<Loader2 size={24} class="animate-spin text-rose-500" />
 			{/if}
+			<!-- Fallback pagination for search bots or disabled JS -->
+			<div class="sr-only focus:not-sr-only print:hidden mt-4">
+				<a href="?page={page + 1}{data.category ? '&category=' + data.category : ''}" class="px-4 py-2 rounded-xl bg-surface-900 border border-surface-800 text-sm text-surface-200 hover:text-white transition-all">
+					Next Page (Page {page + 1})
+				</a>
+			</div>
 		</div>
 	{/if}
 </section>

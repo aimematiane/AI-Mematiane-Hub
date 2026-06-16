@@ -10,10 +10,10 @@
 
 	$effect(() => {
 		client.auth.getUser().then(({ data }) => { user = data.user; });
-		const { subscription } = client.auth.onAuthStateChange((_event, session) => {
+		const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
 			user = session?.user ?? null;
 		});
-		return () => subscription.unsubscribe();
+		return () => subscription?.unsubscribe();
 	});
 
 	$effect(() => {
@@ -91,7 +91,13 @@
 			</div>
 
 			<!-- Mobile Menu Toggle -->
-			<button onclick={() => mobileOpen = !mobileOpen} class="md:hidden p-2 text-surface-400 hover:text-white">
+			<button
+				onclick={() => mobileOpen = !mobileOpen}
+				class="md:hidden p-2 text-surface-400 hover:text-white"
+				aria-expanded={mobileOpen}
+				aria-controls="mobile-menu"
+				aria-label="Toggle navigation menu"
+			>
 				{#if mobileOpen}
 					<X size={22} />
 				{:else}
@@ -103,7 +109,7 @@
 
 	<!-- Mobile Menu -->
 	{#if mobileOpen}
-		<div class="md:hidden border-t border-surface-800 bg-surface-950/95 backdrop-blur-xl">
+		<div id="mobile-menu" class="md:hidden border-t border-surface-800 bg-surface-950/95 backdrop-blur-xl">
 			<div class="px-4 py-3 space-y-1">
 				{#each navLinks as link}
 					<a href={link.href} onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800 transition-all">

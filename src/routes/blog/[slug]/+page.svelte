@@ -1,4 +1,5 @@
 <script>
+	import { goto } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
@@ -38,7 +39,7 @@
 
 	async function toggleBookmark() {
 		const { data: { user } } = await client.auth.getUser();
-		if (!user) return window.location.href = '/auth/login';
+		if (!user) return goto('/auth/login');
 		if (isBookmarked) {
 			await client.from('bookmarks').delete().eq('user_id', user.id).eq('item_type', 'post').eq('item_id', data.post.id);
 		} else {
@@ -49,7 +50,7 @@
 
 	async function toggleUpvote() {
 		const { data: { user } } = await client.auth.getUser();
-		if (!user) return window.location.href = '/auth/login';
+		if (!user) return goto('/auth/login');
 		if (isUpvoted) {
 			await client.from('upvotes').delete().eq('user_id', user.id).eq('item_type', 'post').eq('item_id', data.post.id);
 			upvotesCount = Math.max(0, upvotesCount - 1);
@@ -143,7 +144,17 @@
 
 				{#if post.cover_image_url}
 					<div class="rounded-2xl overflow-hidden mb-8">
-						<img src={optimizeImageUrl(post.cover_image_url, { width: 1200, quality: 85 })} alt={post.title} class="w-full object-cover max-h-96" />
+						<img
+							src={optimizeImageUrl(post.cover_image_url, { width: 1200, quality: 85 })}
+							srcset="{optimizeImageUrl(post.cover_image_url, { width: 400, quality: 85 })} 400w, {optimizeImageUrl(post.cover_image_url, { width: 800, quality: 85 })} 800w, {optimizeImageUrl(post.cover_image_url, { width: 1200, quality: 85 })} 1200w"
+							sizes="(max-width: 768px) 100vw, 800px"
+							alt={post.title}
+							class="w-full object-cover max-h-96"
+							loading="eager"
+							fetchpriority="high"
+							width="1200"
+							height="675"
+						/>
 					</div>
 				{/if}
 

@@ -5,7 +5,7 @@
 	} from '@lucide/svelte';
 	import { renderMarkdown } from '$lib/utils/marked';
 
-	let { value = $bindable(''), placeholder = 'Write your content here...', rows = 12 } = $props();
+	let { value = $bindable(''), placeholder = 'Write your content here...', rows = 12, id = '' } = $props();
 
 	let activeTab = $state('write'); // 'write' or 'preview'
 	let textareaRef = $state(null);
@@ -159,6 +159,7 @@
 	<div class="flex-1 min-h-[200px]">
 		{#if activeTab === 'write'}
 			<textarea 
+				id={id || undefined}
 				bind:this={textareaRef}
 				bind:value={value}
 				{placeholder}

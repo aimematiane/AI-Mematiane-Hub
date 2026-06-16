@@ -1,12 +1,15 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
 
-export async function load({ url, cookies }) {
+export async function load({ url, cookies, setHeaders }) {
+	setHeaders({
+		'cache-control': 'public, max-age=60, stale-while-revalidate=300'
+	});
 	const client = await getSupabaseServerClient({ cookies, url });
 	const category = url.searchParams.get('category') || '';
 	const search = url.searchParams.get('q') || '';
 	const pricing = url.searchParams.get('pricing') || '';
 	const sort = url.searchParams.get('sort') || 'featured';
-	const page = parseInt(url.searchParams.get('page') || '1');
+	const page = Math.max(1, parseInt(url.searchParams.get('page')) || 1);
 	const perPage = 12;
 
 	let query = client
