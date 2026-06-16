@@ -3,7 +3,8 @@ const securityHeaders = {
 	'X-Frame-Options': 'DENY',
 	'Referrer-Policy': 'strict-origin-when-cross-origin',
 	'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-	'X-XSS-Protection': '0'
+	'X-XSS-Protection': '0',
+	'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload'
 };
 
 const cspDirectives = [

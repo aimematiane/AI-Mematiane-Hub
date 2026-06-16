@@ -1,7 +1,10 @@
 import { error } from '@sveltejs/kit';
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
 
-export async function load({ params, cookies, url }) {
+export async function load({ params, cookies, url, setHeaders }) {
+	setHeaders({
+		'cache-control': 'public, max-age=60, stale-while-revalidate=300'
+	});
 	const client = await getSupabaseServerClient({ cookies, url });
 
 	const { data: tool, error: err } = await client
