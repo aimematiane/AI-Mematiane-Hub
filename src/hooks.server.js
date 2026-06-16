@@ -9,11 +9,11 @@ const securityHeaders = {
 
 const cspDirectives = [
 	"default-src 'self'",
-	"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+	"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
 	"style-src 'self' 'unsafe-inline'",
 	"font-src 'self'",
 	"img-src 'self' data: blob: https://aocnsmmsddvnmrbnneds.supabase.co",
-	"connect-src 'self' https://aocnsmmsddvnmrbnneds.supabase.co https://*.supabase.co",
+	"connect-src 'self' https://aocnsmmsddvnmrbnneds.supabase.co https://*.supabase.co https://vitals.vercel-insights.com https://va.vercel-scripts.com",
 	"frame-ancestors 'none'",
 	"base-uri 'self'",
 	"form-action 'self'",
