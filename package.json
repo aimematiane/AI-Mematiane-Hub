@@ -5,7 +5,12 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''"
+		"prepare": "svelte-kit sync || echo ''",
+		"clean": "rimraf reports .lighthouseci .cache .temp",
+		"audit:lighthouse": "lighthouse http://localhost:5173 --output html --output-path ./reports/lighthouse.html",
+		"audit:lighthouse:json": "lighthouse http://localhost:5173 --output json --output-path ./reports/lighthouse.json",
+		"audit:pa11y": "pa11y http://localhost:5173",
+		"audit:lhci": "lhci autorun"
 	},
 	"files": [
 		"dist",
@@ -42,7 +47,10 @@
 		"svelte": "^5.56.1",
 		"tailwindcss": "^4.3.0",
 		"typescript": "^6.0.3",
-		"vite": "^8.0.16"
+		"vite": "^8.0.16",
+		"rimraf": "^5.0.1",
+		"@lhci/cli": "^0.11.0",
+		"pa11y": "^6.0.0"
 	},
 	"keywords": [
 		"svelte"
