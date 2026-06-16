@@ -128,31 +128,31 @@
 				<form onsubmit={(e) => { e.preventDefault(); handleSave(); }} class="space-y-4">
 					<div class="grid grid-cols-2 gap-4">
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Name *</label>
-							<input type="text" bind:value={form.name} onblur={generateSlug} required
+							<label for="ai-tool-name" class="block text-sm text-surface-300 mb-1">Name *</label>
+							<input id="ai-tool-name" type="text" bind:value={form.name} onblur={generateSlug} required
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Slug *</label>
-							<input type="text" bind:value={form.slug} required
+							<label for="ai-tool-slug" class="block text-sm text-surface-300 mb-1">Slug *</label>
+							<input id="ai-tool-slug" type="text" bind:value={form.slug} required
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>
 					<div>
-						<label class="block text-sm text-surface-300 mb-1">Short Description *</label>
-						<input type="text" bind:value={form.description} required
+						<label for="ai-tool-description" class="block text-sm text-surface-300 mb-1">Short Description *</label>
+						<input id="ai-tool-description" type="text" bind:value={form.description} required
 							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 					</div>
 					<div>
-						<label class="block text-sm text-surface-300 mb-1.5">Long Description (Markdown)</label>
-						<MarkdownEditor bind:value={form.long_description} rows={8} placeholder="Write a detailed description of this AI tool..." />
+						<label for="ai-tool-long-desc" class="block text-sm text-surface-300 mb-1.5">Long Description (Markdown)</label>
+						<MarkdownEditor id="ai-tool-long-desc" bind:value={form.long_description} rows={8} placeholder="Write a detailed description of this AI tool..." />
 					</div>
 
 					<!-- Category, Pricing, Tags -->
 					<div class="grid grid-cols-3 gap-4">
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Category *</label>
-							<select bind:value={form.category}
+							<label for="ai-tool-category" class="block text-sm text-surface-300 mb-1">Category *</label>
+							<select id="ai-tool-category" bind:value={form.category}
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500">
 								<option value="text">Text</option>
 								<option value="image">Image</option>
@@ -164,8 +164,8 @@
 							</select>
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Pricing</label>
-							<select bind:value={form.pricing}
+							<label for="ai-tool-pricing" class="block text-sm text-surface-300 mb-1">Pricing</label>
+							<select id="ai-tool-pricing" bind:value={form.pricing}
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500">
 								<option value="free">Free</option>
 								<option value="freemium">Freemium</option>
@@ -174,42 +174,42 @@
 							</select>
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Tags (comma-separated)</label>
-							<input type="text" bind:value={form.tags}
+							<label for="ai-tool-tags" class="block text-sm text-surface-300 mb-1">Tags (comma-separated)</label>
+							<input id="ai-tool-tags" type="text" bind:value={form.tags}
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>
 
 					<!-- Cover Image Upload -->
 					<div>
-						<label class="block text-sm text-surface-300 mb-1.5">Cover Image</label>
+						<label for="ai-tool-image-url" class="block text-sm text-surface-300 mb-1.5">Cover Image</label>
 						<FileUpload accept="image/*" bind:files={coverFiles} path="ai-tools" />
-						<input type="url" bind:value={form.image_url} placeholder="Or paste image URL directly"
+						<input id="ai-tool-image-url" type="url" bind:value={form.image_url} placeholder="Or paste image URL directly"
 							class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 mt-2" />
 					</div>
 
 					<!-- Links -->
 					<div class="grid grid-cols-2 gap-4">
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Website URL</label>
-							<input type="url" bind:value={form.website_url} placeholder="https://example.com"
+							<label for="ai-tool-website" class="block text-sm text-surface-300 mb-1">Website URL</label>
+							<input id="ai-tool-website" type="url" bind:value={form.website_url} placeholder="https://example.com"
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Demo URL</label>
-							<input type="url" bind:value={form.demo_url} placeholder="https://demo.example.com"
+							<label for="ai-tool-demo" class="block text-sm text-surface-300 mb-1">Demo URL</label>
+							<input id="ai-tool-demo" type="url" bind:value={form.demo_url} placeholder="https://demo.example.com"
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>
 					<div class="grid grid-cols-2 gap-4">
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">GitHub URL</label>
-							<input type="url" bind:value={form.github_url} placeholder="https://github.com/..."
+							<label for="ai-tool-github" class="block text-sm text-surface-300 mb-1">GitHub URL</label>
+							<input id="ai-tool-github" type="url" bind:value={form.github_url} placeholder="https://github.com/..."
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1">Research Paper URL</label>
-							<input type="url" bind:value={form.paper_url} placeholder="https://arxiv.org/..."
+							<label for="ai-tool-paper" class="block text-sm text-surface-300 mb-1">Research Paper URL</label>
+							<input id="ai-tool-paper" type="url" bind:value={form.paper_url} placeholder="https://arxiv.org/..."
 								class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 						</div>
 					</div>

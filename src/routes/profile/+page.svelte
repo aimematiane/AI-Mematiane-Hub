@@ -1,17 +1,24 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
-	import { User, Mail, Shield, Bookmark, Calendar } from '@lucide/svelte';
+	import { User, Mail, Shield, Bookmark, Calendar, Upload } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { optimizeImageUrl } from '$lib/utils/image';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
 
-	let displayName = $state(data.profile?.display_name || '');
-	let avatarUrl = $state(data.profile?.avatar_url || '');
+	let displayName = $state('');
+	let avatarUrl = $state('');
 	let saving = $state(false);
 	let saved = $state(false);
+	let uploadingAvatar = $state(false);
+	let avatarUploadError = $state('');
+
+	$effect(() => {
+		displayName = data.profile?.display_name || '';
+		avatarUrl = data.profile?.avatar_url || '';
+	});
 
 	async function handleSave() {
 		saving = true;
@@ -22,6 +29,58 @@
 			.eq('id', data.user.id);
 		if (!error) saved = true;
 		saving = false;
+	}
+
+	async function handleAvatarUpload(files) {
+		if (!files || files.length === 0) return;
+		
+		uploadingAvatar = true;
+		avatarUploadError = '';
+		const file = files[0]; // Only use first file
+
+		try {
+			const ext = file.name.split('.').pop();
+			const timestamp = Date.now();
+			const randomStr = Math.random().toString(36).substring(2, 8);
+			const filePath = `profile-images/${data.user.id}/${timestamp}-${randomStr}.${ext}`;
+
+			const { data: uploadData, error: uploadError } = await client.storage
+				.from('uploads')
+				.upload(filePath, file, {
+					contentType: file.type,
+					upsert: true // Overwrite previous profile image
+				});
+
+			if (uploadError) {
+				console.error('Storage upload error:', uploadError);
+				avatarUploadError = `Failed to upload image: ${uploadError.message}`;
+				uploadingAvatar = false;
+				return;
+			}
+
+			if (uploadData) {
+				const { data: urlData } = client.storage.from('uploads').getPublicUrl(uploadData.path);
+				avatarUrl = urlData.publicUrl;
+				
+				// Auto-save the new avatar URL
+				const { error: updateError } = await client
+					.from('profiles')
+					.update({ avatar_url: avatarUrl })
+					.eq('id', data.user.id);
+				
+				if (updateError) {
+					avatarUploadError = 'Uploaded but failed to save. Try manual save.';
+				} else {
+					saved = true;
+					setTimeout(() => { saved = false; }, 3000);
+				}
+			}
+		} catch (err) {
+			console.error('Avatar upload error:', err);
+			avatarUploadError = err.message || 'Upload failed';
+		} finally {
+			uploadingAvatar = false;
+		}
 	}
 
 	function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
@@ -66,8 +125,57 @@
 				<input id="displayName" type="text" bind:value={displayName}
 					class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 text-sm" />
 			</div>
+
+			<!-- Profile Image Upload -->
+			<div class="p-4 rounded-xl bg-surface-800/50 border border-surface-700 space-y-3">
+				<h3 class="text-sm font-semibold text-white flex items-center gap-2">
+					<Upload size={16} class="text-accent-400" />
+					Upload Profile Image
+				</h3>
+				<p class="text-xs text-surface-400">
+					Upload a new profile picture (JPG, PNG, WebP). Only you can access this image.
+				</p>
+				<div class="relative">
+					<label for="profileImageInput" class="block border-2 border-dashed border-surface-700 rounded-xl p-6 text-center cursor-pointer hover:border-surface-600 transition-all">
+						<input 
+							id="profileImageInput"
+							type="file" 
+							accept="image/jpeg,image/png,image/webp"
+							class="hidden"
+							disabled={uploadingAvatar}
+							onchange={async (e) => {
+								const files = e.target.files;
+								if (files && files.length > 0) {
+									const fileArray = Array.from(files);
+									await handleAvatarUpload(fileArray);
+									// Reset input
+									e.target.value = '';
+								}
+							}}
+						/>
+						{#if uploadingAvatar}
+							<div class="flex items-center justify-center gap-2 text-accent-400">
+								<div class="w-4 h-4 border-2 border-accent-400 border-t-transparent rounded-full animate-spin"></div>
+								<span class="text-sm">Uploading...</span>
+							</div>
+						{:else}
+							<div class="flex flex-col items-center gap-2 text-surface-500">
+								<Upload size={20} />
+								<span class="text-sm">Click to upload or drag file</span>
+								<span class="text-xs text-surface-600">JPG, PNG, or WebP (max 5MB)</span>
+							</div>
+						{/if}
+					</label>
+				</div>
+				{#if avatarUploadError}
+					<div class="text-xs text-red-400 bg-red-500/10 border border-red-500/20 p-2.5 rounded-lg">
+						{avatarUploadError}
+					</div>
+				{/if}
+			</div>
+
 			<div>
-				<label for="avatarUrl" class="block text-sm text-surface-300 mb-1.5">Avatar URL</label>
+				<label for="avatarUrl" class="block text-sm text-surface-300 mb-1.5">Avatar URL (or paste external URL)</label>
 				<input id="avatarUrl" type="url" bind:value={avatarUrl} placeholder="https://example.com/avatar.jpg"
 					class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 text-sm" />
 			</div>

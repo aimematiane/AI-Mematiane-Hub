@@ -9,16 +9,17 @@
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
 
-	let posts = $state(data.posts);
-	let page = $state(data.page);
+	let posts = $state([]);
+	let page = $state(1);
 	let loading = $state(false);
-	let hasMore = $derived(page < Math.ceil(data.totalCount / data.perPage));
 	let loadMoreRef = $state(null);
 
 	$effect(() => {
-		posts = data.posts;
-		page = data.page;
+		posts = data.posts || [];
+		page = data.page ?? 1;
 	});
+
+	let hasMore = $derived(page < Math.ceil(data.totalCount / data.perPage));
 
 	async function loadMore() {
 		if (loading || !hasMore) return;
