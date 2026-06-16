@@ -99,42 +99,25 @@
 			</div>
 			<h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">{item.title}</h1>
 			<p class="text-lg text-surface-400 leading-relaxed">{item.excerpt}</p>
-			<div class="flex items-center justify-between gap-4 mt-6 flex-wrap">
-				<div class="flex items-center gap-4">
-					{#if item.author}
-						<div class="flex items-center gap-2">
-							{#if item.author.avatar_url}
-								<img src={optimizeImageUrl(item.author.avatar_url, { width: 100, quality: 80 })} alt="" class="w-8 h-8 rounded-full object-cover" />
-							{:else}
-								<div class="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center">
-									<User size={14} class="text-surface-400" />
-								</div>
-							{/if}
-							<span class="text-sm text-surface-300">{item.author.display_name}</span>
-						</div>
-					{/if}
-					{#if item.source_url}
-						<a href={item.source_url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-sm text-accent-400 hover:text-accent-300">
-							<ExternalLink size={12} />
-							Source
-						</a>
-					{/if}
-				</div>
-				<div class="flex items-center gap-3">
-					<!-- Upvote Button -->
-					<button onclick={toggleUpvote} class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 {isUpvoted ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-surface-800/50 border border-surface-700 text-surface-400 hover:text-rose-400 hover:border-rose-500/30'}" aria-label="Toggle upvote">
-						<Heart size={16} fill={isUpvoted ? 'currentColor' : 'none'} class="transition-transform {isUpvoted ? 'scale-110' : ''}" />
-						<span class="text-sm font-medium">{upvotesCount}</span>
-					</button>
-					<button onclick={toggleBookmark} class="p-2 rounded-lg hover:bg-surface-800 transition-colors" aria-label="Toggle bookmark">
-						{#if isBookmarked}
-							<BookmarkCheck size={18} class="text-accent-400" />
+			<div class="flex items-center gap-4 mt-6">
+				{#if item.author}
+					<div class="flex items-center gap-2">
+						{#if item.author.avatar_url}
+							<img src={optimizeImageUrl(item.author.avatar_url, { width: 100, quality: 80 })} alt="" class="w-8 h-8 rounded-full object-cover" />
 						{:else}
-							<Bookmark size={18} class="text-surface-500" />
+							<div class="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center">
+								<User size={14} class="text-surface-400" />
+							</div>
 						{/if}
-					</button>
-					<ShareButtons title={item.title} url={`/news/${item.slug}`} description={item.excerpt} />
-				</div>
+						<span class="text-sm text-surface-300">{item.author.display_name}</span>
+					</div>
+				{/if}
+				{#if item.source_url}
+					<a href={item.source_url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-sm text-accent-400 hover:text-accent-300">
+						<ExternalLink size={12} />
+						Source
+					</a>
+				{/if}
 			</div>
 		</header>
 
@@ -189,6 +172,28 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- Action Buttons: Share, Like, Bookmark -->
+		<div class="mt-8 pt-8 border-t border-surface-800">
+			<div class="flex items-center gap-3 flex-wrap">
+				<button onclick={toggleUpvote} class="flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all duration-300 {isUpvoted ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-surface-800 border border-surface-700 text-surface-400 hover:text-rose-400 hover:border-rose-500/30'}" aria-label="Toggle upvote">
+					<Heart size={18} fill={isUpvoted ? 'currentColor' : 'none'} class="transition-transform {isUpvoted ? 'scale-110' : ''}" />
+					<span class="text-sm font-medium">{upvotesCount}</span>
+				</button>
+				<button onclick={toggleBookmark} class="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-surface-700 text-surface-400 hover:text-accent-400 hover:border-accent-400/30 transition-all {isBookmarked ? 'bg-accent-500/15 border border-accent-500/30 text-accent-400' : 'bg-surface-800'}" aria-label="Toggle bookmark">
+					{#if isBookmarked}
+						<BookmarkCheck size={18} />
+						<span class="text-sm font-medium">Saved</span>
+					{:else}
+						<Bookmark size={18} />
+						<span class="text-sm font-medium">Save</span>
+					{/if}
+				</button>
+				<div class="ml-auto">
+					<ShareButtons title={item.title} url={`/news/${item.slug}`} description={item.excerpt} />
+				</div>
+			</div>
+		</div>
 
 		<!-- Comments Section -->
 		<CommentsSection itemId={item.id} itemType="news" />

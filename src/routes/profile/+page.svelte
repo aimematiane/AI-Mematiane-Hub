@@ -62,7 +62,12 @@
 				const { data: urlData } = client.storage.from('uploads').getPublicUrl(uploadData.path);
 				avatarUrl = urlData.publicUrl;
 				
-				// Auto-save the new avatar URL
+				// Immediately update local profile object so UI reflects the new image without page refresh
+				data.profile = {
+					...data.profile,
+					avatar_url: avatarUrl
+				};
+				
 				const { error: updateError } = await client
 					.from('profiles')
 					.update({ avatar_url: avatarUrl })
@@ -99,15 +104,15 @@
 	<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 space-y-6">
 		<!-- User Info -->
 		<div class="flex items-center gap-4 pb-6 border-b border-surface-800">
-			{#if data.profile?.avatar_url}
-				<img src={optimizeImageUrl(data.profile.avatar_url, { width: 120, quality: 80 })} alt="" class="w-16 h-16 rounded-full object-cover" />
+			{#if avatarUrl || data.profile?.avatar_url}
+				<img src={optimizeImageUrl(avatarUrl || data.profile.avatar_url, { width: 120, quality: 80 })} alt="" class="w-16 h-16 rounded-full object-cover" />
 			{:else}
 				<div class="w-16 h-16 rounded-full bg-accent-500/20 flex items-center justify-center">
 					<User size={28} class="text-accent-400" />
 				</div>
 			{/if}
 			<div>
-				<h2 class="text-lg font-semibold text-white">{data.profile?.display_name || 'User'}</h2>
+				<h2 class="text-lg font-semibold text-white">{displayName || data.profile?.display_name || 'User'}</h2>
 				<div class="flex items-center gap-3 text-sm text-surface-400">
 					<span class="inline-flex items-center gap-1"><Mail size={12} />{data.user.email}</span>
 					{#if data.profile?.role === 'admin'}
@@ -148,7 +153,7 @@
 								if (files && files.length > 0) {
 									const fileArray = Array.from(files);
 									await handleAvatarUpload(fileArray);
-									// Reset input
+									// Reset input and update local UI immediately
 									e.target.value = '';
 								}
 							}}

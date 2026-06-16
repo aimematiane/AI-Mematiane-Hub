@@ -110,7 +110,7 @@
 					</div>
 					<h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">{post.title}</h1>
 					<p class="text-lg text-surface-400 leading-relaxed">{post.excerpt}</p>
-					<div class="flex items-center justify-between gap-4 mt-6 flex-wrap">
+					<div class="flex items-center gap-4 mt-6">
 						{#if post.author}
 							<div class="flex items-center gap-3">
 								{#if post.author.avatar_url}
@@ -126,21 +126,6 @@
 								</div>
 							</div>
 						{/if}
-						<div class="flex items-center gap-3">
-							<!-- Upvote Button -->
-							<button onclick={toggleUpvote} class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 {isUpvoted ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-surface-800/50 border border-surface-700 text-surface-400 hover:text-rose-400 hover:border-rose-500/30'}" aria-label="Toggle upvote">
-								<Heart size={16} fill={isUpvoted ? 'currentColor' : 'none'} class="transition-transform {isUpvoted ? 'scale-110' : ''}" />
-								<span class="text-sm font-medium">{upvotesCount}</span>
-							</button>
-							<button onclick={toggleBookmark} class="p-2 rounded-lg hover:bg-surface-800 transition-colors" aria-label="Toggle bookmark">
-								{#if isBookmarked}
-									<BookmarkCheck size={18} class="text-accent-400" />
-								{:else}
-									<Bookmark size={18} class="text-surface-500" />
-								{/if}
-							</button>
-							<ShareButtons title={post.title} url={`/blog/${post.slug}`} description={post.excerpt} />
-						</div>
 					</div>
 				</header>
 
@@ -206,6 +191,28 @@
 						</div>
 					</div>
 				{/if}
+
+				<!-- Action Buttons: Share, Like, Bookmark -->
+				<div class="mt-8 pt-8 border-t border-surface-800">
+					<div class="flex items-center gap-3 flex-wrap">
+						<button onclick={toggleUpvote} class="flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all duration-300 {isUpvoted ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-surface-800 border border-surface-700 text-surface-400 hover:text-rose-400 hover:border-rose-500/30'}" aria-label="Toggle upvote">
+							<Heart size={18} fill={isUpvoted ? 'currentColor' : 'none'} class="transition-transform {isUpvoted ? 'scale-110' : ''}" />
+							<span class="text-sm font-medium">{upvotesCount}</span>
+						</button>
+						<button onclick={toggleBookmark} class="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-surface-700 text-surface-400 hover:text-accent-400 hover:border-accent-400/30 transition-all {isBookmarked ? 'bg-accent-500/15 border border-accent-500/30 text-accent-400' : 'bg-surface-800'}" aria-label="Toggle bookmark">
+							{#if isBookmarked}
+								<BookmarkCheck size={18} />
+								<span class="text-sm font-medium">Saved</span>
+							{:else}
+								<Bookmark size={18} />
+								<span class="text-sm font-medium">Save</span>
+							{/if}
+						</button>
+						<div class="ml-auto">
+							<ShareButtons title={post.title} url={`/blog/${post.slug}`} description={post.excerpt} />
+						</div>
+					</div>
+				</div>
 
 				<!-- Comments Section -->
 				<CommentsSection itemId={post.id} itemType="post" />

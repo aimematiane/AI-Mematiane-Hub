@@ -129,23 +129,8 @@
 			</div>
 		{/if}
 
-		<div class="flex items-start justify-between gap-4 mb-4">
+		<div class="flex items-start gap-4 mb-4">
 			<h1 class="text-3xl sm:text-4xl font-bold text-white">{tool.name}</h1>
-			<div class="flex items-center gap-2 shrink-0">
-				<!-- Upvote Button -->
-				<button onclick={toggleUpvote} class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 {isUpvoted ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-surface-800/50 border border-surface-700 text-surface-400 hover:text-rose-400 hover:border-rose-500/30'}" aria-label="Toggle upvote">
-					<Heart size={16} fill={isUpvoted ? 'currentColor' : 'none'} class="transition-transform {isUpvoted ? 'scale-110' : ''}" />
-					<span class="text-sm font-medium">{upvotesCount}</span>
-				</button>
-				<!-- Bookmark Button -->
-				<button onclick={toggleBookmark} class="p-2 rounded-lg hover:bg-surface-800 transition-colors" aria-label="Toggle bookmark">
-					{#if isBookmarked}
-						<BookmarkCheck size={22} class="text-accent-400" />
-					{:else}
-						<Bookmark size={22} class="text-surface-500" />
-					{/if}
-				</button>
-			</div>
 		</div>
 
 		<div class="flex items-center gap-3 mb-6 flex-wrap">
@@ -190,7 +175,6 @@
 					{tool.pricing}
 				</span>
 			{/if}
-			<ShareButtons title={tool.name} url={`/ai-tools/${tool.slug}`} description={tool.description} />
 		</div>
 
 		{#if tool.long_description}
@@ -216,6 +200,28 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- Action Buttons: Like, Bookmark, Share -->
+		<div class="mt-8 pt-8 border-t border-surface-800">
+			<div class="flex items-center gap-3 flex-wrap">
+				<button onclick={toggleUpvote} class="flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all duration-300 {isUpvoted ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-surface-800 border border-surface-700 text-surface-400 hover:text-rose-400 hover:border-rose-500/30'}" aria-label="Toggle upvote">
+					<Heart size={18} fill={isUpvoted ? 'currentColor' : 'none'} class="transition-transform {isUpvoted ? 'scale-110' : ''}" />
+					<span class="text-sm font-medium">{upvotesCount}</span>
+				</button>
+				<button onclick={toggleBookmark} class="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-surface-700 text-surface-400 hover:text-accent-400 hover:border-accent-400/30 transition-all {isBookmarked ? 'bg-accent-500/15 border border-accent-500/30 text-accent-400' : 'bg-surface-800'}" aria-label="Toggle bookmark">
+					{#if isBookmarked}
+						<BookmarkCheck size={18} />
+						<span class="text-sm font-medium">Saved</span>
+					{:else}
+						<Bookmark size={18} />
+						<span class="text-sm font-medium">Save</span>
+					{/if}
+				</button>
+				<div class="ml-auto">
+					<ShareButtons title={tool.name} url={`/ai-tools/${tool.slug}`} description={tool.description} />
+				</div>
+			</div>
+		</div>
 
 		<!-- Reviews & Comments Section -->
 		<CommentsSection itemId={tool.id} itemType="ai_tool" />
