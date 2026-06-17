@@ -20,8 +20,8 @@ export async function load({ cookies, url }) {
 		.is('deleted_at', null)
 		.order('created_at', { ascending: true });
 
-	// Fetch footer data
-	const [footerSettingsResult, footerColumnsResult, footerSocialResult] = await Promise.all([
+	// Fetch footer data and theme settings
+	const [footerSettingsResult, footerColumnsResult, footerSocialResult, themeSettingsResult] = await Promise.all([
 		client.from('footer_settings').select('key, value').order('sort_order'),
 		client.from('footer_columns')
 			.select('id, title, sort_order, is_visible, links:footer_links(label, url, is_external, sort_order, is_visible)')
@@ -30,13 +30,24 @@ export async function load({ cookies, url }) {
 		client.from('footer_social_links')
 			.select('id, platform, label, url, icon_key, sort_order')
 			.eq('is_visible', true)
-			.order('sort_order')
+			.order('sort_order'),
+		client.from('theme_settings')
+			.select('css_variable, value')
+			.not('css_variable', 'is', null)
 	]);
 
 	// Convert settings array to object for easy access
 	const footerSettingsMap = {};
 	for (const s of footerSettingsResult.data || []) {
 		footerSettingsMap[s.key] = s.value;
+	}
+
+	// Build theme CSS variables map
+	const themeCssVars = {};
+	for (const setting of themeSettingsResult.data || []) {
+		if (setting.css_variable && setting.value) {
+			themeCssVars[setting.css_variable] = setting.value;
+		}
 	}
 
 	return {
@@ -46,6 +57,7 @@ export async function load({ cookies, url }) {
 			settings: footerSettingsMap,
 			columns: footerColumnsResult.data || [],
 			socialLinks: footerSocialResult.data || []
-		}
+		},
+		theme: themeCssVars
 	};
 }

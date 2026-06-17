@@ -22,10 +22,31 @@
 	}
 
 	function handleInput(id, value) {
-		themeSettings = themeSettings.map(s => s.id === id ? { ...s, value } : s);
+		const setting = themeSettings.find(s => s.id === id);
+		if (setting) {
+			themeSettings = themeSettings.map(s => s.id === id ? { ...s, value } : s);
+			
+			// Apply preview in real-time
+			if (setting.css_variable && typeof document !== 'undefined') {
+				document.documentElement.style.setProperty(setting.css_variable, value);
+			}
+		}
 	}
 
-	async function saveSettings() {
+	// Reset preview styles when preview mode is toggled off
+	$effect(() => {
+		if (!previewMode && typeof document !== 'undefined') {
+			const root = document.documentElement;
+			// Clear manually set styles and let natural styles take over
+			for (const setting of themeSettings) {
+				if (setting.css_variable) {
+					root.style.removeProperty(setting.css_variable);
+				}
+			}
+		}
+	});
+
+		async function saveSettings() {
 		saving = true;
 		message = { type: '', text: '' };
 
@@ -39,12 +60,16 @@
 			});
 
 			if (response.ok) {
-				message = { type: 'success', text: 'Theme settings saved successfully!' };
+				message = { type: 'success', text: 'Theme settings saved successfully! Your changes will be applied across the entire site.' };
+				// Reload to apply theme globally
+				setTimeout(() => {
+					window.location.reload();
+				}, 1500);
 			} else {
 				message = { type: 'error', text: 'Failed to save theme settings.' };
 			}
 		} catch (err) {
-			message = { type: 'error', text: 'An error occurred.' };
+			message = { type: 'error', text: 'An error occurred while saving theme settings.' };
 		}
 
 		saving = false;
@@ -110,15 +135,22 @@
 
 	<!-- Preview Panel -->
 	{#if previewMode}
-		<div class="mb-8 p-6 rounded-2xl border border-surface-700" style={getPreviewStyles()}>
-			<h2 class="text-xl font-semibold text-white mb-4">Preview</h2>
-			<div class="space-y-4">
-				<div class="p-4 rounded-xl bg-surface-800">
-					<h3 class="text-lg font-semibold text-white">Card Component</h3>
-					<p class="text-surface-400 text-sm mt-2">This is how your cards will look with the current theme settings.</p>
-					<button class="mt-4 px-4 py-2 rounded-xl bg-accent-500 text-white font-medium text-sm">
-						Button Example
-					</button>
+		<div class="mb-8 p-6 rounded-2xl border-2 border-accent-500/30 bg-accent-500/5">
+			<div class="flex items-center gap-2 mb-4">
+				<Eye size={18} class="text-accent-400" />
+				<h2 class="text-lg font-semibold text-accent-400">Live Preview</h2>
+			</div>
+			<p class="text-sm text-surface-400 mb-4">Changes are applied in real-time as you edit. Your changes will be saved to all users when you click "Save Theme".</p>
+			<div class="p-6 rounded-xl bg-surface-800 border border-surface-700">
+				<h3 class="text-lg font-semibold text-white mb-4">Preview Sample</h3>
+				<div class="space-y-4">
+					<div class="p-4 rounded-lg" style="background-color: var(--color-surface-800, #27272a);">
+						<h4 class="text-base font-semibold text-white mb-2">Card Component</h4>
+						<p class="text-sm text-surface-400">This card will reflect your current theme settings.</p>
+						<button class="mt-4 px-4 py-2 rounded-lg text-white font-medium text-sm" style="background-color: var(--color-accent-500, #06b6d4); color: white;">
+							Primary Button
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

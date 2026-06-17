@@ -1,24 +1,46 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
-	import { Shield, Plus, Save, Check, X } from '@lucide/svelte';
+	import { Shield, Plus, Save, Check, X, AlertCircle } from '@lucide/svelte';
 
 	let { data } = $props();
 
-	let roles = $state(data.roles);
-	let permissions = $state(data.permissions);
-	let permissionsByModule = $state(data.permissionsByModule);
-	let role_permissions = $state(data.role_permissions);
-	let activeRole = $state(roles[0]?.id || null);
+	let activeRole = $state(null);
 	let showCreateModal = $state(false);
 	let saving = $state(false);
-	let newRole = $state({ name: '', display_name: '', level: 10, description: '' });
+	let creating = $state(false);
+	let message = $state({ type: '', text: '' });
+	let newRole = $state({ display_name: '', name: '', level: 10, description: '' });
+	let role_permissions = $state([]);
 
+	// Use derived state instead of effects for better reactivity
+	let roles = $derived.by(() => data.roles || []);
+	let permissions = $derived.by(() => data.permissions || []);
+	let permissionsByModule = $derived.by(() => data.permissionsByModule || {});
+
+	// Initialize activeRole after data loads
 	$effect(() => {
-		roles = data.roles;
-		permissions = data.permissions;
-		permissionsByModule = data.permissionsByModule;
-		role_permissions = data.role_permissions;
+		if (roles.length > 0 && activeRole === null) {
+			activeRole = roles[0].id;
+		}
+	});
+
+	// Update role_permissions when data changes
+	$effect(() => {
+		if (data?.role_permissions) {
+			role_permissions = data.role_permissions;
+		}
+	});
+
+	// Debug logging
+	$effect(() => {
+		console.log('Page data loaded:', {
+			rolesCount: roles.length,
+			permissionsCount: permissions.length,
+			rolePermissionsCount: role_permissions.length,
+			roles: roles,
+			permissionsByModule: Object.keys(permissionsByModule)
+		});
 	});
 
 	function roleHasPermission(roleId, permId) {
@@ -36,31 +58,81 @@
 
 	async function savePermissions() {
 		saving = true;
-		const perms = role_permissions.filter(rp => rp.role_id === activeRole).map(rp => rp.permission_id);
-		const formData = new FormData();
-		formData.append('role_id', activeRole);
-		formData.append('permissions', JSON.stringify(perms));
-		await fetch('/admin/roles?/updatePermissions', {
-			method: 'POST',
-			body: formData
-		});
-		saving = false;
-		await invalidateAll();
+		message = { type: '', text: '' };
+		try {
+			const perms = role_permissions.filter(rp => rp.role_id === activeRole).map(rp => rp.permission_id);
+			const formData = new FormData();
+			formData.append('role_id', activeRole);
+			formData.append('permissions', JSON.stringify(perms));
+			const response = await fetch('/admin/roles?/updatePermissions', {
+				method: 'POST',
+				body: formData
+			});
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
+			
+			const result = await response.json();
+			if (result.success) {
+				message = { type: 'success', text: 'Permissions saved successfully!' };
+				await invalidateAll();
+			} else {
+				message = { type: 'error', text: result.error || 'Failed to save permissions' };
+			}
+		} catch (err) {
+			console.error('Save permissions error:', err);
+			message = { type: 'error', text: 'Error: ' + err.message };
+		} finally {
+			saving = false;
+		}
 	}
 
 	async function createRole() {
-		const formData = new FormData();
-		formData.append('name', newRole.name);
-		formData.append('display_name', newRole.display_name);
-		formData.append('level', newRole.level.toString());
-		formData.append('description', newRole.description);
-		await fetch('/admin/roles?/createRole', {
-			method: 'POST',
-			body: formData
-		});
-		showCreateModal = false;
-		newRole = { name: '', display_name: '', level: 10, description: '' };
-		await invalidateAll();
+		if (!newRole.display_name.trim()) {
+			message = { type: 'error', text: 'Display name is required' };
+			return;
+		}
+		if (!newRole.name.trim()) {
+			message = { type: 'error', text: 'Role key is required' };
+			return;
+		}
+
+		creating = true;
+		message = { type: '', text: '' };
+
+		try {
+			const formData = new FormData();
+			const roleKey = newRole.name.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+			formData.append('name', roleKey);
+			formData.append('display_name', newRole.display_name);
+			formData.append('level', newRole.level.toString());
+			formData.append('description', newRole.description);
+
+			const response = await fetch('/admin/roles?/createRole', {
+				method: 'POST',
+				body: formData
+			});
+
+			if (!response.ok) {
+				throw new Error(`Server error: ${response.status} ${response.statusText}`);
+			}
+
+			const result = await response.json();
+			console.log('Create role response:', result);
+			
+			if (result.success) {
+				message = { type: 'success', text: 'Role created successfully!' };
+				showCreateModal = false;
+				newRole = { display_name: '', name: '', level: 10, description: '' };
+				await invalidateAll();
+			} else {
+				const errorMsg = result.error || result.message || 'Failed to create role';
+				console.error('Create role error:', errorMsg, result);
+				message = { type: 'error', text: errorMsg };
+			}
+		} catch (err) {
+			message = { type: 'error', text: 'An error occurred: ' + err.message };
+		} finally {
+			creating = false;
+		}
 	}
 </script>
 
@@ -89,20 +161,37 @@
 		<!-- Roles List -->
 		<div class="lg:w-64 shrink-0">
 			<div class="bg-surface-900 border border-surface-800 rounded-2xl p-2">
-				{#each roles as role}
-					<button
-						onclick={() => activeRole = role.id}
-						class="w-full text-left px-4 py-3 rounded-xl transition-all {activeRole === role.id ? 'bg-surface-800 text-white' : 'text-surface-400 hover:text-white'}"
-					>
-						<div class="flex items-center justify-between">
-							<span class="font-medium">{role.display_name}</span>
-							{#if role.is_system}
-								<span class="text-xs px-1.5 py-0.5 rounded bg-surface-700 text-surface-400">system</span>
-							{/if}
-						</div>
-						<p class="text-xs text-surface-500 mt-1">Level: {role.level}</p>
-					</button>
-				{/each}
+				{#if roles.length > 0}
+					{#each roles as role}
+						<button
+							onclick={() => activeRole = role.id}
+							class="w-full text-left px-4 py-3 rounded-xl transition-all {activeRole === role.id ? 'bg-surface-800 text-white' : 'text-surface-400 hover:text-white'}"
+						>
+							<div class="flex items-center justify-between">
+								<span class="font-medium">{role.display_name}</span>
+								{#if role.is_system}
+									<span class="text-xs px-1.5 py-0.5 rounded bg-surface-700 text-surface-400">system</span>
+								{/if}
+							</div>
+							<p class="text-xs text-surface-500 mt-1">Level: {role.level}</p>
+						</button>
+					{/each}
+				{:else}
+					<div class="p-4 text-center">
+						<Shield size={24} class="text-surface-700 mx-auto mb-2" />
+						<p class="text-sm text-surface-500 mb-3">No roles found. Create one to get started.</p>
+						<p class="text-xs text-surface-600 mb-4">
+							If you're seeing this and expect roles to exist, check your database connection and ensure migrations have run.
+						</p>
+						<button
+							onclick={() => showCreateModal = true}
+							class="w-full px-3 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-sm font-medium transition-colors"
+						>
+							<Plus size={14} class="inline mr-1.5" />
+							Create Your First Role
+						</button>
+					</div>
+				{/if}
 			</div>
 		</div>
 
@@ -110,14 +199,26 @@
 		<div class="flex-1">
 			<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6">
 				<div class="flex items-center justify-between mb-6">
-					<h2 class="text-lg font-semibold text-white">
-						{#if activeRole}
-							{roles.find(r => r.id === activeRole)?.display_name} Permissions
-						{:else}
-							Select a Role
+					<div>
+						<h2 class="text-lg font-semibold text-white">
+							{#if activeRole && roles.length > 0}
+								{roles.find(r => r.id === activeRole)?.display_name} Permissions
+							{:else}
+								Select a Role
+							{/if}
+						</h2>
+						{#if activeRole && roles.length > 0}
+							{@const currentRole = roles.find(r => r.id === activeRole)}
+							{@const rolePermissions = role_permissions.filter(rp => rp.role_id === activeRole)}
+							<p class="text-sm text-surface-400 mt-2">
+								{#if currentRole.description}
+									{currentRole.description} • 
+								{/if}
+								Level {currentRole.level} • {rolePermissions.length} permissions assigned
+							</p>
 						{/if}
-					</h2>
-					{#if activeRole}
+					</div>
+					{#if activeRole && roles.length > 0}
 						<button
 							onclick={savePermissions}
 							disabled={saving}
@@ -129,7 +230,7 @@
 					{/if}
 				</div>
 
-				{#if activeRole}
+				{#if activeRole && roles.length > 0}
 					<div class="space-y-6">
 						{#each Object.entries(permissionsByModule) as [module, perms]}
 							<div>
@@ -162,31 +263,92 @@
 
 <!-- Create Role Modal -->
 {#if showCreateModal}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showCreateModal = false; }}>
+	<div role="dialog" aria-modal="true" tabindex="0" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') { showCreateModal = false; message = { type: '', text: '' }; } }} onclick={(e) => { if (e.target === e.currentTarget) { showCreateModal = false; message = { type: '', text: '' }; } }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<h3 class="text-lg font-semibold text-white mb-4">Create New Role</h3>
-			<div class="space-y-4">
+			
+			{#if message.text}
+				<div class="mb-4 p-3 rounded-lg flex items-center gap-2 text-sm {message.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'}">
+					{#if message.type === 'success'}
+						<Check size={16} />
+					{:else}
+						<AlertCircle size={16} />
+					{/if}
+					{message.text}
+				</div>
+			{/if}
+			
+			<form onsubmit={(e) => { e.preventDefault(); createRole(); }} class="space-y-4">
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Display Name</label>
-					<input type="text" bind:value={newRole.display_name} placeholder="e.g. Content Manager" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="display-name" class="block text-sm text-surface-300 mb-1.5">Display Name <span class="text-rose-400">*</span></label>
+					<input 
+						id="display-name"
+						type="text" 
+						bind:value={newRole.display_name} 
+						placeholder="e.g. Content Manager" 
+						disabled={creating}
+						required
+						class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm disabled:opacity-50" 
+					/>
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Role Key (lowercase)</label>
-					<input type="text" bind:value={newRole.name} placeholder="content_manager" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm font-mono" />
+					<label for="role-key" class="block text-sm text-surface-300 mb-1.5">Role Key (lowercase) <span class="text-rose-400">*</span></label>
+					<input 
+						id="role-key"
+						type="text" 
+						bind:value={newRole.name} 
+						placeholder="content_manager" 
+						disabled={creating}
+						required
+						class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm font-mono disabled:opacity-50" 
+					/>
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Level (higher = more access)</label>
-					<input type="number" bind:value={newRole.level} placeholder="10" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="role-level" class="block text-sm text-surface-300 mb-1.5">Level (higher = more access)</label>
+					<input 
+						id="role-level"
+						type="number" 
+						bind:value={newRole.level} 
+						placeholder="10" 
+						disabled={creating}
+						class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm disabled:opacity-50" 
+					/>
+					<p class="text-xs text-surface-500 mt-1">0 (user) to 100 (super admin)</p>
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Description</label>
-					<textarea bind:value={newRole.description} rows="2" placeholder="What this role can do..." class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm resize-none"></textarea>
+					<label for="role-description" class="block text-sm text-surface-300 mb-1.5">Description</label>
+					<textarea 
+						id="role-description"
+						bind:value={newRole.description} 
+						rows="2" 
+						placeholder="What this role can do..."
+						disabled={creating}
+						class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm resize-none disabled:opacity-50"
+					></textarea>
 				</div>
-			</div>
-			<div class="flex gap-3 mt-6">
-				<button onclick={() => showCreateModal = false} class="flex-1 px-4 py-2.5 rounded-xl bg-surface-800 text-white font-medium text-sm">Cancel</button>
-				<button onclick={createRole} disabled={!newRole.display_name || !newRole.name} class="flex-1 px-4 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white font-medium text-sm">Create</button>
-			</div>
+				<div class="flex gap-3 mt-6">
+					<button 
+						type="button"
+						onclick={() => { showCreateModal = false; message = { type: '', text: '' }; }} 
+						disabled={creating}
+						class="flex-1 px-4 py-2.5 rounded-xl bg-surface-800 text-white font-medium text-sm disabled:opacity-50"
+					>
+						Cancel
+					</button>
+					<button 
+						type="submit"
+						disabled={!newRole.display_name || !newRole.name || creating}
+						class="flex-1 px-4 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white font-medium text-sm flex items-center justify-center gap-2"
+					>
+						{#if creating}
+							<span>Creating...</span>
+						{:else}
+							<Plus size={16} />
+							<span>Create</span>
+						{/if}
+					</button>
+				</div>
+			</form>
 		</div>
 	</div>
 {/if}

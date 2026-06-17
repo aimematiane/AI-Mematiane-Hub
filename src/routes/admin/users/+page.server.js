@@ -27,8 +27,14 @@ export async function load({ cookies, url }) {
 
 	const { data: roles } = await client
 		.from('roles')
-		.select('id, name, display_name, level')
+		.select('id, name, display_name, level, is_system')
 		.order('level', { ascending: false });
+
+	// Ensure we have roles loaded
+	if (!roles || roles.length === 0) {
+		// Return empty array if no roles exist (they should be seeded)
+		return { users: users || [], roles: [] };
+	}
 
 	return { users: users || [], roles: roles || [] };
 }

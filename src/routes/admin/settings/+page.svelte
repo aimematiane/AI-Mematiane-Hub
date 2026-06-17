@@ -20,14 +20,21 @@
 		general: 'General',
 		branding: 'Branding',
 		contact: 'Contact',
-		social: 'Social Media',
 		legal: 'Legal',
 		analytics: 'Analytics',
 		custom: 'Custom Code'
 	};
 
+	// Filter out social media category as it's managed in Footer Settings
+	$effect(() => {
+		if (categories.includes('social')) {
+			categories = categories.filter(c => c !== 'social');
+		}
+	});
+
 	function getSettingsByCategory(cat) {
-		return settings.filter(s => s.category === cat);
+		// Filter out social media settings as they're managed in Footer Settings
+		return settings.filter(s => s.category === cat && cat !== 'social');
 	}
 
 	function handleInput(id, value) {

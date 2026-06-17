@@ -134,15 +134,22 @@
 								</div>
 							</td>
 							<td class="px-6 py-4">
-								<select
-									value={user.role}
-									onchange={(e) => updateRole(user.id, e.target.value)}
-									class="px-3 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm"
-								>
-									{#each roles as role}
-										<option value={role.name}>{role.display_name}</option>
-									{/each}
-								</select>
+								{#if roles.length > 0}
+									<select
+										value={user.role || ''}
+										onchange={(e) => updateRole(user.id, e.target.value)}
+										class="px-3 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm"
+									>
+										{#if !user.role}
+											<option value="">Select a role</option>
+										{/if}
+										{#each roles as role}
+											<option value={role.name}>{role.display_name}</option>
+										{/each}
+									</select>
+								{:else}
+									<span class="text-surface-500 text-sm">No roles available</span>
+								{/if}
 							</td>
 							<td class="px-6 py-4">
 								<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium {statusColors[user.status] || statusColors.pending}">
