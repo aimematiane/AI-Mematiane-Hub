@@ -19,23 +19,21 @@ export async function load({ cookies, url }) {
 		throw redirect(302, '/profile');
 	}
 
-	const { data: settings } = await client
-		.from('footer_settings')
-		.select('*')
-		.order('sort_order');
-
-	const { data: columns } = await client
-		.from('footer_columns')
-		.select('*, links:footer_links(*)')
-		.order('sort_order');
+	const [settingsResult, columnsResult, socialLinksResult] = await Promise.all([
+		client.from('footer_settings').select('*').order('sort_order'),
+		client.from('footer_columns').select('*, links:footer_links(*)').order('sort_order'),
+		client.from('footer_social_links').select('*').order('sort_order')
+	]);
 
 	return {
-		settings: settings || [],
-		columns: columns || []
+		settings: settingsResult.data || [],
+		columns: columnsResult.data || [],
+		socialLinks: socialLinksResult.data || []
 	};
 }
 
 export const actions = {
+	// Settings actions
 	async updateSettings({ request, cookies, url }) {
 		const client = await getSupabaseServerClient({ cookies, url });
 		const formData = await request.formData();
@@ -48,6 +46,7 @@ export const actions = {
 		return { success: true };
 	},
 
+	// Column actions
 	async createColumn({ request, cookies, url }) {
 		const client = await getSupabaseServerClient({ cookies, url });
 		const formData = await request.formData();
@@ -77,6 +76,7 @@ export const actions = {
 		return { success: true };
 	},
 
+	// Link actions
 	async createLink({ request, cookies, url }) {
 		const client = await getSupabaseServerClient({ cookies, url });
 		const formData = await request.formData();
@@ -90,11 +90,61 @@ export const actions = {
 		return { success: true };
 	},
 
+	async updateLink({ request, cookies, url }) {
+		const client = await getSupabaseServerClient({ cookies, url });
+		const formData = await request.formData();
+		const id = formData.get('id');
+		const label = formData.get('label');
+		const url_path = formData.get('url');
+		const is_external = formData.get('is_external') === 'true';
+		const is_visible = formData.get('is_visible') === 'true';
+
+		await client.from('footer_links').update({ label, url: url_path, is_external, is_visible }).eq('id', id);
+		return { success: true };
+	},
+
 	async deleteLink({ request, cookies, url }) {
 		const client = await getSupabaseServerClient({ cookies, url });
 		const formData = await request.formData();
 		const id = formData.get('id');
 		await client.from('footer_links').delete().eq('id', id);
+		return { success: true };
+	},
+
+	// Social link actions
+	async createSocialLink({ request, cookies, url }) {
+		const client = await getSupabaseServerClient({ cookies, url });
+		const formData = await request.formData();
+		const platform = formData.get('platform');
+		const label = formData.get('label');
+		const url_path = formData.get('url');
+		const icon_key = formData.get('icon_key') || 'link';
+		const sort_order = parseInt(formData.get('sort_order') || '0');
+		const is_visible = formData.get('is_visible') === 'true';
+
+		await client.from('footer_social_links').insert({ platform, label, url: url_path, icon_key, sort_order, is_visible });
+		return { success: true };
+	},
+
+	async updateSocialLink({ request, cookies, url }) {
+		const client = await getSupabaseServerClient({ cookies, url });
+		const formData = await request.formData();
+		const id = formData.get('id');
+		const platform = formData.get('platform');
+		const label = formData.get('label');
+		const url_path = formData.get('url');
+		const icon_key = formData.get('icon_key');
+		const is_visible = formData.get('is_visible') === 'true';
+
+		await client.from('footer_social_links').update({ platform, label, url: url_path, icon_key, is_visible }).eq('id', id);
+		return { success: true };
+	},
+
+	async deleteSocialLink({ request, cookies, url }) {
+		const client = await getSupabaseServerClient({ cookies, url });
+		const formData = await request.formData();
+		const id = formData.get('id');
+		await client.from('footer_social_links').delete().eq('id', id);
 		return { success: true };
 	}
 };

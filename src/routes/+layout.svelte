@@ -21,6 +21,6 @@
   <main id="main-content" class="flex-1">
     {@render children()}
   </main>
-  <Footer />
+  <Footer footer={data.footer} />
 </div>
 
