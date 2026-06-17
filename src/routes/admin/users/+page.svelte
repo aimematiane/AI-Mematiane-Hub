@@ -1,5 +1,5 @@
 <script>
-	import { goto } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { Users as UsersIcon, Shield, Mail, Calendar, MoreVertical, Check, Ban, UserX, Search, Filter } from '@lucide/svelte';
 
@@ -9,6 +9,11 @@
 	let roles = $state(data.roles);
 	let searchQuery = $state('');
 	let statusFilter = $state('all');
+
+	$effect(() => {
+		users = data.users;
+		roles = data.roles;
+	});
 
 	function formatDate(date) {
 		return date ? new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never';
@@ -30,7 +35,7 @@
 		formData.append('status', newStatus);
 
 		await fetch('/admin/users?/updateStatus', { method: 'POST', body: formData });
-		goto('/admin/users');
+		await invalidateAll();
 	}
 
 	async function updateRole(id, newRole) {
@@ -39,7 +44,7 @@
 		formData.append('role', newRole);
 
 		await fetch('/admin/users?/updateRole', { method: 'POST', body: formData });
-		goto('/admin/users');
+		await invalidateAll();
 	}
 
 	async function deleteUser(id) {
@@ -49,7 +54,7 @@
 		formData.append('id', id);
 
 		await fetch('/admin/users?/deleteUser', { method: 'POST', body: formData });
-		goto('/admin/users');
+		await invalidateAll();
 	}
 
 	const statusColors = {

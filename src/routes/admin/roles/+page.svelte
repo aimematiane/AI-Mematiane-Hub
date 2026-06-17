@@ -1,5 +1,5 @@
 <script>
-	import { goto } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { Shield, Plus, Save, Check, X } from '@lucide/svelte';
 
@@ -13,6 +13,13 @@
 	let showCreateModal = $state(false);
 	let saving = $state(false);
 	let newRole = $state({ name: '', display_name: '', level: 10, description: '' });
+
+	$effect(() => {
+		roles = data.roles;
+		permissions = data.permissions;
+		permissionsByModule = data.permissionsByModule;
+		role_permissions = data.role_permissions;
+	});
 
 	function roleHasPermission(roleId, permId) {
 		return role_permissions.some(rp => rp.role_id === roleId && rp.permission_id === permId);
@@ -38,7 +45,7 @@
 			body: formData
 		});
 		saving = false;
-		goto('/admin/roles');
+		await invalidateAll();
 	}
 
 	async function createRole() {
@@ -52,7 +59,8 @@
 			body: formData
 		});
 		showCreateModal = false;
-		goto('/admin/roles');
+		newRole = { name: '', display_name: '', level: 10, description: '' };
+		await invalidateAll();
 	}
 </script>
 

@@ -1,4 +1,5 @@
 <script>
+	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
@@ -90,7 +91,7 @@
 			error = result.error.message;
 		} else {
 			showForm = false;
-			window.location.reload();
+			await invalidateAll();
 		}
 		saving = false;
 	}
@@ -98,7 +99,7 @@
 	async function handleDelete(id) {
 		if (!confirm('Delete this tool?')) return;
 		await client.from('ai_tools').delete().eq('id', id);
-		window.location.reload();
+		await invalidateAll();
 	}
 </script>
 

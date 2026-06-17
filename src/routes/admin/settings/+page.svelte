@@ -1,5 +1,5 @@
 <script>
-	import { page } from '$app/stores';
+	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { Settings, Save, AlertCircle, Check, Upload, Image as ImageIcon } from '@lucide/svelte';
 
@@ -10,6 +10,11 @@
 	let activeCategory = $state(categories[0] || 'general');
 	let saving = $state(false);
 	let message = $state({ type: '', text: '' });
+
+	$effect(() => {
+		settings = data.settings;
+		categories = data.categories;
+	});
 
 	const categoryLabels = {
 		general: 'General',
@@ -54,6 +59,7 @@
 
 			if (response.ok) {
 				message = { type: 'success', text: 'Settings saved successfully!' };
+				await invalidateAll();
 			} else {
 				message = { type: 'error', text: 'Failed to save settings.' };
 			}

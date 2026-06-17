@@ -1,5 +1,5 @@
 <script>
-	import { goto } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { Navigation, Plus, Trash2, Edit, GripVertical, ExternalLink, Eye, EyeOff, ChevronDown, Check } from '@lucide/svelte';
 
@@ -8,6 +8,11 @@
 	let menus = $state(data.menus);
 	let items = $state(data.items);
 	let activeMenu = $state(menus[0]?.id || null);
+
+	$effect(() => {
+		menus = data.menus;
+		items = data.items;
+	});
 	let showMenuForm = $state(false);
 	let showItemForm = $state(false);
 	let editingItem = $state(null);
@@ -45,7 +50,9 @@
 		});
 
 		if (response.ok) {
-			goto('/admin/navigation');
+			showMenuForm = false;
+			menuForm = { name: '', location: 'header' };
+			await invalidateAll();
 		}
 		saving = false;
 	}
@@ -59,7 +66,7 @@
 			method: 'POST',
 			body: formData
 		});
-		goto('/admin/navigation');
+		await invalidateAll();
 	}
 
 	async function createItem() {
@@ -80,7 +87,7 @@
 
 		showItemForm = false;
 		itemForm = { label: '', url: '', is_external: false, open_in_new_tab: false, sort_order: 0 };
-		goto('/admin/navigation');
+		await invalidateAll();
 	}
 
 	async function updateItem() {
@@ -102,7 +109,7 @@
 		editingItem = null;
 		showItemForm = false;
 		itemForm = { label: '', url: '', is_external: false, open_in_new_tab: false, sort_order: 0 };
-		goto('/admin/navigation');
+		await invalidateAll();
 	}
 
 	async function deleteItem(id) {
@@ -114,7 +121,7 @@
 			method: 'POST',
 			body: formData
 		});
-		goto('/admin/navigation');
+		await invalidateAll();
 	}
 
 	function startEdit(item) {
@@ -142,7 +149,7 @@
 			method: 'POST',
 			body: formData
 		});
-		goto('/admin/navigation');
+		await invalidateAll();
 	}
 </script>
 

@@ -1,4 +1,5 @@
 <script>
+	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
@@ -75,7 +76,7 @@
 			error = result.error.message;
 		} else {
 			showForm = false;
-			window.location.reload();
+			await invalidateAll();
 		}
 		saving = false;
 	}
@@ -83,7 +84,7 @@
 	async function handleDelete(id) {
 		if (!confirm('Delete this article?')) return;
 		await client.from('news').delete().eq('id', id);
-		window.location.reload();
+		await invalidateAll();
 	}
 </script>
 
