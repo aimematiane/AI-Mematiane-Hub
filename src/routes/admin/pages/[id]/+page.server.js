@@ -13,7 +13,7 @@ export async function load({ cookies, url, params }) {
 		.eq('id', user.id)
 		.single();
 
-	if (!profile || profile.role !== 'admin') throw redirect(302, '/profile');
+	if (!profile || profile.role === 'user') throw redirect(302, '/profile');
 
 	const { data: page, error: pageError } = await client
 		.from('pages')

@@ -9,6 +9,8 @@
 	let roles = $state(data.roles);
 	let searchQuery = $state('');
 	let statusFilter = $state('all');
+	let pendingRoleChanges = $state({}); // Track pending role changes: { userId: newRole }
+	let savingUsers = $state(new Set()); // Track which users are being saved
 
 	$effect(() => {
 		users = data.users;
@@ -39,12 +41,39 @@
 	}
 
 	async function updateRole(id, newRole) {
-		const formData = new FormData();
-		formData.append('id', id);
-		formData.append('role', newRole);
+		pendingRoleChanges[id] = newRole;
+	}
 
-		await fetch('/admin/users?/updateRole', { method: 'POST', body: formData });
-		await invalidateAll();
+	async function saveRole(userId) {
+		const newRole = pendingRoleChanges[userId];
+		if (!newRole) return;
+
+		savingUsers.add(userId);
+	
+		try {
+			const formData = new FormData();
+			formData.append('id', userId);
+			formData.append('role', newRole);
+
+			const response = await fetch('/admin/users?/updateRole', { method: 'POST', body: formData });
+			
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(errorText || 'Failed to update role');
+			}
+			
+			delete pendingRoleChanges[userId];
+			await invalidateAll();
+		} catch (err) {
+			console.error('Role save error:', err);
+			alert('Error updating role: ' + err.message);
+		} finally {
+			savingUsers.delete(userId);
+		}
+	}
+
+	function cancelRoleChange(userId) {
+		delete pendingRoleChanges[userId];
 	}
 
 	async function deleteUser(id) {
@@ -135,10 +164,12 @@
 							</td>
 							<td class="px-6 py-4">
 								{#if roles.length > 0}
+								<div class="flex items-center gap-2">
 									<select
-										value={user.role || ''}
+										value={pendingRoleChanges[user.id] || user.role || ''}
 										onchange={(e) => updateRole(user.id, e.target.value)}
-										class="px-3 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm"
+										disabled={savingUsers.has(user.id)}
+										class="px-3 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm disabled:opacity-50"
 									>
 										{#if !user.role}
 											<option value="">Select a role</option>
@@ -147,6 +178,23 @@
 											<option value={role.name}>{role.display_name}</option>
 										{/each}
 									</select>
+									{#if pendingRoleChanges[user.id]}
+										<button
+											onclick={() => saveRole(user.id)}
+											disabled={savingUsers.has(user.id)}
+											class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-1"
+										>
+											<Check size={14} />
+											{savingUsers.has(user.id) ? 'Saving...' : 'Save'}
+										</button>
+										<button
+											onclick={() => cancelRoleChange(user.id)}
+											class="px-3 py-1.5 rounded-lg bg-surface-700 hover:bg-surface-600 text-surface-300 text-sm"
+										>
+											Cancel
+										</button>
+									{/if}
+								</div>
 								{:else}
 									<span class="text-surface-500 text-sm">No roles available</span>
 								{/if}

@@ -15,7 +15,7 @@ export async function load({ cookies, url }) {
 		.eq('id', user.id)
 		.single();
 
-	if (!profile || profile.role !== 'admin') {
+	if (!profile || profile.role === 'user') {
 		throw redirect(302, '/profile');
 	}
 

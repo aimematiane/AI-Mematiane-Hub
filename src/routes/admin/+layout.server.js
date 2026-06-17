@@ -9,27 +9,31 @@ export async function load({ cookies, url }) {
 		throw redirect(302, '/auth/login');
 	}
 
-	const { data: profile } = await client
+	const { data: profile, error: profileError } = await client
 		.from('profiles')
 		.select('id, email, display_name, avatar_url, role')
 		.eq('id', user.id)
 		.single();
 
-	if (!profile) {
+	if (profileError) {
+		console.error('Profile fetch error:', profileError);
 		throw redirect(302, '/auth/login');
 	}
 
-	// Check if user has any admin role
-	const { data: userRoles } = await client
-		.from('user_roles')
-		.select('role_id, roles(level)')
-		.eq('user_id', user.id);
+	if (!profile) {
+		console.log('No profile found');
+		throw redirect(302, '/auth/login');
+	}
 
-	const isAdmin = profile.role === 'admin' || (userRoles && userRoles.some(ur => ur.roles?.level >= 50));
+	console.log('Admin layout check - User role:', profile.role);
 
-	if (!isAdmin) {
+	// Allow all roles except 'user' to access admin panel
+	if (profile.role === 'user') {
+		console.log('User role cannot access admin');
 		throw redirect(302, '/profile');
 	}
+
+	console.log('Admin check passed, fetching counts...');
 
 	// Get all counts for sidebar badges
 	const [toolsResult, postsResult, newsResult, pagesResult, usersResult, mediaResult] = await Promise.all([
@@ -41,10 +45,11 @@ export async function load({ cookies, url }) {
 		client.from('media_files').select('id', { count: 'exact', head: true }).is('deleted_at', null)
 	]);
 
+	console.log('Counts fetched successfully');
+
 	return {
 		user,
 		profile,
-		userRoles,
 		counts: {
 			tools: toolsResult.count || 0,
 			posts: postsResult.count || 0,

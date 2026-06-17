@@ -115,7 +115,7 @@
 				<h2 class="text-lg font-semibold text-white">{displayName || data.profile?.display_name || 'User'}</h2>
 				<div class="flex items-center gap-3 text-sm text-surface-400">
 					<span class="inline-flex items-center gap-1"><Mail size={12} />{data.user.email}</span>
-					{#if data.profile?.role === 'admin'}
+					{#if ['admin', 'super_admin'].includes(data.profile?.role)}
 						<span class="inline-flex items-center gap-1 text-amber-400"><Shield size={12} />Admin</span>
 					{/if}
 				</div>
@@ -207,7 +207,7 @@
 					<p class="text-xs text-surface-400">View saved articles and tools</p>
 				</div>
 			</a>
-			{#if data.profile?.role === 'admin'}
+			{#if data.profile?.role && data.profile.role !== 'user'}
 				<a href="/admin" class="p-4 rounded-xl bg-surface-900 border border-surface-800 hover:border-amber-500/30 transition-all flex items-center gap-3">
 					<Shield size={18} class="text-amber-400" />
 					<div>

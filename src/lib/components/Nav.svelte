@@ -77,7 +77,7 @@
 			<!-- Desktop Auth -->
 			<div class="hidden md:flex items-center gap-2">
 				{#if user}
-					{#if profile?.role === 'admin'}
+					{#if profile?.role && profile.role !== 'user'}
 						<a href="/admin" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-amber-400 hover:bg-amber-500/10 transition-all duration-300">
 							<Shield size={14} />
 							Admin
@@ -133,7 +133,7 @@
 				{/each}
 				<div class="border-t border-surface-800 pt-2 mt-2">
 					{#if user}
-						{#if profile?.role === 'admin'}
+						{#if profile?.role && profile.role !== 'user'}
 							<a href="/admin" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-amber-400 hover:bg-amber-500/10">
 								Admin Dashboard
 							</a>
