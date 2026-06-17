@@ -30,9 +30,12 @@
 		message = { type: '', text: '' };
 
 		try {
-			const response = await fetch('/admin/theme', {
+			const formData = new FormData();
+			formData.append('settings', JSON.stringify(themeSettings));
+
+			const response = await fetch('/admin/theme?/update', {
 				method: 'POST',
-				body: JSON.stringify({ settings: themeSettings })
+				body: formData
 			});
 
 			if (response.ok) {

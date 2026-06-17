@@ -1,5 +1,5 @@
 <script>
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { FileText, Plus, Edit, Trash2, Eye, EyeOff, Globe, Calendar } from '@lucide/svelte';
 
@@ -9,6 +9,11 @@
 	let showCreateModal = $state(false);
 	let newPage = $state({ title: '', slug: '' });
 	let creating = $state(false);
+
+	// Re-sync whenever server data refreshes (after any action)
+	$effect(() => {
+		pages = data.pages;
+	});
 
 	function formatDate(date) {
 		return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -22,8 +27,17 @@
 		formData.append('title', newPage.title);
 		formData.append('slug', newPage.slug);
 
-		await fetch('/admin/pages', { method: 'POST', body: formData });
-		goto('/admin/pages');
+		const response = await fetch('?/create', { method: 'POST', body: formData });
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error('Failed to create page:', response.status, errorText);
+			creating = false;
+			return;
+		}
+		creating = false;
+		showCreateModal = false;
+		newPage = { title: '', slug: '' };
+		await invalidateAll();
 	}
 
 	async function deletePage(id) {
@@ -32,25 +46,20 @@
 		const formData = new FormData();
 		formData.append('id', id);
 
-		await fetch('/admin/pages', { method: 'POST', body: formData });
-		goto('/admin/pages');
+		await fetch('?/delete', { method: 'POST', body: formData });
+		await invalidateAll();
 	}
 
 	async function publishPage(id, currentlyPublished) {
 		const formData = new FormData();
 		formData.append('id', id);
 
-		await fetch('/admin/pages', {
-			method: 'POST',
-			body: formData
-		});
-
 		if (currentlyPublished) {
-			await fetch('/admin/pages', { method: 'POST', body: new URLSearchParams({ id, action: 'unpublish' }) });
+			await fetch('?/unpublish', { method: 'POST', body: formData });
 		} else {
-			await fetch('/admin/pages', { method: 'POST', body: new URLSearchParams({ id, action: 'publish' }) });
+			await fetch('?/publish', { method: 'POST', body: formData });
 		}
-		goto('/admin/pages');
+		await invalidateAll();
 	}
 
 	function generateSlug() {
@@ -96,7 +105,7 @@
 						<tr class="hover:bg-surface-800/50 transition-colors">
 							<td class="px-6 py-4">
 								<div>
-									<a href="/admin/pages/{page.id}" class="font-medium text-white hover:text-accent-400">{page.title}</a>
+									<a href={`/admin/pages/${page.id}`} class="font-medium text-white hover:text-accent-400">{page.title}</a>
 									<p class="text-sm text-surface-500">/{page.slug}</p>
 								</div>
 							</td>

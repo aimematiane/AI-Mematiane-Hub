@@ -36,9 +36,12 @@
 		if (!menuForm.name) return;
 		saving = true;
 
-		const response = await fetch('/admin/navigation', {
+		const formData = new FormData();
+		formData.append('name', menuForm.name);
+		formData.append('location', menuForm.location);
+		const response = await fetch('/admin/navigation?/createMenu', {
 			method: 'POST',
-			body: new URLSearchParams({ ...menuForm, action: 'createMenu' })
+			body: formData
 		});
 
 		if (response.ok) {
@@ -50,9 +53,11 @@
 	async function deleteMenu(id) {
 		if (!confirm('Delete this menu and all its items?')) return;
 
-		await fetch('/admin/navigation', {
+		const formData = new FormData();
+		formData.append('id', id);
+		await fetch('/admin/navigation?/deleteMenu', {
 			method: 'POST',
-			body: new URLSearchParams({ id, action: 'deleteMenu' })
+			body: formData
 		});
 		goto('/admin/navigation');
 	}
@@ -61,9 +66,16 @@
 		if (!itemForm.label || !itemForm.url) return;
 		saving = true;
 
-		await fetch('/admin/navigation', {
+		const formData = new FormData();
+		formData.append('menu_id', activeMenu);
+		formData.append('label', itemForm.label);
+		formData.append('url', itemForm.url);
+		formData.append('is_external', itemForm.is_external.toString());
+		formData.append('open_in_new_tab', itemForm.open_in_new_tab.toString());
+		formData.append('sort_order', itemForm.sort_order.toString());
+		await fetch('/admin/navigation?/createItem', {
 			method: 'POST',
-			body: new URLSearchParams({ ...itemForm, menu_id: activeMenu, action: 'createItem' })
+			body: formData
 		});
 
 		showItemForm = false;
@@ -75,9 +87,16 @@
 		if (!editingItem) return;
 		saving = true;
 
-		await fetch('/admin/navigation', {
+		const formData = new FormData();
+		formData.append('id', editingItem.id);
+		formData.append('label', itemForm.label);
+		formData.append('url', itemForm.url);
+		formData.append('is_external', itemForm.is_external.toString());
+		formData.append('open_in_new_tab', itemForm.open_in_new_tab.toString());
+		formData.append('sort_order', itemForm.sort_order.toString());
+		await fetch('/admin/navigation?/updateItem', {
 			method: 'POST',
-			body: new URLSearchParams({ id: editingItem.id, ...itemForm, action: 'updateItem' })
+			body: formData
 		});
 
 		editingItem = null;
@@ -89,9 +108,11 @@
 	async function deleteItem(id) {
 		if (!confirm('Delete this menu item?')) return;
 
-		await fetch('/admin/navigation', {
+		const formData = new FormData();
+		formData.append('id', id);
+		await fetch('/admin/navigation?/deleteItem', {
 			method: 'POST',
-			body: new URLSearchParams({ id, action: 'deleteItem' })
+			body: formData
 		});
 		goto('/admin/navigation');
 	}
@@ -109,18 +130,17 @@
 	}
 
 	async function toggleVisibility(item) {
-		await fetch('/admin/navigation', {
+		const formData = new FormData();
+		formData.append('id', item.id);
+		formData.append('label', item.label);
+		formData.append('url', item.url);
+		formData.append('is_external', item.is_external.toString());
+		formData.append('open_in_new_tab', item.open_in_new_tab.toString());
+		formData.append('sort_order', item.sort_order.toString());
+		formData.append('is_visible', (!item.is_visible).toString());
+		await fetch('/admin/navigation?/updateItem', {
 			method: 'POST',
-			body: new URLSearchParams({
-				id: item.id,
-				label: item.label,
-				url: item.url,
-				is_external: item.is_external,
-				open_in_new_tab: item.open_in_new_tab,
-				sort_order: item.sort_order,
-				is_visible: !item.is_visible,
-				action: 'updateItem'
-			})
+			body: formData
 		});
 		goto('/admin/navigation');
 	}

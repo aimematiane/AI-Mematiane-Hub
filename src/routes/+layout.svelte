@@ -9,19 +9,18 @@
   injectAnalytics({ mode: dev ? 'development' : 'production' });
   injectSpeedInsights();
 
-  const { children } = $props();
+  let { children, data } = $props();
 </script>
-
-
 
 <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent-600 focus:text-white focus:rounded-md focus:shadow-md">
   Skip to main content
 </a>
 
 <div class="min-h-screen flex flex-col">
-  <Nav />
+  <Nav navPages={data.navPages} />
   <main id="main-content" class="flex-1">
     {@render children()}
   </main>
   <Footer />
 </div>
+

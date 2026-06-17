@@ -16,9 +16,9 @@
 
 	const currentTab = $derived(tabs.find(t => t.id === activeTab));
 
-	const filteredItems = $derived(() => {
-		if (!currentTab()) return [];
-		return currentTab().data.filter(item => {
+	const filteredItems = $derived.by(() => {
+		if (!currentTab) return [];
+		return currentTab.data.filter(item => {
 			return !searchQuery || item.title?.toLowerCase().includes(searchQuery.toLowerCase());
 		});
 	});
@@ -93,7 +93,7 @@
 
 	<!-- Content Table -->
 	<div class="bg-surface-900 border border-surface-800 rounded-2xl overflow-hidden">
-		{#if filteredItems().length > 0}
+		{#if filteredItems.length > 0}
 			<table class="w-full">
 				<thead class="bg-surface-800">
 					<tr>
@@ -105,7 +105,7 @@
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-surface-800">
-					{#each filteredItems() as item}
+					{#each filteredItems as item}
 						{@const seo = getSeoScore(item)}
 						<tr class="hover:bg-surface-800/50">
 							<td class="px-6 py-4">

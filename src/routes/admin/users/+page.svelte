@@ -14,7 +14,7 @@
 		return date ? new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never';
 	}
 
-	const filteredUsers = $derived(() => {
+	const filteredUsers = $derived.by(() => {
 		return users.filter(user => {
 			const matchesSearch = !searchQuery ||
 				user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -29,7 +29,7 @@
 		formData.append('id', id);
 		formData.append('status', newStatus);
 
-		await fetch('/admin/users', { method: 'POST', body: formData });
+		await fetch('/admin/users?/updateStatus', { method: 'POST', body: formData });
 		goto('/admin/users');
 	}
 
@@ -38,7 +38,7 @@
 		formData.append('id', id);
 		formData.append('role', newRole);
 
-		await fetch('/admin/users', { method: 'POST', body: formData });
+		await fetch('/admin/users?/updateRole', { method: 'POST', body: formData });
 		goto('/admin/users');
 	}
 
@@ -48,7 +48,7 @@
 		const formData = new FormData();
 		formData.append('id', id);
 
-		await fetch('/admin/users', { method: 'POST', body: formData });
+		await fetch('/admin/users?/deleteUser', { method: 'POST', body: formData });
 		goto('/admin/users');
 	}
 

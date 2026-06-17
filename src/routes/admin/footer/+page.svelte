@@ -16,18 +16,23 @@
 
 	async function saveSettings() {
 		saving = true;
-		await fetch('/admin/footer', {
+		const formData = new FormData();
+		formData.append('settings', JSON.stringify(settings));
+		await fetch('/admin/footer?/updateSettings', {
 			method: 'POST',
-			body: JSON.stringify({ settings })
+			body: formData
 		});
 		saving = false;
 		goto('/admin/footer');
 	}
 
 	async function createColumn() {
-		await fetch('/admin/footer', {
+		const formData = new FormData();
+		formData.append('title', newColumn.title);
+		formData.append('sort_order', columns.length.toString());
+		await fetch('/admin/footer?/createColumn', {
 			method: 'POST',
-			body: new URLSearchParams({ title: newColumn.title, sort_order: columns.length, action: 'createColumn' })
+			body: formData
 		});
 		showColumnForm = false;
 		newColumn = { title: '' };
@@ -36,17 +41,25 @@
 
 	async function deleteColumn(id) {
 		if (!confirm('Delete this column and all its links?')) return;
-		await fetch('/admin/footer', {
+		const formData = new FormData();
+		formData.append('id', id);
+		await fetch('/admin/footer?/deleteColumn', {
 			method: 'POST',
-			body: new URLSearchParams({ id, action: 'deleteColumn' })
+			body: formData
 		});
 		goto('/admin/footer');
 	}
 
 	async function createLink() {
-		await fetch('/admin/footer', {
+		const formData = new FormData();
+		formData.append('column_id', activeColumnId);
+		formData.append('label', newLink.label);
+		formData.append('url', newLink.url);
+		formData.append('is_external', newLink.is_external.toString());
+		formData.append('sort_order', '0');
+		await fetch('/admin/footer?/createLink', {
 			method: 'POST',
-			body: new URLSearchParams({ column_id: activeColumnId, ...newLink, sort_order: 0, action: 'createLink' })
+			body: formData
 		});
 		showLinkForm = false;
 		newLink = { label: '', url: '', is_external: false };
@@ -54,9 +67,11 @@
 	}
 
 	async function deleteLink(id) {
-		await fetch('/admin/footer', {
+		const formData = new FormData();
+		formData.append('id', id);
+		await fetch('/admin/footer?/deleteLink', {
 			method: 'POST',
-			body: new URLSearchParams({ id, action: 'deleteLink' })
+			body: formData
 		});
 		goto('/admin/footer');
 	}

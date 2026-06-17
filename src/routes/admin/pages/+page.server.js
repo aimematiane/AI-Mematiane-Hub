@@ -44,7 +44,7 @@ export const actions = {
 		if (error) {
 			return { error: error.message };
 		}
-		throw redirect(302, `/admin/pages/${data.id}`);
+		return { success: true, id: data.id };
 	},
 
 	async delete({ request, cookies, url }) {

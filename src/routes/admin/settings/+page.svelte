@@ -44,9 +44,12 @@
 		message = { type: '', text: '' };
 
 		try {
-			const response = await fetch('/admin/settings', {
+			const formData = new FormData();
+			formData.append('settings', JSON.stringify(settings));
+
+			const response = await fetch('/admin/settings?/update', {
 				method: 'POST',
-				body: JSON.stringify({ settings })
+				body: formData
 			});
 
 			if (response.ok) {
@@ -145,7 +148,7 @@
 							{:else if setting.input_type === 'image'}
 								<div class="flex items-center gap-4">
 									{#if setting.value}
-										img src={setting.value} alt="" class="w-16 h-16 rounded-lg object-cover border border-surface-700" />
+										<img src={setting.value} alt="" class="w-16 h-16 rounded-lg object-cover border border-surface-700" />
 									{:else}
 										<div class="w-16 h-16 rounded-lg bg-surface-800 border border-surface-700 flex items-center justify-center">
 											<ImageIcon size={20} class="text-surface-500" />

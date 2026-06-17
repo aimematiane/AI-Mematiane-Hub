@@ -30,20 +30,26 @@
 	async function savePermissions() {
 		saving = true;
 		const perms = role_permissions.filter(rp => rp.role_id === activeRole).map(rp => rp.permission_id);
-
-		await fetch('/admin/roles', {
+		const formData = new FormData();
+		formData.append('role_id', activeRole);
+		formData.append('permissions', JSON.stringify(perms));
+		await fetch('/admin/roles?/updatePermissions', {
 			method: 'POST',
-			body: new URLSearchParams({ role_id: activeRole, permissions: JSON.stringify(perms), action: 'updatePermissions' })
+			body: formData
 		});
-
 		saving = false;
 		goto('/admin/roles');
 	}
 
 	async function createRole() {
-		await fetch('/admin/roles', {
+		const formData = new FormData();
+		formData.append('name', newRole.name);
+		formData.append('display_name', newRole.display_name);
+		formData.append('level', newRole.level.toString());
+		formData.append('description', newRole.description);
+		await fetch('/admin/roles?/createRole', {
 			method: 'POST',
-			body: new URLSearchParams({ ...newRole, action: 'createRole' })
+			body: formData
 		});
 		showCreateModal = false;
 		goto('/admin/roles');

@@ -1,8 +1,11 @@
 <script>
-	import { Brain, Menu, X, LogIn, LogOut, User, Shield } from '@lucide/svelte';
+	import { Menu, X, LogIn, LogOut, User, Shield } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
+	import { page } from '$app/stores';
 
 	const client = getSupabaseBrowserClient();
+
+	let { navPages = [] } = $props();
 
 	let mobileOpen = $state(false);
 	let user = $state(null);
@@ -31,16 +34,28 @@
 		profile = null;
 	}
 
-	const navLinks = [
+	// Static core links always shown
+	const staticLinks = [
 		{ href: '/ai-tools', label: 'AI Showcase' },
 		{ href: '/news', label: 'News' },
 		{ href: '/blog', label: 'Blog' }
 	];
+
+	// Merge static + dynamic pages from DB (show_in_menu=true)
+	let allNavLinks = $derived([
+		...staticLinks,
+		...navPages.map(p => ({ href: `/pages/${p.slug}`, label: p.title }))
+	]);
+
+	function isActive(href) {
+		return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
+	}
 </script>
 
-<header class="sticky top-0 z-50 glass-panel border-b border-white/5 bg-surface-950/70 backdrop-blur-lg">
+<header class="sticky top-0 z-50 border-b border-white/5 bg-surface-950/70 backdrop-blur-lg">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex items-center justify-between h-16">
+
 			<!-- Logo -->
 			<a href="/" class="flex items-center gap-2.5 group transition-opacity duration-300 hover:opacity-95">
 				<img src="/logo.png" alt="AI Mematiane" class="w-8 h-8 rounded-lg object-cover transition-transform duration-500 group-hover:rotate-6 group-hover:scale-105" />
@@ -49,10 +64,10 @@
 
 			<!-- Desktop Nav -->
 			<nav class="hidden md:flex items-center gap-1">
-				{#each navLinks as link}
+				{#each allNavLinks as link}
 					<a
 						href={link.href}
-						class="px-3 py-2 rounded-lg text-sm font-medium text-surface-300 hover:text-white hover:bg-white/5 transition-all duration-300"
+						class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 {isActive(link.href) ? 'text-white bg-white/10' : 'text-surface-300 hover:text-white hover:bg-white/5'}"
 					>
 						{link.label}
 					</a>
@@ -84,13 +99,13 @@
 						<LogIn size={14} />
 						Login
 					</a>
-					<a href="/auth/register" class="px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-accent-500 to-cyan-500 hover:from-accent-600 hover:to-cyan-600 text-white shadow-lg shadow-accent-500/25 hover:shadow-accent-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
+					<a href="/auth/register" class="px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-accent-500 to-cyan-500 hover:from-accent-600 hover:to-cyan-600 text-white shadow-lg shadow-accent-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
 						Sign Up
 					</a>
 				{/if}
 			</div>
 
-			<!-- Mobile Menu Toggle -->
+			<!-- Mobile Toggle -->
 			<button
 				onclick={() => mobileOpen = !mobileOpen}
 				class="md:hidden p-2 text-surface-400 hover:text-white"
@@ -98,11 +113,7 @@
 				aria-controls="mobile-menu"
 				aria-label="Toggle navigation menu"
 			>
-				{#if mobileOpen}
-					<X size={22} />
-				{:else}
-					<Menu size={22} />
-				{/if}
+				{#if mobileOpen}<X size={22} />{:else}<Menu size={22} />{/if}
 			</button>
 		</div>
 	</div>
@@ -111,8 +122,12 @@
 	{#if mobileOpen}
 		<div id="mobile-menu" class="md:hidden border-t border-surface-800 bg-surface-950/95 backdrop-blur-xl">
 			<div class="px-4 py-3 space-y-1">
-				{#each navLinks as link}
-					<a href={link.href} onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800 transition-all">
+				{#each allNavLinks as link}
+					<a
+						href={link.href}
+						onclick={() => mobileOpen = false}
+						class="block px-3 py-2.5 rounded-lg text-sm transition-all {isActive(link.href) ? 'text-white bg-white/10' : 'text-surface-300 hover:text-white hover:bg-surface-800'}"
+					>
 						{link.label}
 					</a>
 				{/each}
@@ -130,12 +145,8 @@
 							Logout
 						</button>
 					{:else}
-						<a href="/auth/login" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800">
-							Login
-						</a>
-						<a href="/auth/register" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm font-medium bg-accent-500 hover:bg-accent-600 text-white text-center">
-							Sign Up
-						</a>
+						<a href="/auth/login" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800">Login</a>
+						<a href="/auth/register" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm font-medium bg-accent-500 hover:bg-accent-600 text-white text-center">Sign Up</a>
 					{/if}
 				</div>
 			</div>
