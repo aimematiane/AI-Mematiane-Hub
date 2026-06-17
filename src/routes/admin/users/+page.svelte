@@ -104,7 +104,7 @@
 
 	<!-- Users Table -->
 	<div class="bg-surface-900 border border-surface-800 rounded-2xl overflow-hidden">
-		{#if filteredUsers().length > 0}
+		{#if filteredUsers.length > 0}
 			<table class="w-full">
 				<thead class="bg-surface-800">
 					<tr>
@@ -116,7 +116,7 @@
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-surface-800">
-					{#each filteredUsers() as user}
+					{#each filteredUsers as user}
 						<tr class="hover:bg-surface-800/50 transition-colors">
 							<td class="px-6 py-4">
 								<div class="flex items-center gap-3">
