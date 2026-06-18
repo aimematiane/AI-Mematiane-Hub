@@ -1,8 +1,8 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
 
-export async function load({ cookies, url, depends }) {
-	depends('app:layout');
+export async function load({ cookies, url }) {
 	const client = await getSupabaseServerClient({ cookies, url });
+	const isAdminRoute = url.pathname.startsWith('/admin');
 
 	let user = null;
 	let profile = null;
@@ -22,7 +22,6 @@ export async function load({ cookies, url, depends }) {
 		profile = profileData;
 	}
 
-	// Fetch published pages that are set to show in navbar
 	const { data: navPages } = await client
 		.from('pages')
 		.select('id, title, slug')
@@ -31,7 +30,17 @@ export async function load({ cookies, url, depends }) {
 		.is('deleted_at', null)
 		.order('created_at', { ascending: true });
 
-	// Fetch footer data and theme settings
+	// Admin routes skip heavy global chrome data — admin has its own layout
+	if (isAdminRoute) {
+		return {
+			user,
+			profile,
+			navPages: navPages || [],
+			footer: { settings: {}, columns: [], socialLinks: [] },
+			theme: {}
+		};
+	}
+
 	const [footerSettingsResult, footerColumnsResult, footerSocialResult, themeSettingsResult] = await Promise.all([
 		client.from('footer_settings').select('key, value').order('sort_order'),
 		client.from('footer_columns')
@@ -47,13 +56,11 @@ export async function load({ cookies, url, depends }) {
 			.not('css_variable', 'is', null)
 	]);
 
-	// Convert settings array to object for easy access
 	const footerSettingsMap = {};
 	for (const s of footerSettingsResult.data || []) {
 		footerSettingsMap[s.key] = s.value;
 	}
 
-	// Build theme CSS variables map
 	const themeCssVars = {};
 	for (const setting of themeSettingsResult.data || []) {
 		if (setting.css_variable && setting.value) {

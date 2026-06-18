@@ -573,17 +573,17 @@ CREATE POLICY "manage_role_permissions" ON public.role_permissions FOR ALL TO au
 
 -- Site Settings
 CREATE POLICY "select_public_site_settings" ON public.site_settings FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "manage_site_settings" ON public.site_settings FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "manage_site_settings" ON public.site_settings FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- Theme Settings
 CREATE POLICY "select_theme_settings" ON public.theme_settings FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "manage_theme_settings" ON public.theme_settings FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "manage_theme_settings" ON public.theme_settings FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- Navigation
 CREATE POLICY "select_navigation_menus" ON public.navigation_menus FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "manage_navigation_menus" ON public.navigation_menus FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "manage_navigation_menus" ON public.navigation_menus FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 CREATE POLICY "select_navigation_items" ON public.navigation_items FOR SELECT TO anon, authenticated USING (EXISTS (SELECT 1 FROM navigation_menus WHERE navigation_menus.id = navigation_items.menu_id AND navigation_menus.is_active = true));
-CREATE POLICY "manage_navigation_items" ON public.navigation_items FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "manage_navigation_items" ON public.navigation_items FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- Pages
 CREATE POLICY "select_published_pages" ON public.pages FOR SELECT TO anon, authenticated USING (is_published = true OR author_id = auth.uid());
@@ -591,22 +591,22 @@ CREATE POLICY "manage_pages" ON public.pages FOR ALL TO authenticated USING (EXI
 
 -- Footer
 CREATE POLICY "select_footer_settings" ON public.footer_settings FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "manage_footer_settings" ON public.footer_settings FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "manage_footer_settings" ON public.footer_settings FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 CREATE POLICY "select_footer_columns" ON public.footer_columns FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "manage_footer_columns" ON public.footer_columns FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "manage_footer_columns" ON public.footer_columns FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 CREATE POLICY "select_footer_links" ON public.footer_links FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "manage_footer_links" ON public.footer_links FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "manage_footer_links" ON public.footer_links FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 CREATE POLICY "select_footer_social_links" ON public.footer_social_links FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "manage_footer_social_links" ON public.footer_social_links FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "manage_footer_social_links" ON public.footer_social_links FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- Media Files
 CREATE POLICY "select_media_files" ON public.media_files FOR SELECT TO anon, authenticated USING (deleted_at IS NULL);
 CREATE POLICY "insert_media_files" ON public.media_files FOR INSERT TO authenticated WITH CHECK (auth.uid() = uploaded_by);
-CREATE POLICY "update_media_files" ON public.media_files FOR UPDATE TO authenticated USING (auth.uid() = uploaded_by OR EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
-CREATE POLICY "delete_media_files" ON public.media_files FOR DELETE TO authenticated USING (auth.uid() = uploaded_by OR EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "update_media_files" ON public.media_files FOR UPDATE TO authenticated USING (auth.uid() = uploaded_by OR public.is_admin()) WITH CHECK (auth.uid() = uploaded_by OR public.is_admin());
+CREATE POLICY "delete_media_files" ON public.media_files FOR DELETE TO authenticated USING (auth.uid() = uploaded_by OR public.is_admin());
 
 -- Audit Logs
-CREATE POLICY "select_audit_logs" ON public.audit_logs FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "select_audit_logs" ON public.audit_logs FOR SELECT TO authenticated USING (public.is_admin());
 CREATE POLICY "insert_audit_logs" ON public.audit_logs FOR INSERT TO authenticated WITH CHECK (public.is_admin());
 
 -- =====================================================

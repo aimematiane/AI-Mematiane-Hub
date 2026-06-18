@@ -2,7 +2,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { SOCIAL_ICONS, SOCIAL_ICON_KEYS } from '$lib/utils/socialIcons.js';
-	import { Layers, Plus, Trash2, Save, ExternalLink, Share2, Eye, EyeOff, Edit } from '@lucide/svelte';
+	import { Layers, Plus, Trash2, Save, ExternalLink, Share2, Eye, EyeOff, Edit, AlertCircle } from '@lucide/svelte';
+	import { submitAction } from '$lib/utils/adminFetch.js';
 
 	let { data } = $props();
 
@@ -10,6 +11,7 @@
 	let columns = $state([]);
 	let socialLinks = $state([]);
 	let saving = $state(false);
+	let error = $state('');
 
 	// Modal states
 	let showColumnForm = $state(false);
@@ -24,11 +26,10 @@
 	let newSocial = $state({ platform: '', label: '', url: '', icon_key: 'link', is_visible: true });
 	let editingSocial = $state(null);
 
-	// Re-sync whenever server data refreshes
 	$effect(() => {
-		settings = data.settings;
-		columns = data.columns;
-		socialLinks = data.socialLinks;
+		settings = structuredClone(data.settings || []);
+		columns = structuredClone(data.columns || []);
+		socialLinks = structuredClone(data.socialLinks || []);
 	});
 
 	function handleSettingInput(id, value) {
@@ -37,99 +38,143 @@
 
 	async function saveSettings() {
 		saving = true;
-		const formData = new FormData();
-		formData.append('settings', JSON.stringify(settings));
-		await fetch('?/updateSettings', { method: 'POST', body: formData });
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('settings', JSON.stringify(settings));
+			await submitAction('updateSettings', formData, '/admin/footer');
+			await invalidateAll();
+		} catch (err) {
+			error = err.message || 'Failed to save footer settings.';
+		}
 		saving = false;
-		await invalidateAll();
 	}
 
 	async function createColumn() {
-		const formData = new FormData();
-		formData.append('title', newColumn.title);
-		formData.append('sort_order', columns.length.toString());
-		await fetch('?/createColumn', { method: 'POST', body: formData });
-		showColumnForm = false;
-		newColumn = { title: '' };
-		await invalidateAll();
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('title', newColumn.title);
+			formData.append('sort_order', columns.length.toString());
+			await submitAction('createColumn', formData, '/admin/footer');
+			showColumnForm = false;
+			newColumn = { title: '' };
+			await invalidateAll();
+		} catch (err) {
+			error = err.message || 'Failed to create column.';
+		}
 	}
 
 	async function deleteColumn(id) {
 		if (!confirm('Delete this column and all its links?')) return;
-		const formData = new FormData();
-		formData.append('id', id);
-		await fetch('?/deleteColumn', { method: 'POST', body: formData });
-		await invalidateAll();
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('id', id);
+			await submitAction('deleteColumn', formData, '/admin/footer');
+			await invalidateAll();
+		} catch (err) {
+			error = err.message || 'Failed to delete column.';
+		}
 	}
 
 	async function createLink() {
-		const formData = new FormData();
-		formData.append('column_id', activeColumnId);
-		formData.append('label', newLink.label);
-		formData.append('url', newLink.url);
-		formData.append('is_external', newLink.is_external.toString());
-		formData.append('sort_order', '0');
-		await fetch('?/createLink', { method: 'POST', body: formData });
-		showLinkForm = false;
-		newLink = { label: '', url: '', is_external: false };
-		await invalidateAll();
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('column_id', activeColumnId);
+			formData.append('label', newLink.label);
+			formData.append('url', newLink.url);
+			formData.append('is_external', newLink.is_external.toString());
+			formData.append('sort_order', '0');
+			await submitAction('createLink', formData, '/admin/footer');
+			showLinkForm = false;
+			newLink = { label: '', url: '', is_external: false };
+			await invalidateAll();
+		} catch (err) {
+			error = err.message || 'Failed to create link.';
+		}
 	}
 
 	async function deleteLink(id) {
-		const formData = new FormData();
-		formData.append('id', id);
-		await fetch('?/deleteLink', { method: 'POST', body: formData });
-		await invalidateAll();
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('id', id);
+			await submitAction('deleteLink', formData, '/admin/footer');
+			await invalidateAll();
+		} catch (err) {
+			error = err.message || 'Failed to delete link.';
+		}
 	}
 
-	// Social link actions
 	async function createSocialLink() {
-		const formData = new FormData();
-		formData.append('platform', newSocial.platform);
-		formData.append('label', newSocial.label);
-		formData.append('url', newSocial.url);
-		formData.append('icon_key', newSocial.icon_key);
-		formData.append('sort_order', socialLinks.length.toString());
-		formData.append('is_visible', newSocial.is_visible.toString());
-		await fetch('?/createSocialLink', { method: 'POST', body: formData });
-		showSocialForm = false;
-		newSocial = { platform: '', label: '', url: '', icon_key: 'link', is_visible: true };
-		await invalidateAll();
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('platform', newSocial.platform);
+			formData.append('label', newSocial.label);
+			formData.append('url', newSocial.url);
+			formData.append('icon_key', newSocial.icon_key);
+			formData.append('sort_order', socialLinks.length.toString());
+			formData.append('is_visible', newSocial.is_visible.toString());
+			await submitAction('createSocialLink', formData, '/admin/footer');
+			showSocialForm = false;
+			newSocial = { platform: '', label: '', url: '', icon_key: 'link', is_visible: true };
+			await invalidateAll();
+		} catch (err) {
+			error = err.message || 'Failed to add social link.';
+		}
 	}
 
 	async function updateSocialLink() {
 		if (!editingSocial) return;
-		const formData = new FormData();
-		formData.append('id', editingSocial.id);
-		formData.append('platform', editingSocial.platform);
-		formData.append('label', editingSocial.label);
-		formData.append('url', editingSocial.url);
-		formData.append('icon_key', editingSocial.icon_key);
-		formData.append('is_visible', editingSocial.is_visible.toString());
-		await fetch('?/updateSocialLink', { method: 'POST', body: formData });
-		showEditSocialForm = false;
-		editingSocial = null;
-		await invalidateAll();
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('id', editingSocial.id);
+			formData.append('platform', editingSocial.platform);
+			formData.append('label', editingSocial.label);
+			formData.append('url', editingSocial.url);
+			formData.append('icon_key', editingSocial.icon_key);
+			formData.append('is_visible', editingSocial.is_visible.toString());
+			await submitAction('updateSocialLink', formData, '/admin/footer');
+			showEditSocialForm = false;
+			editingSocial = null;
+			await invalidateAll();
+		} catch (err) {
+			error = err.message || 'Failed to update social link.';
+		}
 	}
 
 	async function deleteSocialLink(id) {
 		if (!confirm('Delete this social link?')) return;
-		const formData = new FormData();
-		formData.append('id', id);
-		await fetch('?/deleteSocialLink', { method: 'POST', body: formData });
-		await invalidateAll();
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('id', id);
+			await submitAction('deleteSocialLink', formData, '/admin/footer');
+			await invalidateAll();
+		} catch (err) {
+			error = err.message || 'Failed to delete social link.';
+		}
 	}
 
 	async function toggleSocialVisibility(link) {
-		const formData = new FormData();
-		formData.append('id', link.id);
-		formData.append('platform', link.platform);
-		formData.append('label', link.label);
-		formData.append('url', link.url);
-		formData.append('icon_key', link.icon_key);
-		formData.append('is_visible', (!link.is_visible).toString());
-		await fetch('?/updateSocialLink', { method: 'POST', body: formData });
-		await invalidateAll();
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('id', link.id);
+			formData.append('platform', link.platform);
+			formData.append('label', link.label);
+			formData.append('url', link.url);
+			formData.append('icon_key', link.icon_key);
+			formData.append('is_visible', String(!link.is_visible));
+			await submitAction('updateSocialLink', formData, '/admin/footer');
+			await invalidateAll();
+		} catch (err) {
+			error = err.message || 'Failed to update visibility.';
+		}
 	}
 
 	function openEditSocial(link) {
@@ -152,6 +197,12 @@
 		</div>
 	</div>
 
+	{#if error}
+		<div class="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-2">
+			<AlertCircle size={16} /> {error}
+		</div>
+	{/if}
+
 	<!-- Settings Section -->
 	<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 mb-6">
 		<h2 class="text-lg font-semibold text-white mb-4">Footer Settings</h2>
@@ -159,7 +210,7 @@
 			{#each settings as setting}
 				<div>
 					<label for={`footer-setting-${setting.id}`} class="block text-sm text-surface-300 mb-1.5">{setting.display_name}</label>
-					{#if setting.key.includes('enabled')}
+					{#if setting.key.includes('enabled') || setting.input_type === 'boolean'}
 						<label class="flex items-center gap-2 cursor-pointer">
 							<input id={`footer-setting-${setting.id}`} type="checkbox" checked={setting.value === 'true'} onchange={(e) => handleSettingInput(setting.id, e.target.checked ? 'true' : 'false')} class="rounded bg-surface-800 border-surface-600 text-accent-500" />
 							<span class="text-sm text-surface-400">Enabled</span>

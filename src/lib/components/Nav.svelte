@@ -1,43 +1,46 @@
 <script>
-	import { Menu, X, LogIn, LogOut, User, Shield } from '@lucide/svelte';
-	import { getSupabaseBrowserClient } from '$lib/supabase/client';
-	import { isAdminRole } from '$lib/utils/roles.js';
-	import { page } from '$app/stores';
-	import { invalidateAll } from '$app/navigation';
+import { invalidateAll } from '$app/navigation';
+import { Menu, X, LogIn, LogOut, User, Shield } from '@lucide/svelte';
+import { getSupabaseBrowserClient } from '$lib/supabase/client';
+import { isAdminRole } from '$lib/utils/roles.js';
+import { page } from '$app/stores';
 
-	const client = getSupabaseBrowserClient();
+const client = getSupabaseBrowserClient();
 
-	let { navPages = [], user = null, profile = null } = $props();
+let { navPages = [], user = null, profile = null } = $props();
 
-	let mobileOpen = $state(false);
+let mobileOpen = $state(false);
 
-	$effect(() => {
-		const { data: { subscription } } = client.auth.onAuthStateChange(() => {
+$effect(() => {
+	const { data: { subscription } } = client.auth.onAuthStateChange((event) => {
+		// Avoid reload storms — INITIAL_SESSION fires on every page load
+		if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
 			invalidateAll();
-		});
-		return () => subscription?.unsubscribe();
+		}
 	});
+	return () => subscription?.unsubscribe();
+});
 
-	async function handleLogout() {
-		await client.auth.signOut();
-		await invalidateAll();
-		mobileOpen = false;
-	}
+async function handleLogout() {
+	await client.auth.signOut();
+	await invalidateAll();
+	mobileOpen = false;
+}
 
-	const staticLinks = [
-		{ href: '/ai-tools', label: 'AI Showcase' },
-		{ href: '/news', label: 'News' },
-		{ href: '/blog', label: 'Blog' }
-	];
+const staticLinks = [
+	{ href: '/ai-tools', label: 'AI Showcase' },
+	{ href: '/news', label: 'News' },
+	{ href: '/blog', label: 'Blog' }
+];
 
-	let allNavLinks = $derived([
-		...staticLinks,
-		...navPages.map(p => ({ href: `/pages/${p.slug}`, label: p.title }))
-	]);
+let allNavLinks = $derived([
+	...staticLinks,
+	...navPages.map(p => ({ href: `/pages/${p.slug}`, label: p.title }))
+]);
 
-	function isActive(href) {
-		return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
-	}
+function isActive(href) {
+	return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
+}
 </script>
 
 <header class="sticky top-0 z-50 border-b border-white/5 bg-surface-950/70 backdrop-blur-lg">

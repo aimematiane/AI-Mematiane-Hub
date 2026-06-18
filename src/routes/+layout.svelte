@@ -3,6 +3,7 @@
   import Nav from "$lib/components/Nav.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import { dev } from '$app/environment';
+  import { page } from '$app/stores';
   import { injectAnalytics } from '@vercel/analytics/sveltekit';
   import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 
@@ -10,6 +11,7 @@
   injectSpeedInsights();
 
   let { children, data } = $props();
+  const isAdminRoute = $derived($page.url.pathname.startsWith('/admin'));
 
   // Apply theme CSS variables when data changes
   $effect(() => {
@@ -31,6 +33,8 @@
   <main id="main-content" class="flex-1">
     {@render children()}
   </main>
-  <Footer footer={data.footer} />
+  {#if !isAdminRoute}
+    <Footer footer={data.footer} />
+  {/if}
 </div>
 

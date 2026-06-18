@@ -3,6 +3,8 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import { Image, Upload, Trash2, Search, FolderOpen, Grid, List, Copy, ExternalLink, X, Check, Edit } from '@lucide/svelte';
+	import { submitAction } from '$lib/utils/adminFetch.js';
+	import { isImageFile, inlineImageUrl } from '$lib/utils/media.js';
 
 	let { data } = $props();
 
@@ -49,52 +51,58 @@
 	async function uploadByUrl() {
 		if (!urlInput) return;
 		saving = true;
-
-		const formData = new FormData();
-		formData.append('url', urlInput);
-		formData.append('filename', uploadFilename || urlInput.split('/').pop() || 'file');
-		formData.append('alt_text', uploadAltText);
-		formData.append('folder', uploadFolder);
-
-		await fetch('?/upload', { method: 'POST', body: formData });
-
-		showUploadModal = false;
-		urlInput = '';
-		uploadFilename = '';
-		uploadAltText = '';
-		uploadFolder = '/';
+		try {
+			const formData = new FormData();
+			formData.append('url', urlInput);
+			formData.append('filename', uploadFilename || urlInput.split('/').pop() || 'file');
+			formData.append('alt_text', uploadAltText);
+			formData.append('folder', uploadFolder || 'media');
+			await submitAction('upload', formData, '/admin/media');
+			showUploadModal = false;
+			urlInput = '';
+			uploadFilename = '';
+			uploadAltText = '';
+			uploadFolder = 'media';
+			await invalidateAll();
+		} catch (err) {
+			alert(err.message);
+		}
 		saving = false;
-		await invalidateAll();
 	}
 
 	async function handleFileUploaded() {
 		if (uploadFiles.length === 0) return;
 		saving = true;
-
-		for (const fileUrl of uploadFiles) {
-			const formData = new FormData();
-			formData.append('url', fileUrl);
-			formData.append('filename', fileUrl.split('/').pop() || 'file');
-			formData.append('alt_text', uploadAltText);
-			formData.append('folder', uploadFolder);
-			await fetch('?/upload', { method: 'POST', body: formData });
+		try {
+			for (const fileUrl of uploadFiles) {
+				const formData = new FormData();
+				formData.append('url', fileUrl);
+				formData.append('filename', fileUrl.split('/').pop() || 'file');
+				formData.append('alt_text', uploadAltText);
+				formData.append('folder', uploadFolder || 'media');
+				await submitAction('upload', formData, '/admin/media');
+			}
+			showUploadModal = false;
+			uploadFiles = [];
+			uploadAltText = '';
+			uploadFolder = 'media';
+			await invalidateAll();
+		} catch (err) {
+			alert(err.message);
 		}
-
-		showUploadModal = false;
-		uploadFiles = [];
-		uploadAltText = '';
-		uploadFolder = '/';
 		saving = false;
-		await invalidateAll();
 	}
 
 	async function deleteMedia(id) {
 		if (!confirm('Delete this file?')) return;
-
-		const formData = new FormData();
-		formData.append('id', id);
-		await fetch('?/delete', { method: 'POST', body: formData });
-		await invalidateAll();
+		try {
+			const formData = new FormData();
+			formData.append('id', id);
+			await submitAction('delete', formData, '/admin/media');
+			await invalidateAll();
+		} catch (err) {
+			alert(err.message);
+		}
 	}
 
 	function startEdit(item) {
@@ -109,26 +117,34 @@
 
 	async function saveEdit() {
 		saving = true;
-		const formData = new FormData();
-		formData.append('id', editingMedia.id);
-		formData.append('alt_text', editForm.alt_text);
-		formData.append('title', editForm.title);
-		formData.append('description', editForm.description);
-		await fetch('?/updateMeta', { method: 'POST', body: formData });
-		showEditModal = false;
-		editingMedia = null;
+		try {
+			const formData = new FormData();
+			formData.append('id', editingMedia.id);
+			formData.append('alt_text', editForm.alt_text);
+			formData.append('title', editForm.title);
+			formData.append('description', editForm.description);
+			await submitAction('updateMeta', formData, '/admin/media');
+			showEditModal = false;
+			editingMedia = null;
+			await invalidateAll();
+		} catch (err) {
+			alert(err.message);
+		}
 		saving = false;
-		await invalidateAll();
 	}
 
 	function copyUrl(url) {
-		navigator.clipboard.writeText(url);
+		navigator.clipboard.writeText(displayUrl(url));
 		copiedUrl = url;
 		setTimeout(() => copiedUrl = '', 2000);
 	}
 
-	function isImage(mimeType) {
-		return mimeType?.startsWith('image/');
+	function isImage(mimeType, filename) {
+		return isImageFile(mimeType, filename);
+	}
+
+	function displayUrl(url) {
+		return inlineImageUrl(url);
 	}
 </script>
 
@@ -188,8 +204,8 @@
 		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
 			{#each filteredMedia as item}
 				<div class="group relative aspect-square rounded-xl bg-surface-900 border border-surface-800 overflow-hidden hover:border-surface-600 transition-all">
-					{#if isImage(item.mime_type)}
-						<img src={item.url} alt={item.alt_text || item.filename} class="w-full h-full object-cover" />
+					{#if isImage(item.mime_type, item.filename || item.original_filename)}
+						<img src={displayUrl(item.url)} alt={item.alt_text || item.filename} class="w-full h-full object-contain bg-surface-950 p-2" />
 					{:else}
 						<div class="w-full h-full flex items-center justify-center">
 							<FolderOpen size={32} class="text-surface-600" />
@@ -236,8 +252,8 @@
 							<tr class="hover:bg-surface-800/50">
 								<td class="px-6 py-4">
 									<div class="flex items-center gap-3">
-										{#if isImage(item.mime_type)}
-											<img src={item.url} alt="" class="w-10 h-10 rounded-lg object-cover" />
+										{#if isImage(item.mime_type, item.filename || item.original_filename)}
+											<img src={displayUrl(item.url)} alt="" class="w-10 h-10 rounded-lg object-contain bg-surface-950" />
 										{:else}
 											<div class="w-10 h-10 rounded-lg bg-surface-700 flex items-center justify-center">
 												<FolderOpen size={18} class="text-surface-500" />
@@ -345,8 +361,8 @@
 				<button onclick={() => showEditModal = false} class="p-1.5 rounded-lg hover:bg-surface-800 text-surface-400"><X size={18} /></button>
 			</div>
 
-			{#if isImage(editingMedia.mime_type)}
-				<img src={editingMedia.url} alt={editingMedia.alt_text} class="w-full h-40 object-cover rounded-xl mb-4" />
+			{#if isImage(editingMedia.mime_type, editingMedia.filename || editingMedia.original_filename)}
+				<img src={displayUrl(editingMedia.url)} alt={editingMedia.alt_text} class="w-full h-40 object-contain bg-surface-950 rounded-xl mb-4 p-2" />
 			{/if}
 			<p class="text-sm text-surface-400 mb-4 truncate">{editingMedia.original_filename}</p>
 

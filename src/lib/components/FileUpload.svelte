@@ -3,7 +3,9 @@
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { optimizeImageUrl } from '$lib/utils/image';
 
-	let { label = 'Upload Files', accept = 'image/*', files = $bindable([]), path = 'misc' } = $props();
+	import { guessMimeType } from '$lib/utils/media.js';
+
+	let { label = 'Upload Files', accept = 'image/*', files = $bindable([]), path = 'misc', onUploaded = null } = $props();
 
 	const client = getSupabaseBrowserClient();
 	let uploading = $state(false);
@@ -28,10 +30,12 @@
 			const randomStr = Math.random().toString(36).substring(2, 8);
 			const filePath = `${path}/${timestamp}-${randomStr}.${ext}`;
 
+			const contentType = file.type || guessMimeType(file.name);
+
 			const { data, error } = await client.storage
 				.from('uploads')
 				.upload(filePath, file, {
-					contentType: file.type,
+					contentType,
 					upsert: false
 				});
 
@@ -47,6 +51,9 @@
 			}
 		}
 		uploading = false;
+		if (onUploaded && files.length > 0) {
+			onUploaded([...files]);
+		}
 	}
 
 	function handleDrop(e) {

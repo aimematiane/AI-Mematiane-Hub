@@ -1,23 +1,17 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
-	import { Settings, Save, AlertCircle, Check, Upload, Image as ImageIcon } from '@lucide/svelte';
+	import FileUpload from '$lib/components/FileUpload.svelte';
+	import { Settings, Save, AlertCircle, Check, Image as ImageIcon } from '@lucide/svelte';
+	import { submitAction } from '$lib/utils/adminFetch.js';
+	import { inlineImageUrl } from '$lib/utils/media.js';
 
-	let { data, form } = $props();
+	let { data } = $props();
 
 	let settings = $state([]);
-	let categories = $state([]);
 	let activeCategory = $state('general');
 	let saving = $state(false);
 	let message = $state({ type: '', text: '' });
-
-	$effect(() => {
-		settings = data.settings || [];
-		categories = (data.categories || []).filter(c => c !== 'social');
-		if (!categories.includes(activeCategory)) {
-			activeCategory = categories[0] || 'general';
-		}
-	});
 
 	const categoryLabels = {
 		general: 'General',
@@ -28,48 +22,44 @@
 		custom: 'Custom Code'
 	};
 
+	const categories = $derived(
+		[...new Set((data.settings || []).map(s => s.category).filter(c => c && c !== 'social'))]
+	);
+
+	$effect(() => {
+		settings = structuredClone(data.settings || []);
+		if (categories.length && !categories.includes(activeCategory)) {
+			activeCategory = categories[0];
+		}
+	});
+
 	function getSettingsByCategory(cat) {
-		// Filter out social media settings as they're managed in Footer Settings
-		return settings.filter(s => s.category === cat && cat !== 'social');
+		return settings.filter(s => s.category === cat);
 	}
 
 	function handleInput(id, value) {
 		settings = settings.map(s => s.id === id ? { ...s, value } : s);
 	}
 
-	function handleJsonInput(id, key, value) {
-		settings = settings.map(s => {
-			if (s.id === id) {
-				const existingJson = s.value_json || {};
-				return { ...s, value_json: { ...existingJson, [key]: value } };
-			}
-			return s;
-		});
+	function handleJsonValue(id, raw) {
+		try {
+			const json = JSON.parse(raw);
+			settings = settings.map(s => s.id === id ? { ...s, value_json: json } : s);
+		} catch {}
 	}
 
 	async function saveSettings() {
 		saving = true;
 		message = { type: '', text: '' };
-
 		try {
 			const formData = new FormData();
 			formData.append('settings', JSON.stringify(settings));
-
-			const response = await fetch('/admin/settings?/update', {
-				method: 'POST',
-				body: formData
-			});
-
-			if (response.ok) {
-				message = { type: 'success', text: 'Settings saved successfully!' };
-				await invalidateAll();
-			} else {
-				message = { type: 'error', text: 'Failed to save settings.' };
-			}
+			await submitAction('update', formData, '/admin/settings');
+			message = { type: 'success', text: 'Settings saved successfully!' };
+			await invalidateAll();
 		} catch (err) {
-			message = { type: 'error', text: 'An error occurred.' };
+			message = { type: 'error', text: err.message || 'Failed to save settings.' };
 		}
-
 		saving = false;
 	}
 </script>
@@ -77,7 +67,6 @@
 <SeoHead title="Site Settings" noindex={true} />
 
 <div class="p-6 lg:p-8">
-	<!-- Header -->
 	<div class="flex items-center justify-between mb-8">
 		<div>
 			<h1 class="text-2xl font-bold text-white flex items-center gap-3">
@@ -96,24 +85,19 @@
 		</button>
 	</div>
 
-	<!-- Messages -->
 	{#if message.text}
 		<div class="mb-6 p-4 rounded-xl flex items-center gap-3 {message.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'}">
-			{#if message.type === 'success'}
-				<Check size={18} />
-			{:else}
-				<AlertCircle size={18} />
-			{/if}
+			{#if message.type === 'success'}<Check size={18} />{:else}<AlertCircle size={18} />{/if}
 			{message.text}
 		</div>
 	{/if}
 
 	<div class="flex flex-col lg:flex-row gap-6">
-		<!-- Categories Sidebar -->
 		<div class="lg:w-56 shrink-0">
 			<div class="bg-surface-900 border border-surface-800 rounded-2xl p-2">
 				{#each categories as cat}
 					<button
+						type="button"
 						onclick={() => activeCategory = cat}
 						class="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all {activeCategory === cat ? 'bg-surface-800 text-white' : 'text-surface-400 hover:text-white'}"
 					>
@@ -123,7 +107,6 @@
 			</div>
 		</div>
 
-		<!-- Settings Form -->
 		<div class="flex-1">
 			<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6">
 				<h2 class="text-lg font-semibold text-white mb-6">{categoryLabels[activeCategory] || activeCategory}</h2>
@@ -143,35 +126,38 @@
 									id={`site-setting-${setting.id}`}
 									type={setting.input_type === 'email' ? 'email' : setting.input_type === 'url' ? 'url' : 'text'}
 									value={setting.value || ''}
-									oninput={(e) => handleInput(setting.id, e.target.value)}
-									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 text-sm"
-									placeholder={setting.display_name}
+									oninput={(e) => handleInput(setting.id, e.currentTarget.value)}
+									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500"
 								/>
 							{:else if setting.input_type === 'textarea' || setting.input_type === 'rich_text'}
 								<textarea
 									id={`site-setting-${setting.id}`}
 									value={setting.value || ''}
-									oninput={(e) => handleInput(setting.id, e.target.value)}
+									oninput={(e) => handleInput(setting.id, e.currentTarget.value)}
 									rows="4"
-									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 text-sm resize-none"
-									placeholder={setting.display_name}
+									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm resize-none focus:outline-none focus:border-accent-500"
 								></textarea>
 							{:else if setting.input_type === 'image'}
-								<div class="flex items-center gap-4">
+								<div class="space-y-3">
 									{#if setting.value}
-										<img src={setting.value} alt="" class="w-16 h-16 rounded-lg object-cover border border-surface-700" />
+										<img src={inlineImageUrl(setting.value)} alt="" class="w-20 h-20 rounded-lg object-contain border border-surface-700 bg-surface-950 p-1" />
 									{:else}
-										<div class="w-16 h-16 rounded-lg bg-surface-800 border border-surface-700 flex items-center justify-center">
+										<div class="w-20 h-20 rounded-lg bg-surface-800 border border-surface-700 flex items-center justify-center">
 											<ImageIcon size={20} class="text-surface-500" />
 										</div>
 									{/if}
+									<FileUpload
+										label="Upload image"
+										accept="image/*,.svg"
+										path="media"
+										onUploaded={(uploaded) => { if (uploaded[0]) handleInput(setting.id, uploaded[0]); }}
+									/>
 									<input
-										id={`site-setting-${setting.id}`}
 										type="url"
 										value={setting.value || ''}
-										oninput={(e) => handleInput(setting.id, e.target.value)}
-										class="flex-1 px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 text-sm"
-										placeholder="Enter image URL"
+										oninput={(e) => handleInput(setting.id, e.currentTarget.value)}
+										placeholder="Or paste image URL"
+										class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm"
 									/>
 								</div>
 							{:else if setting.input_type === 'boolean'}
@@ -180,40 +166,32 @@
 										id={`site-setting-${setting.id}`}
 										type="checkbox"
 										checked={setting.value === 'true'}
-										onchange={(e) => handleInput(setting.id, e.target.checked ? 'true' : 'false')}
-										class="w-5 h-5 rounded bg-surface-800 border border-surface-600 text-accent-500 focus:ring-accent-500 focus:ring-offset-0"
+										onchange={(e) => handleInput(setting.id, e.currentTarget.checked ? 'true' : 'false')}
+										class="w-5 h-5 rounded bg-surface-800 border-surface-600 text-accent-500"
 									/>
-									<span class="text-sm text-surface-300">Enable</span>
+									<span class="text-sm text-surface-300">Enabled</span>
 								</label>
 							{:else if setting.input_type === 'json'}
 								<textarea
 									id={`site-setting-${setting.id}`}
 									value={JSON.stringify(setting.value_json || {}, null, 2)}
-									oninput={(e) => {
-										try {
-											const json = JSON.parse(e.target.value);
-											settings = settings.map(s => s.id === setting.id ? { ...s, value_json: json } : s);
-										} catch {}
-									}}
+									oninput={(e) => handleJsonValue(setting.id, e.currentTarget.value)}
 									rows="6"
-									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 text-sm font-mono resize-none"
-									placeholder="Enter JSON object"
+									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm font-mono resize-none"
 								></textarea>
 							{:else}
 								<input
 									id={`site-setting-${setting.id}`}
 									type="text"
 									value={setting.value || ''}
-									oninput={(e) => handleInput(setting.id, e.target.value)}
-									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 text-sm"
+									oninput={(e) => handleInput(setting.id, e.currentTarget.value)}
+									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm"
 								/>
 							{/if}
 						</div>
-					{/each}
-
-					{#if getSettingsByCategory(activeCategory).length === 0}
+					{:else}
 						<p class="text-surface-500 text-sm">No settings in this category.</p>
-					{/if}
+					{/each}
 				</div>
 			</div>
 		</div>

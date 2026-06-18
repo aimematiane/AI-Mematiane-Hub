@@ -1,4 +1,6 @@
 import { requireAdmin } from '$lib/server/auth.js';
+import { logAudit } from '$lib/server/audit.js';
+import { fail } from '@sveltejs/kit';
 
 export async function load(event) {
 	const { client } = await requireAdmin(event, 'role');
@@ -20,17 +22,24 @@ export async function load(event) {
 export const actions = {
 	async update(event) {
 		const { request } = event;
-		const { client } = await requireAdmin(event, 'role');
+		const { client, user } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
-		const settingsJson = formData.get('settings');
-		const settings = JSON.parse(settingsJson);
+		const settings = JSON.parse(formData.get('settings'));
 
 		for (const setting of settings) {
-			await client
+			const { error } = await client
 				.from('theme_settings')
 				.update({ value: setting.value })
 				.eq('id', setting.id);
+			if (error) return fail(400, { message: error.message });
 		}
+
+		await logAudit(client, {
+			userId: user.id,
+			action: 'update_theme',
+			entityType: 'theme_settings',
+			newValues: { count: settings.length }
+		});
 
 		return { success: true };
 	}

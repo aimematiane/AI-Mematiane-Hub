@@ -1,4 +1,7 @@
 import { requireAdmin } from '$lib/server/auth.js';
+import { logAudit } from '$lib/server/audit.js';
+import { guessMimeType } from '$lib/utils/media.js';
+import { fail } from '@sveltejs/kit';
 
 export async function load(event) {
 	const { client, user } = await requireAdmin(event, 'role');
@@ -23,15 +26,17 @@ export const actions = {
 		const { request } = event;
 		const { client, user } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
-		const url_path = formData.get('url');
-		const filename = formData.get('filename');
-		const alt_text = formData.get('alt_text');
-		const folder = formData.get('folder') || '/';
+		const url_path = formData.get('url')?.toString() || '';
+		const filename = formData.get('filename')?.toString() || url_path.split('/').pop() || 'file';
+		const alt_text = formData.get('alt_text')?.toString() || '';
+		const folder = formData.get('folder')?.toString() || 'media';
 
-		await client.from('media_files').insert({
-			filename: filename || url_path.split('/').pop(),
-			original_filename: filename || url_path.split('/').pop(),
-			mime_type: 'image/jpeg', // Would be determined in real upload
+		const mime_type = guessMimeType(filename);
+
+		const { error } = await client.from('media_files').insert({
+			filename,
+			original_filename: filename,
+			mime_type,
 			size_bytes: 0,
 			url: url_path,
 			uploaded_by: user.id,
@@ -39,29 +44,44 @@ export const actions = {
 			alt_text
 		});
 
+		if (error) return fail(400, { message: error.message });
+
+		await logAudit(client, {
+			userId: user.id,
+			action: 'media_upload',
+			entityType: 'media_files',
+			newValues: { url: url_path, filename }
+		});
+
 		return { success: true };
 	},
 
 	async delete(event) {
 		const { request } = event;
-		const { client } = await requireAdmin(event, 'role');
+		const { client, user } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 
-		await client.from('media_files').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+		const { error } = await client.from('media_files').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+		if (error) return fail(400, { message: error.message });
+
+		await logAudit(client, { userId: user.id, action: 'media_delete', entityType: 'media_files', entityId: id });
 		return { success: true };
 	},
 
 	async updateMeta(event) {
 		const { request } = event;
-		const { client } = await requireAdmin(event, 'role');
+		const { client, user } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
-		const alt_text = formData.get('alt_text');
-		const title = formData.get('title');
-		const description = formData.get('description');
+		const alt_text = formData.get('alt_text')?.toString() || '';
+		const title = formData.get('title')?.toString() || '';
+		const description = formData.get('description')?.toString() || '';
 
-		await client.from('media_files').update({ alt_text, title, description }).eq('id', id);
+		const { error } = await client.from('media_files').update({ alt_text, title, description }).eq('id', id);
+		if (error) return fail(400, { message: error.message });
+
+		await logAudit(client, { userId: user.id, action: 'media_update', entityType: 'media_files', entityId: id });
 		return { success: true };
 	}
 };

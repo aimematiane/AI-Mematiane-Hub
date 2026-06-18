@@ -10,6 +10,8 @@
 	const siteName = $derived(settings.site_name || 'AI Mematiane');
 	const description = $derived(settings.footer_description || 'Your global directory of AI models, tools, news, and deep-dive analysis. Stay ahead of the curve.');
 	const copyright = $derived(settings.copyright_text || `© ${new Date().getFullYear()} AI Mematiane. All rights reserved.`);
+	const newsletterEnabled = $derived(settings.footer_newsletter_enabled === 'true');
+	const newsletterTitle = $derived(settings.footer_newsletter_title || 'Subscribe to be Updated');
 
 	function sortedLinks(links) {
 		return [...(links || [])].filter(l => l.is_visible !== false).sort((a, b) => a.sort_order - b.sort_order);
@@ -74,6 +76,25 @@
 				</div>
 			{/if}
 		</div>
+
+		{#if newsletterEnabled}
+			<div class="mt-10 p-6 rounded-2xl bg-surface-900 border border-surface-800">
+				<h3 class="text-lg font-semibold text-white mb-2 font-display">{newsletterTitle}</h3>
+				<p class="text-sm text-surface-400 mb-4">Get the latest AI news and tool updates in your inbox.</p>
+				<form class="flex flex-col sm:flex-row gap-3 max-w-lg" onsubmit={(e) => e.preventDefault()}>
+					<label for="footer-newsletter-email" class="sr-only">Email address</label>
+					<input
+						id="footer-newsletter-email"
+						type="email"
+						placeholder="you@example.com"
+						class="flex-1 px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm placeholder-surface-500"
+					/>
+					<button type="submit" class="px-5 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-medium transition-colors">
+						Subscribe
+					</button>
+				</form>
+			</div>
+		{/if}
 
 		<div class="border-t border-surface-800 mt-8 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
 			<p class="text-xs text-surface-500">{copyright}</p>
