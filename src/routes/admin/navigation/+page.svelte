@@ -5,13 +5,16 @@
 
 	let { data } = $props();
 
-	let menus = $state(data.menus);
-	let items = $state(data.items);
-	let activeMenu = $state(menus[0]?.id || null);
+	let menus = $state([]);
+	let items = $state([]);
+	let activeMenu = $state(null);
 
 	$effect(() => {
-		menus = data.menus;
-		items = data.items;
+		menus = data.menus || [];
+		items = data.items || [];
+		if (!activeMenu && menus.length > 0) {
+			activeMenu = menus[0].id;
+		}
 	});
 	let showMenuForm = $state(false);
 	let showItemForm = $state(false);
@@ -313,17 +316,17 @@
 
 <!-- Menu Form Modal -->
 {#if showMenuForm}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showMenuForm = false; }}>
+	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showMenuForm = false; }} onclick={(e) => { if (e.target === e.currentTarget) showMenuForm = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<h3 class="text-lg font-semibold text-white mb-4">Create New Menu</h3>
 			<div class="space-y-4">
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Menu Name</label>
-					<input type="text" bind:value={menuForm.name} placeholder="e.g. Main Menu" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="nav-menu-name" class="block text-sm text-surface-300 mb-1.5">Menu Name</label>
+					<input id="nav-menu-name" type="text" bind:value={menuForm.name} placeholder="e.g. Main Menu" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Location</label>
-					<select bind:value={menuForm.location} class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm">
+					<label for="nav-menu-location" class="block text-sm text-surface-300 mb-1.5">Location</label>
+					<select id="nav-menu-location" bind:value={menuForm.location} class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm">
 						<option value="header">Header</option>
 						<option value="footer">Footer</option>
 						<option value="sidebar">Sidebar</option>
@@ -341,17 +344,17 @@
 
 <!-- Item Form Modal -->
 {#if showItemForm}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showItemForm = false; }}>
+	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showItemForm = false; }} onclick={(e) => { if (e.target === e.currentTarget) showItemForm = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<h3 class="text-lg font-semibold text-white mb-4">{editingItem ? 'Edit Menu Item' : 'Add Menu Item'}</h3>
 			<div class="space-y-4">
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Label</label>
-					<input type="text" bind:value={itemForm.label} placeholder="e.g. About Us" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="nav-item-label" class="block text-sm text-surface-300 mb-1.5">Label</label>
+					<input id="nav-item-label" type="text" bind:value={itemForm.label} placeholder="e.g. About Us" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">URL</label>
-					<input type="text" bind:value={itemForm.url} placeholder="e.g. /about or https://example.com" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="nav-item-url" class="block text-sm text-surface-300 mb-1.5">URL</label>
+					<input id="nav-item-url" type="text" bind:value={itemForm.url} placeholder="e.g. /about or https://example.com" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div class="flex items-center gap-4">
 					<label class="flex items-center gap-2 cursor-pointer">

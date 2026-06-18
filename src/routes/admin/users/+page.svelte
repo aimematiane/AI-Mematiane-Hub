@@ -5,8 +5,8 @@
 
 	let { data } = $props();
 
-	let users = $state(data.users);
-	let roles = $state(data.roles);
+	let users = $state([]);
+	let roles = $state([]);
 	let searchQuery = $state('');
 	let statusFilter = $state('all');
 	let pendingRoleChanges = $state({}); // Track pending role changes: { userId: newRole }

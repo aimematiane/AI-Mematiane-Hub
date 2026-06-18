@@ -4,10 +4,14 @@
 
 	let { data } = $props();
 
-	let logs = $state(data.logs);
+	let logs = $state([]);
 	let searchQuery = $state('');
 	let actionFilter = $state('all');
 	let entityFilter = $state('all');
+
+	$effect(() => {
+		logs = data.logs || [];
+	});
 
 	function formatDate(date) {
 		return new Date(date).toLocaleString('en-US', {
@@ -36,8 +40,8 @@
 		logout: 'bg-surface-700 text-surface-400'
 	};
 
-	const uniqueActions = [...new Set(logs.map(l => l.action))];
-	const uniqueEntities = [...new Set(logs.map(l => l.entity_type))];
+	const uniqueActions = $derived([...new Set(logs.map(l => l.action))]);
+	const uniqueEntities = $derived([...new Set(logs.map(l => l.entity_type))]);
 </script>
 
 <SeoHead title="Audit Logs" noindex={true} />

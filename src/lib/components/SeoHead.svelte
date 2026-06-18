@@ -9,7 +9,10 @@
 		authorName = '',
 		tags = [],
 		noindex = false,
-		preloadImage = ''
+		preloadImage = '',
+		prevUrl = '',
+		nextUrl = '',
+		schemaType = ''
 	} = $props();
 
 	const baseUrl = 'https://ai-mematiane.com';
@@ -19,6 +22,30 @@
 	const metaTitle = $derived(title || 'AI Mematiane');
 	const metaDescription = $derived(description || 'AI Mematiane is a global directory of AI tools, news and analysis.');
 	const canonicalUrl = $derived(resolvedUrl || baseUrl);
+	const resolvedPrevUrl = $derived(prevUrl ? (prevUrl.startsWith('http') ? prevUrl : `${baseUrl}${prevUrl}`) : '');
+	const resolvedNextUrl = $derived(nextUrl ? (nextUrl.startsWith('http') ? nextUrl : `${baseUrl}${nextUrl}`) : '');
+	const structuredData = $derived(
+		schemaType === 'Article'
+			? {
+					'@context': 'https://schema.org',
+					'@type': 'Article',
+					headline: metaTitle,
+					description: metaDescription,
+					url: canonicalUrl,
+					...(resolvedImage ? { image: resolvedImage } : {}),
+					...(publishedTime ? { datePublished: publishedTime } : {}),
+					...(authorName ? { author: { '@type': 'Person', name: authorName } } : {}),
+					publisher: {
+						'@type': 'Organization',
+						name: 'AI Mematiane',
+						logo: {
+							'@type': 'ImageObject',
+							url: `${baseUrl}/logo.png`
+						}
+					}
+				}
+			: null
+	);
 </script>
 
 <svelte:head>
@@ -53,10 +80,21 @@
 	<link rel="canonical" href={canonicalUrl} />
 	<link rel="alternate" href={canonicalUrl} hreflang="en" />
 	<link rel="alternate" href="https://ai-mematiane.com/" hreflang="x-default" />
+	{#if resolvedPrevUrl}
+		<link rel="prev" href={resolvedPrevUrl} />
+	{/if}
+	{#if resolvedNextUrl}
+		<link rel="next" href={resolvedNextUrl} />
+	{/if}
 	{#if preloadImage}
 		<link rel="preload" as="image" href={preloadImage} />
 	{/if}
 	{#if noindex}
 		<meta name="robots" content="noindex,nofollow" />
+	{/if}
+	{#if structuredData}
+		<script type="application/ld+json">
+			{JSON.stringify(structuredData)}
+		</script>
 	{/if}
 </svelte:head>

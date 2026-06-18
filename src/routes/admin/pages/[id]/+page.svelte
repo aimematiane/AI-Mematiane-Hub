@@ -11,7 +11,7 @@
 
 	let { data, form } = $props();
 
-	let page = $state({ ...data.page });
+	let page = $state({});
 	let saving = $state(false);
 	let publishing = $state(false);
 	let deleting = $state(false);
@@ -19,12 +19,7 @@
 	let activeSection = $state(null);
 	let showAddMenu = $state(false);
 
-	// Sections stored as JSON array
-	let sections = $state(
-		Array.isArray(data.page.sections) && data.page.sections.length > 0
-			? data.page.sections
-			: []
-	);
+	let sections = $state([]);
 
 	$effect(() => {
 		page = { ...data.page };
@@ -291,7 +286,7 @@
 											<span class="text-xs text-surface-500 ml-2 truncate">— {section.data.title}</span>
 										{/if}
 									</div>
-									<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onclick={(e) => e.stopPropagation()}>
+									<div role="presentation" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onclick={(e) => e.stopPropagation()}>
 										<button type="button" onclick={() => moveSection(section.id, -1)} disabled={idx === 0}
 											class="p-1 rounded text-surface-500 hover:text-white disabled:opacity-30"><ChevronUp size={14} /></button>
 										<button type="button" onclick={() => moveSection(section.id, 1)} disabled={idx === sections.length - 1}
@@ -309,18 +304,18 @@
 
 										{#if section.type === 'hero'}
 											<div>
-												<label class="block text-xs font-medium text-surface-400 mb-1">Heading</label>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Heading</span>
 												<input type="text" bind:value={section.data.title}
 													class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 											</div>
 											<div>
-												<label class="block text-xs font-medium text-surface-400 mb-1">Subtitle</label>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Subtitle</span>
 												<textarea bind:value={section.data.subtitle} rows="2"
 													class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 resize-none"></textarea>
 											</div>
 											<div class="flex gap-3">
 												<div class="flex-1">
-													<label class="block text-xs font-medium text-surface-400 mb-1">Alignment</label>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Alignment</span>
 													<select bind:value={section.data.alignment}
 														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none">
 														<option value="left">Left</option>
@@ -329,7 +324,7 @@
 													</select>
 												</div>
 												<div class="flex-1">
-													<label class="block text-xs font-medium text-surface-400 mb-1">Size</label>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Size</span>
 													<select bind:value={section.data.size}
 														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none">
 														<option value="small">Small</option>
@@ -390,7 +385,7 @@
 										{:else if section.type === 'cards'}
 											<div class="flex gap-3 mb-2">
 												<div class="flex-1">
-													<label class="block text-xs font-medium text-surface-400 mb-1">Columns</label>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Columns</span>
 													<select bind:value={section.data.columns}
 														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none">
 														<option value={2}>2 Columns</option>
@@ -399,7 +394,7 @@
 													</select>
 												</div>
 												<div class="flex-1">
-													<label class="block text-xs font-medium text-surface-400 mb-1">Style</label>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Style</span>
 													<select bind:value={section.data.style}
 														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none">
 														<option value="default">Default</option>
@@ -417,18 +412,18 @@
 														</button>
 														<div class="flex gap-2">
 															<div class="w-16">
-																<label class="block text-xs text-surface-500 mb-1">Icon</label>
+																<span class="block text-xs text-surface-500 mb-1">Icon</span>
 																<input type="text" bind:value={card.icon} maxlength="2"
 																	class="w-full px-2 py-1.5 rounded bg-surface-700 border border-surface-600 text-center text-lg focus:outline-none focus:border-accent-500" />
 															</div>
 															<div class="flex-1">
-																<label class="block text-xs text-surface-500 mb-1">Title</label>
+																<span class="block text-xs text-surface-500 mb-1">Title</span>
 																<input type="text" bind:value={card.title}
 																	class="w-full px-2 py-1.5 rounded bg-surface-700 border border-surface-600 text-white text-sm focus:outline-none focus:border-accent-500" />
 															</div>
 														</div>
 														<div>
-															<label class="block text-xs text-surface-500 mb-1">Description</label>
+															<span class="block text-xs text-surface-500 mb-1">Description</span>
 															<textarea bind:value={card.description} rows="2"
 																class="w-full px-2 py-1.5 rounded bg-surface-700 border border-surface-600 text-white text-sm resize-none focus:outline-none focus:border-accent-500"></textarea>
 														</div>
@@ -442,7 +437,7 @@
 
 										{:else if section.type === 'faq'}
 											<div>
-												<label class="block text-xs font-medium text-surface-400 mb-1">Section Title</label>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Section Title</span>
 												<input type="text" bind:value={section.data.title}
 													class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 											</div>
@@ -454,12 +449,12 @@
 															<X size={13} />
 														</button>
 														<div>
-															<label class="block text-xs text-surface-500 mb-1">Question</label>
+															<span class="block text-xs text-surface-500 mb-1">Question</span>
 															<input type="text" bind:value={item.question}
 																class="w-full px-2 py-1.5 rounded bg-surface-700 border border-surface-600 text-white text-sm focus:outline-none focus:border-accent-500" />
 														</div>
 														<div>
-															<label class="block text-xs text-surface-500 mb-1">Answer</label>
+															<span class="block text-xs text-surface-500 mb-1">Answer</span>
 															<textarea bind:value={item.answer} rows="3"
 																class="w-full px-2 py-1.5 rounded bg-surface-700 border border-surface-600 text-white text-sm resize-none focus:outline-none focus:border-accent-500"></textarea>
 														</div>
@@ -473,29 +468,29 @@
 
 										{:else if section.type === 'cta'}
 											<div>
-												<label class="block text-xs font-medium text-surface-400 mb-1">Heading</label>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Heading</span>
 												<input type="text" bind:value={section.data.title}
 													class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 											</div>
 											<div>
-												<label class="block text-xs font-medium text-surface-400 mb-1">Description</label>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Description</span>
 												<textarea bind:value={section.data.description} rows="2"
 													class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500 resize-none"></textarea>
 											</div>
 											<div class="grid grid-cols-2 gap-3">
 												<div>
-													<label class="block text-xs font-medium text-surface-400 mb-1">Button Text</label>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Button Text</span>
 													<input type="text" bind:value={section.data.buttonText}
 														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
 												</div>
 												<div>
-													<label class="block text-xs font-medium text-surface-400 mb-1">Button URL</label>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Button URL</span>
 													<input type="text" bind:value={section.data.buttonUrl}
 														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm font-mono focus:outline-none focus:border-accent-500" />
 												</div>
 											</div>
 											<div>
-												<label class="block text-xs font-medium text-surface-400 mb-1">Style</label>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Style</span>
 												<select bind:value={section.data.style}
 													class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none">
 													<option value="gradient">Gradient</option>
@@ -507,7 +502,7 @@
 										{:else if section.type === 'divider'}
 											<div class="flex gap-3">
 												<div class="flex-1">
-													<label class="block text-xs font-medium text-surface-400 mb-1">Style</label>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Style</span>
 													<select bind:value={section.data.style}
 														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none">
 														<option value="line">Line</option>
@@ -517,7 +512,7 @@
 													</select>
 												</div>
 												<div class="flex-1">
-													<label class="block text-xs font-medium text-surface-400 mb-1">Spacing</label>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Spacing</span>
 													<select bind:value={section.data.spacing}
 														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none">
 														<option value="small">Small</option>

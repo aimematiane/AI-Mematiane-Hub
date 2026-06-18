@@ -6,8 +6,8 @@
 
 	let { data } = $props();
 
-	let media = $state(data.media);
-	let folders = $state(data.folders);
+	let media = $state([]);
+	let folders = $state([]);
 	let searchQuery = $state('');
 	let activeFolder = $state('all');
 	let viewMode = $state('grid');
@@ -283,7 +283,7 @@
 
 <!-- Upload Modal -->
 {#if showUploadModal}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showUploadModal = false; }}>
+	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showUploadModal = false; }} onclick={(e) => { if (e.target === e.currentTarget) showUploadModal = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-lg">
 			<div class="flex items-center justify-between mb-4">
 				<h3 class="text-lg font-semibold text-white">Add Media</h3>
@@ -296,12 +296,12 @@
 				{#if uploadFiles.length > 0}
 					<div class="mt-3 space-y-3">
 						<div>
-							<label class="block text-sm text-surface-300 mb-1.5">Alt Text</label>
-							<input type="text" bind:value={uploadAltText} placeholder="Describe the image" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+							<label for="upload-file-alt" class="block text-sm text-surface-300 mb-1.5">Alt Text</label>
+							<input id="upload-file-alt" type="text" bind:value={uploadAltText} placeholder="Describe the image" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 						</div>
 						<div>
-							<label class="block text-sm text-surface-300 mb-1.5">Folder</label>
-							<input type="text" bind:value={uploadFolder} placeholder="/" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+							<label for="upload-file-folder" class="block text-sm text-surface-300 mb-1.5">Folder</label>
+							<input id="upload-file-folder" type="text" bind:value={uploadFolder} placeholder="/" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 						</div>
 					</div>
 					<button onclick={handleFileUploaded} disabled={saving} class="mt-4 w-full px-4 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white font-medium text-sm">
@@ -320,12 +320,12 @@
 			<!-- Add by URL -->
 			<div class="space-y-3">
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">URL</label>
-					<input type="url" bind:value={urlInput} placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="upload-url" class="block text-sm text-surface-300 mb-1.5">URL</label>
+					<input id="upload-url" type="url" bind:value={urlInput} placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Alt Text</label>
-					<input type="text" bind:value={uploadAltText} placeholder="Describe the image" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="upload-url-alt" class="block text-sm text-surface-300 mb-1.5">Alt Text</label>
+					<input id="upload-url-alt" type="text" bind:value={uploadAltText} placeholder="Describe the image" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 			</div>
 			<div class="flex gap-3 mt-4">
@@ -338,7 +338,7 @@
 
 <!-- Edit Modal -->
 {#if showEditModal && editingMedia}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showEditModal = false; }}>
+	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showEditModal = false; }} onclick={(e) => { if (e.target === e.currentTarget) showEditModal = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<div class="flex items-center justify-between mb-4">
 				<h3 class="text-lg font-semibold text-white">Edit Media</h3>
@@ -352,16 +352,16 @@
 
 			<div class="space-y-4">
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Alt Text</label>
-					<input type="text" bind:value={editForm.alt_text} placeholder="Describe the image for accessibility" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="edit-media-alt" class="block text-sm text-surface-300 mb-1.5">Alt Text</label>
+					<input id="edit-media-alt" type="text" bind:value={editForm.alt_text} placeholder="Describe the image for accessibility" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Title</label>
-					<input type="text" bind:value={editForm.title} placeholder="Optional title" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="edit-media-title" class="block text-sm text-surface-300 mb-1.5">Title</label>
+					<input id="edit-media-title" type="text" bind:value={editForm.title} placeholder="Optional title" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Description</label>
-					<textarea bind:value={editForm.description} rows="2" placeholder="Optional description" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm resize-none"></textarea>
+					<label for="edit-media-description" class="block text-sm text-surface-300 mb-1.5">Description</label>
+					<textarea id="edit-media-description" bind:value={editForm.description} rows="2" placeholder="Optional description" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm resize-none"></textarea>
 				</div>
 			</div>
 			<div class="flex gap-3 mt-6">

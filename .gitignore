@@ -1,20 +1,5 @@
+# Dependencies
 node_modules/
-.env
-.env.*
-.cache/
-.temp/
-.lighthouseci/
-reports/
-.DS_Store
-.vscode/
-.idea/
-dist/
-.svelte-kit/
-coverage/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*node_modules
 
 # Output
 .output
@@ -24,6 +9,7 @@ pnpm-debug.log*node_modules
 /.svelte-kit
 /build
 /dist
+coverage/
 
 # OS
 .DS_Store
@@ -38,3 +24,13 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Local tooling/cache
+.cache/
+.temp/
+.vscode/
+.idea/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

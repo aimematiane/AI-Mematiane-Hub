@@ -4,12 +4,20 @@
 
 	let { data } = $props();
 
-	let themeSettings = $state(data.themeSettings);
-	let categories = $state(data.categories);
-	let activeCategory = $state(categories[0] || 'colors');
+	let themeSettings = $state([]);
+	let categories = $state([]);
+	let activeCategory = $state('colors');
 	let saving = $state(false);
 	let message = $state({ type: '', text: '' });
 	let previewMode = $state(false);
+
+	$effect(() => {
+		themeSettings = data.themeSettings || [];
+		categories = data.categories || [];
+		if (!categories.includes(activeCategory)) {
+			activeCategory = categories[0] || 'colors';
+		}
+	});
 
 	const categoryLabels = {
 		colors: 'Colors',
@@ -181,11 +189,12 @@
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						{#each getSettingsByCategory(activeCategory) as setting}
 							<div class="p-4 rounded-xl bg-surface-800 border border-surface-700">
-								<label class="block text-sm font-medium text-surface-300 mb-3">
+								<label for={`theme-color-${setting.id}`} class="block text-sm font-medium text-surface-300 mb-3">
 									{setting.display_name}
 								</label>
 								<div class="flex items-center gap-3">
 									<input
+										id={`theme-color-${setting.id}`}
 										type="color"
 										value={setting.value || '#000000'}
 										oninput={(e) => handleInput(setting.id, e.target.value)}
@@ -209,12 +218,13 @@
 					<div class="space-y-6">
 						{#each getSettingsByCategory(activeCategory) as setting}
 							<div>
-								<label class="block text-sm font-medium text-surface-300 mb-2">
+								<label for={`theme-setting-${setting.id}`} class="block text-sm font-medium text-surface-300 mb-2">
 									{setting.display_name}
 								</label>
 
 								{#if setting.key.includes('font') && !setting.key.includes('weight')}
 									<input
+										id={`theme-setting-${setting.id}`}
 										type="text"
 										value={setting.value || ''}
 										oninput={(e) => handleInput(setting.id, e.target.value)}
@@ -223,6 +233,7 @@
 									/>
 								{:else if setting.key.includes('weight')}
 									<select
+										id={`theme-setting-${setting.id}`}
 										value={setting.value || '400'}
 										onchange={(e) => handleInput(setting.id, e.target.value)}
 										class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 text-sm"
@@ -235,6 +246,7 @@
 									</select>
 								{:else if setting.key.includes('radius')}
 									<input
+										id={`theme-setting-${setting.id}`}
 										type="text"
 										value={setting.value || ''}
 										oninput={(e) => handleInput(setting.id, e.target.value)}
@@ -243,6 +255,7 @@
 									/>
 								{:else}
 									<textarea
+										id={`theme-setting-${setting.id}`}
 										value={setting.value || ''}
 										oninput={(e) => handleInput(setting.id, e.target.value)}
 										rows="2"

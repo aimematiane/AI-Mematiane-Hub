@@ -15,7 +15,7 @@
 	let sidebarOpen = $state(true);
 	let mobileSidebarOpen = $state(false);
 
-	const navItems = [
+	const navItems = $derived([
 		{ href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
 		{ href: '/admin/posts', label: 'Blog Posts', icon: BookOpen, count: data.counts.posts },
 		{ href: '/admin/news', label: 'News', icon: Newspaper, count: data.counts.news },
@@ -36,7 +36,7 @@
 		{ spacer: true },
 		{ section: 'Logs' },
 		{ href: '/admin/audit', label: 'Audit Logs', icon: FolderOpen }
-	];
+	]);
 
 	function isActive(href, exact = false) {
 		if (exact) {

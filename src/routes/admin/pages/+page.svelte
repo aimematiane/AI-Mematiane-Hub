@@ -5,7 +5,7 @@
 
 	let { data } = $props();
 
-	let pages = $state(data.pages);
+	let pages = $state([]);
 	let showCreateModal = $state(false);
 	let newPage = $state({ title: '', slug: '' });
 	let creating = $state(false);
@@ -157,17 +157,17 @@
 
 <!-- Create Modal -->
 {#if showCreateModal}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showCreateModal = false; }}>
+	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showCreateModal = false; }} onclick={(e) => { if (e.target === e.currentTarget) showCreateModal = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<h3 class="text-lg font-semibold text-white mb-4">Create New Page</h3>
 			<div class="space-y-4">
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Page Title</label>
-					<input type="text" bind:value={newPage.title} oninput={generateSlug} placeholder="e.g. About Us" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="new-page-title" class="block text-sm text-surface-300 mb-1.5">Page Title</label>
+					<input id="new-page-title" type="text" bind:value={newPage.title} oninput={generateSlug} placeholder="e.g. About Us" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Slug</label>
-					<input type="text" bind:value={newPage.slug} placeholder="about-us" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm font-mono" />
+					<label for="new-page-slug" class="block text-sm text-surface-300 mb-1.5">Slug</label>
+					<input id="new-page-slug" type="text" bind:value={newPage.slug} placeholder="about-us" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm font-mono" />
 				</div>
 			</div>
 			<div class="flex gap-3 mt-6">

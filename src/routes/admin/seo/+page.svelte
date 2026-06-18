@@ -7,12 +7,12 @@
 	let activeTab = $state('posts');
 	let searchQuery = $state('');
 
-	const tabs = [
+	const tabs = $derived([
 		{ id: 'posts', label: 'Blog Posts', data: data.content.posts },
 		{ id: 'news', label: 'News', data: data.content.news },
 		{ id: 'tools', label: 'AI Tools', data: data.content.tools },
 		{ id: 'pages', label: 'Pages', data: data.content.pages }
-	];
+	]);
 
 	const currentTab = $derived(tabs.find(t => t.id === activeTab));
 

@@ -5,15 +5,18 @@
 
 	let { data, form } = $props();
 
-	let settings = $state(data.settings);
-	let categories = $state(data.categories);
-	let activeCategory = $state(categories[0] || 'general');
+	let settings = $state([]);
+	let categories = $state([]);
+	let activeCategory = $state('general');
 	let saving = $state(false);
 	let message = $state({ type: '', text: '' });
 
 	$effect(() => {
-		settings = data.settings;
-		categories = data.categories;
+		settings = data.settings || [];
+		categories = (data.categories || []).filter(c => c !== 'social');
+		if (!categories.includes(activeCategory)) {
+			activeCategory = categories[0] || 'general';
+		}
 	});
 
 	const categoryLabels = {
@@ -24,13 +27,6 @@
 		analytics: 'Analytics',
 		custom: 'Custom Code'
 	};
-
-	// Filter out social media category as it's managed in Footer Settings
-	$effect(() => {
-		if (categories.includes('social')) {
-			categories = categories.filter(c => c !== 'social');
-		}
-	});
 
 	function getSettingsByCategory(cat) {
 		// Filter out social media settings as they're managed in Footer Settings
@@ -135,7 +131,7 @@
 				<div class="space-y-6">
 					{#each getSettingsByCategory(activeCategory) as setting}
 						<div>
-							<label class="block text-sm font-medium text-surface-300 mb-2">
+							<label for={`site-setting-${setting.id}`} class="block text-sm font-medium text-surface-300 mb-2">
 								{setting.display_name}
 							</label>
 							{#if setting.description}
@@ -144,6 +140,7 @@
 
 							{#if setting.input_type === 'text' || setting.input_type === 'url' || setting.input_type === 'email'}
 								<input
+									id={`site-setting-${setting.id}`}
 									type={setting.input_type === 'email' ? 'email' : setting.input_type === 'url' ? 'url' : 'text'}
 									value={setting.value || ''}
 									oninput={(e) => handleInput(setting.id, e.target.value)}
@@ -152,6 +149,7 @@
 								/>
 							{:else if setting.input_type === 'textarea' || setting.input_type === 'rich_text'}
 								<textarea
+									id={`site-setting-${setting.id}`}
 									value={setting.value || ''}
 									oninput={(e) => handleInput(setting.id, e.target.value)}
 									rows="4"
@@ -168,6 +166,7 @@
 										</div>
 									{/if}
 									<input
+										id={`site-setting-${setting.id}`}
 										type="url"
 										value={setting.value || ''}
 										oninput={(e) => handleInput(setting.id, e.target.value)}
@@ -178,6 +177,7 @@
 							{:else if setting.input_type === 'boolean'}
 								<label class="flex items-center gap-3 cursor-pointer">
 									<input
+										id={`site-setting-${setting.id}`}
 										type="checkbox"
 										checked={setting.value === 'true'}
 										onchange={(e) => handleInput(setting.id, e.target.checked ? 'true' : 'false')}
@@ -187,6 +187,7 @@
 								</label>
 							{:else if setting.input_type === 'json'}
 								<textarea
+									id={`site-setting-${setting.id}`}
 									value={JSON.stringify(setting.value_json || {}, null, 2)}
 									oninput={(e) => {
 										try {
@@ -200,6 +201,7 @@
 								></textarea>
 							{:else}
 								<input
+									id={`site-setting-${setting.id}`}
 									type="text"
 									value={setting.value || ''}
 									oninput={(e) => handleInput(setting.id, e.target.value)}
