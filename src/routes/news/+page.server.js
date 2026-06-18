@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { applyNewsQueryFilters } from '$lib/utils/pagination.js';
 
 export async function load({ url, cookies, setHeaders }) {
 	setHeaders({
@@ -12,11 +13,9 @@ export async function load({ url, cookies, setHeaders }) {
 	let query = client
 		.from('news')
 		.select('id, title, slug, excerpt, cover_image_url, category, tags, reading_time_min, published_at', { count: 'exact' })
-		.eq('is_published', true)
-		.order('published_at', { ascending: false })
 		.range((page - 1) * perPage, page * perPage - 1);
 
-	if (category) query = query.eq('category', category);
+	query = applyNewsQueryFilters(query, { category });
 
 	const { data: newsItems, count, error } = await query;
 

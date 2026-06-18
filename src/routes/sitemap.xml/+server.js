@@ -1,13 +1,20 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { SITE_URL } from '$lib/config/site.js';
 
 export async function GET(event) {
 	const client = await getSupabaseServerClient(event);
-	const siteUrl = 'https://ai-mematiane.com';
+	const siteUrl = SITE_URL;
 
-	const [{ data: posts, count: postCount }, { data: news, count: newsCount }, { data: tools }] = await Promise.all([
+	const [
+		{ data: posts, count: postCount },
+		{ data: news, count: newsCount },
+		{ data: tools },
+		{ data: pages }
+	] = await Promise.all([
 		client.from('posts').select('slug, updated_at', { count: 'exact' }).eq('is_published', true),
 		client.from('news').select('slug, updated_at', { count: 'exact' }).eq('is_published', true),
-		client.from('ai_tools').select('slug, updated_at')
+		client.from('ai_tools').select('slug, updated_at'),
+		client.from('pages').select('slug, updated_at').eq('is_published', true).is('deleted_at', null)
 	]);
 
 	const staticPages = ['/', '/ai-tools', '/blog', '/news'];
@@ -31,7 +38,8 @@ export async function GET(event) {
 
 		...(posts || []).map(p => ({ loc: `${siteUrl}/blog/${p.slug}`, lastmod: p.updated_at, priority: '0.8' })),
 		...(news || []).map(n => ({ loc: `${siteUrl}/news/${n.slug}`, lastmod: n.updated_at, priority: '0.8' })),
-		...(tools || []).map(t => ({ loc: `${siteUrl}/ai-tools/${t.slug}`, lastmod: t.updated_at, priority: '0.7' }))
+		...(tools || []).map(t => ({ loc: `${siteUrl}/ai-tools/${t.slug}`, lastmod: t.updated_at, priority: '0.7' })),
+		...(pages || []).map(p => ({ loc: `${siteUrl}/pages/${p.slug}`, lastmod: p.updated_at, priority: '0.7' }))
 	];
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>

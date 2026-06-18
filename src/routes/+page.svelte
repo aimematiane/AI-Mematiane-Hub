@@ -1,6 +1,7 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { Brain, Sparkles, Newspaper, BookOpen, ArrowRight } from '@lucide/svelte';
+	import { SITE_URL } from '$lib/config/site.js';
 </script>
 
 <SeoHead
@@ -16,12 +17,12 @@
 			"@graph": [
 				{
 					"@type": "Organization",
-					"@id": "https://ai-mematiane.com/#organization",
+					"@id": `${SITE_URL}/#organization`,
 					"name": "AI Mematiane",
-					"url": "https://ai-mematiane.com",
+					"url": SITE_URL,
 					"logo": {
 						"@type": "ImageObject",
-						"url": "https://ai-mematiane.com/logo.png"
+						"url": `${SITE_URL}/logo.png`
 					},
 					"sameAs": [
 						"https://x.com/AIMematiane",
@@ -31,17 +32,17 @@
 				},
 				{
 					"@type": "WebSite",
-					"@id": "https://ai-mematiane.com/#website",
-					"url": "https://ai-mematiane.com",
+					"@id": `${SITE_URL}/#website`,
+					"url": SITE_URL,
 					"name": "AI Mematiane",
 					"publisher": {
-						"@id": "https://ai-mematiane.com/#organization"
+						"@id": `${SITE_URL}/#organization`
 					},
 					"potentialAction": {
 						"@type": "SearchAction",
 						"target": {
 							"@type": "EntryPoint",
-							"urlTemplate": "https://ai-mematiane.com/ai-tools?q={search_term_string}"
+							"urlTemplate": `${SITE_URL}/ai-tools?q={search_term_string}`
 						},
 						"query-input": "required name=search_term_string"
 					}

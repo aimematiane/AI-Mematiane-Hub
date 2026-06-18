@@ -1,6 +1,7 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { Calendar, ChevronDown } from '@lucide/svelte';
+	import { resolveMetaTitle, resolveMetaDescription } from '$lib/config/site.js';
 
 	let { data } = $props();
 	let page = $derived(data.page);
@@ -13,8 +14,9 @@
 </script>
 
 <SeoHead
-	title={page.meta_title || page.title}
-	description={page.meta_description}
+	title={resolveMetaTitle(page.meta_title, page.title)}
+	description={resolveMetaDescription(page.meta_description, page.title)}
+	url={`/pages/${page.slug}`}
 />
 
 <div class="min-h-screen">
@@ -90,16 +92,21 @@
 							<div class="bg-surface-900 border border-surface-800 rounded-xl overflow-hidden transition-colors
 								{openFaq[item.id] ? 'border-accent-500/30' : 'hover:border-surface-700'}">
 								<button
+									type="button"
+									id="faq-trigger-{item.id}"
+									aria-expanded={openFaq[item.id] ? 'true' : 'false'}
+									aria-controls="faq-panel-{item.id}"
 									onclick={() => toggleFaq(item.id)}
 									class="w-full flex items-center justify-between px-5 py-4 text-left"
 								>
 									<span class="text-sm font-medium text-white pr-4">{item.question}</span>
 									<ChevronDown size={18}
+										aria-hidden="true"
 										class="text-surface-400 transition-transform flex-shrink-0
 											{openFaq[item.id] ? 'rotate-180 text-accent-400' : ''}" />
 								</button>
 								{#if openFaq[item.id]}
-									<div class="px-5 pb-4 text-sm text-surface-400 leading-relaxed border-t border-surface-800 pt-3">
+									<div id="faq-panel-{item.id}" role="region" aria-labelledby="faq-trigger-{item.id}" class="px-5 pb-4 text-sm text-surface-400 leading-relaxed border-t border-surface-800 pt-3">
 										{item.answer}
 									</div>
 								{/if}

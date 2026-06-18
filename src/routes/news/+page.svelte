@@ -5,6 +5,7 @@
 	import { Clock, Loader2 } from '@lucide/svelte';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
+	import { applyNewsQueryFilters } from '$lib/utils/pagination.js';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
@@ -25,12 +26,9 @@
 		if (loading || !hasMore) return;
 		loading = true;
 		const nextPage = page + 1;
-		const { data: newItems, error } = await client
-			.from('news')
-			.select('*')
-			.eq('is_published', true)
-			.order('published_at', { ascending: false })
-			.range((nextPage - 1) * data.perPage, nextPage * data.perPage - 1);
+		let query = client.from('news').select('*');
+		query = applyNewsQueryFilters(query, { category: data.category });
+		const { data: newItems, error } = await query.range((nextPage - 1) * data.perPage, nextPage * data.perPage - 1);
 
 		if (!error && newItems && newItems.length > 0) {
 			newsItems.push(...newItems);

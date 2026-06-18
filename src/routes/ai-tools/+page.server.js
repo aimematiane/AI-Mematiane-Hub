@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { applyAiToolsQueryFilters } from '$lib/utils/pagination.js';
 
 export async function load({ url, cookies, setHeaders }) {
 	setHeaders({
@@ -17,30 +18,7 @@ export async function load({ url, cookies, setHeaders }) {
 		.select('*', { count: 'exact' })
 		.range((page - 1) * perPage, page * perPage - 1);
 
-	// Apply sort
-	switch (sort) {
-		case 'newest':
-			query = query.order('created_at', { ascending: false });
-			break;
-		case 'oldest':
-			query = query.order('created_at', { ascending: true });
-			break;
-		case 'name_asc':
-			query = query.order('name', { ascending: true });
-			break;
-		case 'name_desc':
-			query = query.order('name', { ascending: false });
-			break;
-		case 'featured':
-		default:
-			query = query.order('is_featured', { ascending: false }).order('created_at', { ascending: false });
-			break;
-	}
-
-	// Apply filters
-	if (category) query = query.eq('category', category);
-	if (pricing) query = query.eq('pricing', pricing);
-	if (search) query = query.ilike('name', `%${search}%`);
+	query = applyAiToolsQueryFilters(query, { category, search, pricing, sort });
 
 	const { data: tools, count, error } = await query;
 

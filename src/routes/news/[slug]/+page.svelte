@@ -9,6 +9,7 @@
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
+	import { resolveMetaTitle, resolveMetaDescription } from '$lib/config/site.js';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
@@ -67,8 +68,8 @@
 
 {#if item}
 	<SeoHead
-		title={item.title}
-		description={item.excerpt}
+		title={resolveMetaTitle(item.meta_title, item.title)}
+		description={resolveMetaDescription(item.meta_description, item.excerpt)}
 		image={item.cover_image_url || ''}
 		url={`/news/${item.slug}`}
 		type="article"

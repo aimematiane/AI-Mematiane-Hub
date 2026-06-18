@@ -9,6 +9,7 @@
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
+	import { absoluteUrl, resolveMetaTitle, resolveMetaDescription } from '$lib/config/site.js';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
@@ -81,9 +82,9 @@
 		"@context": "https://schema.org",
 		"@type": "SoftwareApplication",
 		"name": tool.name,
-		"description": tool.description,
+		"description": resolveMetaDescription(tool.meta_description, tool.description),
 		"applicationCategory": tool.category,
-		"url": `https://ai-mematiane.com/ai-tools/${tool.slug}`,
+		"url": absoluteUrl(`/ai-tools/${tool.slug}`),
 		"image": tool.image_url || "",
 		"offers": {
 			"@type": "Offer",
@@ -96,8 +97,8 @@
 
 {#if tool}
 	<SeoHead
-		title={tool.name}
-		description={tool.description}
+		title={resolveMetaTitle(tool.meta_title, tool.name)}
+		description={resolveMetaDescription(tool.meta_description, tool.description)}
 		image={tool.image_url || ''}
 		url={`/ai-tools/${tool.slug}`}
 		type="website"

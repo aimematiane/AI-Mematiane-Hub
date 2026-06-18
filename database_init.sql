@@ -607,7 +607,7 @@ CREATE POLICY "delete_media_files" ON public.media_files FOR DELETE TO authentic
 
 -- Audit Logs
 CREATE POLICY "select_audit_logs" ON public.audit_logs FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
-CREATE POLICY "insert_audit_logs" ON public.audit_logs FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "insert_audit_logs" ON public.audit_logs FOR INSERT TO authenticated WITH CHECK (public.is_admin());
 
 -- =====================================================
 -- SECTION 7: STORAGE BUCKET
@@ -619,9 +619,9 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Storage policies for general uploads
 CREATE POLICY "Allow public select from uploads" ON storage.objects FOR SELECT TO public USING (bucket_id = 'uploads');
-CREATE POLICY "Allow authenticated insert to uploads" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'uploads');
-CREATE POLICY "Allow authenticated update to uploads" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'uploads') WITH CHECK (bucket_id = 'uploads');
-CREATE POLICY "Allow authenticated delete from uploads" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'uploads');
+CREATE POLICY "Allow staff insert to uploads" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'uploads' AND EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role <> 'user'));
+CREATE POLICY "Allow staff update to uploads" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'uploads' AND EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role <> 'user')) WITH CHECK (bucket_id = 'uploads' AND EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role <> 'user'));
+CREATE POLICY "Allow staff delete from uploads" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'uploads' AND EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role <> 'user'));
 
 -- Profile images folder policies
 CREATE POLICY "Users can upload profile images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'uploads' AND (storage.foldername(name))[1] = 'profile-images' AND (storage.foldername(name))[2] = auth.uid()::text);

@@ -9,6 +9,7 @@
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
+	import { resolveMetaTitle, resolveMetaDescription } from '$lib/config/site.js';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
@@ -75,8 +76,8 @@
 
 {#if post}
 	<SeoHead
-		title={post.title}
-		description={post.excerpt}
+		title={resolveMetaTitle(post.meta_title, post.title)}
+		description={resolveMetaDescription(post.meta_description, post.excerpt)}
 		image={post.cover_image_url || ''}
 		url={`/blog/${post.slug}`}
 		type="article"

@@ -1,8 +1,8 @@
 <script>
 	import { page } from '$app/stores';
-	let { items = [] } = $props();
+	import { absoluteUrl } from '$lib/config/site.js';
 
-	const siteUrl = import.meta.env.VITE_SITE_URL || 'https://ai-mematiane.com';
+	let { items = [] } = $props();
 
 	const schema = $derived(JSON.stringify({
 		'@context': 'https://schema.org',
@@ -11,7 +11,7 @@
 			'@type': 'ListItem',
 			position: i + 1,
 			name: item.label,
-			item: `${siteUrl}${item.href || $page.url.pathname}`
+			item: absoluteUrl(item.href || $page.url.pathname)
 		}))
 	}));
 </script>

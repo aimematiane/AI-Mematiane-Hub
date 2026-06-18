@@ -27,7 +27,7 @@
 </a>
 
 <div class="min-h-screen flex flex-col">
-  <Nav navPages={data.navPages} />
+  <Nav navPages={data.navPages} user={data.user} profile={data.profile} />
   <main id="main-content" class="flex-1">
     {@render children()}
   </main>

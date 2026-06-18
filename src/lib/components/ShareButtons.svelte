@@ -1,9 +1,8 @@
 <script>
 	import { Share2, Send } from '@lucide/svelte';
+	import { absoluteUrl } from '$lib/config/site.js';
 
 	let { title, url = '', description = '' } = $props();
-
-	const siteUrl = import.meta.env.VITE_SITE_URL || '';
 
 	let supportsWebShare = $state(false);
 
@@ -20,7 +19,7 @@
 	}
 
 	function getShareUrl() {
-		return url.startsWith('http') ? url : `${siteUrl}${url}`;
+		return absoluteUrl(url);
 	}
 
 	function getFallbackLinks() {

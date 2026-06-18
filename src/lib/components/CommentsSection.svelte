@@ -16,6 +16,7 @@
 	let content = $state('');
 	let rating = $state(null); // Used if itemType === 'ai_tool'
 	let ratingHover = $state(0);
+	let ratingError = $state('');
 
 	$effect(() => {
 		if (itemId && itemType) {
@@ -48,8 +49,9 @@
 		e.preventDefault();
 		if (!user) return goto('/auth/login');
 		if (!content.trim()) return;
+		ratingError = '';
 		if (itemType === 'ai_tool' && !rating) {
-			alert('Please select a star rating.');
+			ratingError = 'Please select a star rating before posting.';
 			return;
 		}
 
@@ -153,6 +155,9 @@
 									<span class="text-xs text-amber-400 font-medium ml-2">{rating} of 5 stars</span>
 								{/if}
 							</div>
+							{#if ratingError}
+								<p class="mt-2 text-sm text-red-400" role="alert">{ratingError}</p>
+							{/if}
 						</div>
 					{/if}
 

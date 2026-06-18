@@ -4,6 +4,7 @@
 	import { Loader2 } from '@lucide/svelte';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
+	import { applyAiToolsQueryFilters } from '$lib/utils/pagination.js';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
@@ -24,12 +25,14 @@
 		if (loading || !hasMore) return;
 		loading = true;
 		const nextPage = page + 1;
-		const { data: newTools, error } = await client
-			.from('ai_tools')
-			.select('*')
-			.order('is_featured', { ascending: false })
-			.order('created_at', { ascending: false })
-			.range((nextPage - 1) * data.perPage, nextPage * data.perPage - 1);
+		let query = client.from('ai_tools').select('*');
+		query = applyAiToolsQueryFilters(query, {
+			category: data.category,
+			search: data.search,
+			pricing: data.pricing,
+			sort: data.sort
+		});
+		const { data: newTools, error } = await query.range((nextPage - 1) * data.perPage, nextPage * data.perPage - 1);
 
 		if (!error && newTools && newTools.length > 0) {
 			tools.push(...newTools);

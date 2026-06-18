@@ -1,14 +1,25 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
 
-export async function load({ cookies, url }) {
+export async function load({ cookies, url, depends }) {
+	depends('app:layout');
 	const client = await getSupabaseServerClient({ cookies, url });
 
 	let user = null;
+	let profile = null;
 	try {
 		const { data, error } = await client.auth.getUser();
 		if (!error) user = data.user;
-	} catch (e) {
+	} catch {
 		// Gracefully handle invalid/expired refresh tokens
+	}
+
+	if (user) {
+		const { data: profileData } = await client
+			.from('profiles')
+			.select('role, display_name')
+			.eq('id', user.id)
+			.single();
+		profile = profileData;
 	}
 
 	// Fetch published pages that are set to show in navbar
@@ -52,6 +63,7 @@ export async function load({ cookies, url }) {
 
 	return {
 		user,
+		profile,
 		navPages: navPages || [],
 		footer: {
 			settings: footerSettingsMap,

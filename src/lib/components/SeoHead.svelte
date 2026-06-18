@@ -1,4 +1,6 @@
 <script>
+	import { SITE_URL, absoluteUrl } from '$lib/config/site.js';
+
 	let {
 		title = '',
 		description = '',
@@ -12,23 +14,25 @@
 		preloadImage = '',
 		prevUrl = '',
 		nextUrl = '',
-		schemaType = ''
+		schemaType = '',
+		customSchema = null,
+		imageWidth = 1200,
+		imageHeight = 675
 	} = $props();
 
-	const baseUrl = 'https://ai-mematiane.com';
-
-	const resolvedUrl = $derived(url?.startsWith('http') ? url : `${baseUrl}${url}`);
-	const resolvedImage = $derived(image ? (image.startsWith('http') ? image : `${baseUrl}${image}`) : '');
+	const resolvedUrl = $derived(absoluteUrl(url));
+	const resolvedImage = $derived(image ? absoluteUrl(image) : '');
 	const metaTitle = $derived(title || 'AI Mematiane');
 	const metaDescription = $derived(description || 'AI Mematiane is a global directory of AI tools, news and analysis.');
-	const canonicalUrl = $derived(resolvedUrl || baseUrl);
-	const resolvedPrevUrl = $derived(prevUrl ? (prevUrl.startsWith('http') ? prevUrl : `${baseUrl}${prevUrl}`) : '');
-	const resolvedNextUrl = $derived(nextUrl ? (nextUrl.startsWith('http') ? nextUrl : `${baseUrl}${nextUrl}`) : '');
-	const structuredData = $derived(
-		schemaType === 'Article'
+	const canonicalUrl = $derived(resolvedUrl || SITE_URL);
+	const resolvedPrevUrl = $derived(prevUrl ? absoluteUrl(prevUrl) : '');
+	const resolvedNextUrl = $derived(nextUrl ? absoluteUrl(nextUrl) : '');
+
+	const articleSchema = $derived(
+		schemaType === 'Article' || schemaType === 'NewsArticle'
 			? {
 					'@context': 'https://schema.org',
-					'@type': 'Article',
+					'@type': schemaType === 'NewsArticle' ? 'NewsArticle' : 'Article',
 					headline: metaTitle,
 					description: metaDescription,
 					url: canonicalUrl,
@@ -40,11 +44,19 @@
 						name: 'AI Mematiane',
 						logo: {
 							'@type': 'ImageObject',
-							url: `${baseUrl}/logo.png`
+							url: `${SITE_URL}/logo.png`
 						}
 					}
 				}
 			: null
+	);
+
+	const structuredData = $derived(
+		customSchema
+			? typeof customSchema === 'string'
+				? JSON.parse(customSchema)
+				: customSchema
+			: articleSchema
 	);
 </script>
 
@@ -61,6 +73,8 @@
 	{#if resolvedImage}
 		<meta property="og:image" content={resolvedImage} />
 		<meta property="og:image:secure_url" content={resolvedImage} />
+		<meta property="og:image:width" content={String(imageWidth)} />
+		<meta property="og:image:height" content={String(imageHeight)} />
 		<meta property="twitter:image" content={resolvedImage} />
 	{/if}
 	{#if type === 'article' && publishedTime}
@@ -79,7 +93,7 @@
 	<meta property="twitter:description" content={metaDescription} />
 	<link rel="canonical" href={canonicalUrl} />
 	<link rel="alternate" href={canonicalUrl} hreflang="en" />
-	<link rel="alternate" href="https://ai-mematiane.com/" hreflang="x-default" />
+	<link rel="alternate" href={canonicalUrl} hreflang="x-default" />
 	{#if resolvedPrevUrl}
 		<link rel="prev" href={resolvedPrevUrl} />
 	{/if}
@@ -87,7 +101,7 @@
 		<link rel="next" href={resolvedNextUrl} />
 	{/if}
 	{#if preloadImage}
-		<link rel="preload" as="image" href={preloadImage} />
+		<link rel="preload" as="image" href={absoluteUrl(preloadImage)} />
 	{/if}
 	{#if noindex}
 		<meta name="robots" content="noindex,nofollow" />

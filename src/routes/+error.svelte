@@ -21,7 +21,7 @@
 
 	<div class="relative max-w-md w-full text-center z-10">
 		<!-- Error Code Badge -->
-		<div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-surface-900/80 border border-surface-800 text-accent-400 text-4xl font-extrabold font-display shadow-2xl mb-8 animate-bounce">
+		<div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-surface-900/80 border border-surface-800 text-accent-400 text-4xl font-extrabold font-display shadow-2xl mb-8">
 			{status}
 		</div>
 

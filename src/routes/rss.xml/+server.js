@@ -1,8 +1,9 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { SITE_URL } from '$lib/config/site.js';
 
 export async function GET(event) {
 	const client = await getSupabaseServerClient(event);
-	const siteUrl = 'https://ai-mematiane.com';
+	const siteUrl = SITE_URL;
 
 	const [{ data: posts }, { data: news }] = await Promise.all([
 		client.from('posts').select('title, slug, excerpt, published_at').eq('is_published', true).order('published_at', { ascending: false }).limit(20),

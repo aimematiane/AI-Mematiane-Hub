@@ -11,12 +11,18 @@
 	let uploadError = $state('');
 	const inputId = 'file-upload-' + Math.random().toString(36).substring(2, 9);
 
+	const MAX_FILE_BYTES = 10 * 1024 * 1024; // matches Supabase bucket limit
+
 	async function handleUpload(fileList) {
 		if (!fileList || fileList.length === 0) return;
 		uploading = true;
 		uploadError = '';
 
 		for (const file of fileList) {
+			if (file.size > MAX_FILE_BYTES) {
+				uploadError = `"${file.name}" exceeds the 10 MB limit.`;
+				break;
+			}
 			const ext = file.name.split('.').pop();
 			const timestamp = Date.now();
 			const randomStr = Math.random().toString(36).substring(2, 8);

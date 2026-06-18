@@ -1,3 +1,5 @@
+import { SITE_URL } from '$lib/config/site.js';
+
 const securityHeaders = {
 	'X-Content-Type-Options': 'nosniff',
 	'X-Frame-Options': 'DENY',
@@ -7,21 +9,41 @@ const securityHeaders = {
 	'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload'
 };
 
-const cspDirectives = [
-	"default-src 'self'",
-	"script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
-	"style-src 'self' 'unsafe-inline'",
-	"font-src 'self'",
-	"img-src 'self' data: blob: https://aocnsmmsddvnmrbnneds.supabase.co",
-	"connect-src 'self' https://aocnsmmsddvnmrbnneds.supabase.co https://*.supabase.co https://vitals.vercel-insights.com https://va.vercel-scripts.com",
-	"frame-ancestors 'none'",
-	"base-uri 'self'",
-	"form-action 'self'",
-	"object-src 'none'",
-	"upgrade-insecure-requests"
-];
+function buildCspHeader() {
+	const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+	let supabaseHost = '';
+	try {
+		if (supabaseUrl) supabaseHost = new URL(supabaseUrl).host;
+	} catch {
+		// ignore invalid URL
+	}
 
-const cspHeader = cspDirectives.join('; ');
+	const imgSrc = ["'self'", 'data:', 'blob:'];
+	if (supabaseHost) imgSrc.push(`https://${supabaseHost}`);
+
+	const connectSrc = ["'self'", 'https://vitals.vercel-insights.com', 'https://va.vercel-scripts.com'];
+	if (supabaseHost) {
+		connectSrc.push(`https://${supabaseHost}`, 'https://*.supabase.co');
+	}
+
+	const directives = [
+		"default-src 'self'",
+		"script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+		"style-src 'self' 'unsafe-inline'",
+		"font-src 'self'",
+		`img-src ${imgSrc.join(' ')}`,
+		`connect-src ${connectSrc.join(' ')}`,
+		"frame-ancestors 'none'",
+		"base-uri 'self'",
+		"form-action 'self'",
+		"object-src 'none'",
+		"upgrade-insecure-requests"
+	];
+
+	return directives.join('; ');
+}
+
+const cspHeader = buildCspHeader();
 
 export function handle({ event, resolve }) {
 	return resolve(event).then((response) => {
