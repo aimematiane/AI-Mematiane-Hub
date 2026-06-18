@@ -1,23 +1,7 @@
-import { getSupabaseServerClient } from '$lib/supabase/server.js';
-import { redirect } from '@sveltejs/kit';
+import { requireAdmin } from '$lib/server/auth.js';
 
-export async function load({ cookies, url }) {
-	const client = await getSupabaseServerClient({ cookies, url });
-	const { data: { user } } = await client.auth.getUser();
-
-	if (!user) {
-		throw redirect(302, '/auth/login');
-	}
-
-	const { data: profile } = await client
-		.from('profiles')
-		.select('role')
-		.eq('id', user.id)
-		.single();
-
-	if (!profile || profile.role === 'user') {
-		throw redirect(302, '/profile');
-	}
+export async function load(event) {
+	const { client } = await requireAdmin(event, 'role');
 
 	const { data: menus } = await client
 		.from('navigation_menus')
@@ -36,8 +20,9 @@ export async function load({ cookies, url }) {
 }
 
 export const actions = {
-	async createMenu({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async createMenu(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const name = formData.get('name');
 		const location = formData.get('location');
@@ -46,8 +31,9 @@ export const actions = {
 		return { success: true };
 	},
 
-	async updateMenu({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async updateMenu(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		const name = formData.get('name');
@@ -58,16 +44,18 @@ export const actions = {
 		return { success: true };
 	},
 
-	async deleteMenu({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async deleteMenu(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		await client.from('navigation_menus').delete().eq('id', id);
 		return { success: true };
 	},
 
-	async createItem({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async createItem(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const menu_id = formData.get('menu_id');
 		const parent_id = formData.get('parent_id') || null;
@@ -83,8 +71,9 @@ export const actions = {
 		return { success: true };
 	},
 
-	async updateItem({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async updateItem(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		const label = formData.get('label');
@@ -100,16 +89,18 @@ export const actions = {
 		return { success: true };
 	},
 
-	async deleteItem({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async deleteItem(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		await client.from('navigation_items').delete().eq('id', id);
 		return { success: true };
 	},
 
-	async reorderItems({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async reorderItems(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const items = JSON.parse(formData.get('items'));
 

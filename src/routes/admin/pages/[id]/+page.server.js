@@ -1,19 +1,9 @@
-import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { requireAdmin } from '$lib/server/auth.js';
 import { redirect, error } from '@sveltejs/kit';
 
-export async function load({ cookies, url, params }) {
-	const client = await getSupabaseServerClient({ cookies, url });
-	const { data: { user } } = await client.auth.getUser();
-
-	if (!user) throw redirect(302, '/auth/login');
-
-	const { data: profile } = await client
-		.from('profiles')
-		.select('role')
-		.eq('id', user.id)
-		.single();
-
-	if (!profile || profile.role === 'user') throw redirect(302, '/profile');
+export async function load(event) {
+	const { params } = event;
+	const { client } = await requireAdmin(event, 'role');
 
 	const { data: page, error: pageError } = await client
 		.from('pages')
@@ -28,8 +18,9 @@ export async function load({ cookies, url, params }) {
 }
 
 export const actions = {
-	async save({ request, cookies, url, params }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async save(event) {
+		const { request, params } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 
 		const title = formData.get('title');
@@ -56,24 +47,27 @@ export const actions = {
 		return { success: true };
 	},
 
-	async publish({ request, cookies, url, params }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async publish(event) {
+		const { params } = event;
+		const { client } = await requireAdmin(event, 'role');
 		await client.from('pages')
 			.update({ is_published: true, published_at: new Date().toISOString() })
 			.eq('id', params.id);
 		return { success: true };
 	},
 
-	async unpublish({ request, cookies, url, params }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async unpublish(event) {
+		const { params } = event;
+		const { client } = await requireAdmin(event, 'role');
 		await client.from('pages')
 			.update({ is_published: false })
 			.eq('id', params.id);
 		return { success: true };
 	},
 
-	async delete({ request, cookies, url, params }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async delete(event) {
+		const { params } = event;
+		const { client } = await requireAdmin(event, 'role');
 		await client.from('pages')
 			.update({ deleted_at: new Date().toISOString() })
 			.eq('id', params.id);

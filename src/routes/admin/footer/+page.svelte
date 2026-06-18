@@ -6,9 +6,9 @@
 
 	let { data } = $props();
 
-	let settings = $state(data.settings);
-	let columns = $state(data.columns);
-	let socialLinks = $state(data.socialLinks);
+	let settings = $state([]);
+	let columns = $state([]);
+	let socialLinks = $state([]);
 	let saving = $state(false);
 
 	// Modal states
@@ -158,14 +158,14 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			{#each settings as setting}
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">{setting.display_name}</label>
+					<label for={`footer-setting-${setting.id}`} class="block text-sm text-surface-300 mb-1.5">{setting.display_name}</label>
 					{#if setting.key.includes('enabled')}
 						<label class="flex items-center gap-2 cursor-pointer">
-							<input type="checkbox" checked={setting.value === 'true'} onchange={(e) => handleSettingInput(setting.id, e.target.checked ? 'true' : 'false')} class="rounded bg-surface-800 border-surface-600 text-accent-500" />
+							<input id={`footer-setting-${setting.id}`} type="checkbox" checked={setting.value === 'true'} onchange={(e) => handleSettingInput(setting.id, e.target.checked ? 'true' : 'false')} class="rounded bg-surface-800 border-surface-600 text-accent-500" />
 							<span class="text-sm text-surface-400">Enabled</span>
 						</label>
 					{:else}
-						<textarea value={setting.value || ''} oninput={(e) => handleSettingInput(setting.id, e.target.value)} rows="2" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm resize-none"></textarea>
+						<textarea id={`footer-setting-${setting.id}`} value={setting.value || ''} oninput={(e) => handleSettingInput(setting.id, e.target.value)} rows="2" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm resize-none"></textarea>
 					{/if}
 				</div>
 			{/each}
@@ -281,12 +281,12 @@
 
 <!-- Column Form Modal -->
 {#if showColumnForm}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showColumnForm = false; }}>
+	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showColumnForm = false; }} onclick={(e) => { if (e.target === e.currentTarget) showColumnForm = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<h3 class="text-lg font-semibold text-white mb-4">Add Footer Column</h3>
 			<div>
-				<label class="block text-sm text-surface-300 mb-1.5">Column Title</label>
-				<input type="text" bind:value={newColumn.title} placeholder="e.g. Quick Links" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+				<label for="footer-column-title" class="block text-sm text-surface-300 mb-1.5">Column Title</label>
+				<input id="footer-column-title" type="text" bind:value={newColumn.title} placeholder="e.g. Quick Links" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 			</div>
 			<div class="flex gap-3 mt-6">
 				<button onclick={() => showColumnForm = false} class="flex-1 px-4 py-2.5 rounded-xl bg-surface-800 text-white font-medium text-sm">Cancel</button>
@@ -298,17 +298,17 @@
 
 <!-- Link Form Modal -->
 {#if showLinkForm}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showLinkForm = false; }}>
+	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showLinkForm = false; }} onclick={(e) => { if (e.target === e.currentTarget) showLinkForm = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<h3 class="text-lg font-semibold text-white mb-4">Add Footer Link</h3>
 			<div class="space-y-4">
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Label</label>
-					<input type="text" bind:value={newLink.label} placeholder="e.g. About Us" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="footer-link-label" class="block text-sm text-surface-300 mb-1.5">Label</label>
+					<input id="footer-link-label" type="text" bind:value={newLink.label} placeholder="e.g. About Us" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">URL</label>
-					<input type="text" bind:value={newLink.url} placeholder="/about or https://..." class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="footer-link-url" class="block text-sm text-surface-300 mb-1.5">URL</label>
+					<input id="footer-link-url" type="text" bind:value={newLink.url} placeholder="/about or https://..." class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<label class="flex items-center gap-2 cursor-pointer">
 					<input type="checkbox" bind:checked={newLink.is_external} class="rounded bg-surface-800 border-surface-600 text-accent-500" />
@@ -325,24 +325,24 @@
 
 <!-- Add Social Link Modal -->
 {#if showSocialForm}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showSocialForm = false; }}>
+	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showSocialForm = false; }} onclick={(e) => { if (e.target === e.currentTarget) showSocialForm = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<h3 class="text-lg font-semibold text-white mb-4">Add Social Link</h3>
 			<div class="space-y-4">
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Platform Name</label>
-					<input type="text" bind:value={newSocial.platform} placeholder="e.g. GitHub" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="footer-social-platform" class="block text-sm text-surface-300 mb-1.5">Platform Name</label>
+					<input id="footer-social-platform" type="text" bind:value={newSocial.platform} placeholder="e.g. GitHub" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Display Label</label>
-					<input type="text" bind:value={newSocial.label} placeholder="e.g. Follow us on GitHub" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="footer-social-label" class="block text-sm text-surface-300 mb-1.5">Display Label</label>
+					<input id="footer-social-label" type="text" bind:value={newSocial.label} placeholder="e.g. Follow us on GitHub" class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">URL</label>
-					<input type="text" bind:value={newSocial.url} placeholder="https://github.com/..." class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="footer-social-url" class="block text-sm text-surface-300 mb-1.5">URL</label>
+					<input id="footer-social-url" type="text" bind:value={newSocial.url} placeholder="https://github.com/..." class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Icon</label>
+					<p class="block text-sm text-surface-300 mb-1.5">Icon</p>
 					<div class="grid grid-cols-6 gap-2 p-3 rounded-xl bg-surface-800 border border-surface-700">
 						{#each SOCIAL_ICON_KEYS as key}
 							<button
@@ -371,24 +371,24 @@
 
 <!-- Edit Social Link Modal -->
 {#if showEditSocialForm && editingSocial}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick={(e) => { if (e.target === e.currentTarget) showEditSocialForm = false; }}>
+	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showEditSocialForm = false; }} onclick={(e) => { if (e.target === e.currentTarget) showEditSocialForm = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<h3 class="text-lg font-semibold text-white mb-4">Edit Social Link</h3>
 			<div class="space-y-4">
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Platform Name</label>
-					<input type="text" bind:value={editingSocial.platform} class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="footer-edit-social-platform" class="block text-sm text-surface-300 mb-1.5">Platform Name</label>
+					<input id="footer-edit-social-platform" type="text" bind:value={editingSocial.platform} class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Display Label</label>
-					<input type="text" bind:value={editingSocial.label} class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="footer-edit-social-label" class="block text-sm text-surface-300 mb-1.5">Display Label</label>
+					<input id="footer-edit-social-label" type="text" bind:value={editingSocial.label} class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">URL</label>
-					<input type="text" bind:value={editingSocial.url} class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
+					<label for="footer-edit-social-url" class="block text-sm text-surface-300 mb-1.5">URL</label>
+					<input id="footer-edit-social-url" type="text" bind:value={editingSocial.url} class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm" />
 				</div>
 				<div>
-					<label class="block text-sm text-surface-300 mb-1.5">Icon</label>
+					<p class="block text-sm text-surface-300 mb-1.5">Icon</p>
 					<div class="grid grid-cols-6 gap-2 p-3 rounded-xl bg-surface-800 border border-surface-700">
 						{#each SOCIAL_ICON_KEYS as key}
 							<button

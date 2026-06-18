@@ -1,65 +1,7 @@
-import { getSupabaseServerClient } from '$lib/supabase/server.js';
-import { redirect } from '@sveltejs/kit';
+import { hasPermission, requireAdmin } from '$lib/server/auth.js';
 
-// Helper function to check if user has specific permission
-async function checkPermission(client, userId, permissionName) {
-	const { data: profile } = await client
-		.from('profiles')
-		.select('role')
-		.eq('id', userId)
-		.single();
-
-	if (!profile) return false;
-
-	// Super admin has all permissions
-	if (profile.role === 'super_admin') return true;
-
-	// Get the role ID from the role name
-	const { data: roleData } = await client
-		.from('roles')
-		.select('id')
-		.eq('name', profile.role)
-		.single();
-
-	if (!roleData) return false;
-
-	// Get the permission ID from the permission name
-	const { data: permData } = await client
-		.from('permissions')
-		.select('id')
-		.eq('name', permissionName)
-		.single();
-
-	if (!permData) return false;
-
-	// Check if this role has this permission
-	const { data: rpData } = await client
-		.from('role_permissions')
-		.select('id')
-		.eq('role_id', roleData.id)
-		.eq('permission_id', permData.id)
-		.limit(1);
-
-	return rpData && rpData.length > 0;
-}
-
-export async function load({ cookies, url }) {
-	const client = await getSupabaseServerClient({ cookies, url });
-	const { data: { user } } = await client.auth.getUser();
-
-	if (!user) {
-		throw redirect(302, '/auth/login');
-	}
-
-	const { data: profile } = await client
-		.from('profiles')
-		.select('role')
-		.eq('id', user.id)
-		.single();
-
-	if (!profile || profile.role === 'user') {
-		throw redirect(302, '/profile');
-	}
+export async function load(event) {
+	const { client } = await requireAdmin(event, 'role');
 
 	const { data: users } = await client
 		.from('profiles')
@@ -82,16 +24,15 @@ export async function load({ cookies, url }) {
 }
 
 export const actions = {
-	async updateStatus({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
-		const { data: { user } } = await client.auth.getUser();
+	async updateStatus(event) {
+		const { request } = event;
+		const { client, user } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		const status = formData.get('status');
 
 		// Check permission
-		const hasPermission = await checkPermission(client, user.id, 'users.manage_status');
-		if (!hasPermission) {
+		if (!(await hasPermission(client, user.id, 'users.manage_status'))) {
 			return { success: false, error: 'You do not have permission to manage user status' };
 		}
 
@@ -99,42 +40,36 @@ export const actions = {
 		return { success: true };
 	},
 
-	async updateRole({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
-		const { data: { user } } = await client.auth.getUser();
+	async updateRole(event) {
+		const { request } = event;
+		const { client, user } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		const role = formData.get('role');
 
 		// Check permission
-		const hasPermission = await checkPermission(client, user.id, 'users.manage_roles');
-		if (!hasPermission) {
+		if (!(await hasPermission(client, user.id, 'users.manage_roles'))) {
 			console.error(`Permission denied: User ${user.id} tried to manage roles`);
 			return { success: false, error: 'You do not have permission to manage user roles' };
 		}
 
-		console.log(`Attempting to update role: userId=${id}, role=${role}`);
-
-		const { data, error } = await client.from('profiles').update({ role }).eq('id', id);
+		const { error } = await client.from('profiles').update({ role }).eq('id', id);
 		
 		if (error) {
 			console.error('Role update error:', error);
 			return { success: false, error: error.message };
 		}
-		
-		console.log(`Role updated successfully: ${id} -> ${role}`);
 		return { success: true };
 	},
 
-	async deleteUser({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
-		const { data: { user } } = await client.auth.getUser();
+	async deleteUser(event) {
+		const { request } = event;
+		const { client, user } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 
 		// Check permission
-		const hasPermission = await checkPermission(client, user.id, 'users.delete');
-		if (!hasPermission) {
+		if (!(await hasPermission(client, user.id, 'users.delete'))) {
 			return { success: false, error: 'You do not have permission to delete users' };
 		}
 

@@ -7,6 +7,7 @@
 		Type, LayoutGrid, HelpCircle, Megaphone, Minus, AlignCenter, Copy
 	} from '@lucide/svelte';
 	import { enhance } from '$app/forms';
+	import { sanitizeHtml } from '$lib/utils/marked.js';
 
 	let { data, form } = $props();
 
@@ -383,7 +384,7 @@
 														prose-headings:text-white prose-p:text-surface-300 prose-a:text-accent-400 prose-strong:text-white prose-blockquote:border-accent-500 prose-blockquote:text-surface-400
 														prose-ul:text-surface-300 prose-ol:text-surface-300 prose-code:text-accent-300 prose-code:bg-surface-700 prose-code:px-1 prose-code:rounded
 														prose-hr:border-surface-600"
-												>{@html section.data.content}</div>
+												>{@html sanitizeHtml(section.data.content)}</div>
 											</div>
 
 										{:else if section.type === 'cards'}

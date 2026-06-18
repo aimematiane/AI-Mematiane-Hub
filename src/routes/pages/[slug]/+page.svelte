@@ -3,9 +3,8 @@
 	import { Calendar, ChevronDown } from '@lucide/svelte';
 
 	let { data } = $props();
-	let { page } = data;
-
-	let sections = page.sections || [];
+	let page = $derived(data.page);
+	let sections = $derived(page.sections || []);
 	let openFaq = $state({});
 
 	function toggleFaq(id) {

@@ -1,23 +1,7 @@
-import { getSupabaseServerClient } from '$lib/supabase/server.js';
-import { redirect } from '@sveltejs/kit';
+import { requireAdmin } from '$lib/server/auth.js';
 
-export async function load({ cookies, url }) {
-	const client = await getSupabaseServerClient({ cookies, url });
-	const { data: { user } } = await client.auth.getUser();
-
-	if (!user) {
-		throw redirect(302, '/auth/login');
-	}
-
-	const { data: profile } = await client
-		.from('profiles')
-		.select('role')
-		.eq('id', user.id)
-		.single();
-
-	if (!profile || profile.role === 'user') {
-		throw redirect(302, '/profile');
-	}
+export async function load(event) {
+	const { client } = await requireAdmin(event, 'role');
 
 	const [settingsResult, columnsResult, socialLinksResult] = await Promise.all([
 		client.from('footer_settings').select('*').order('sort_order'),
@@ -33,9 +17,9 @@ export async function load({ cookies, url }) {
 }
 
 export const actions = {
-	// Settings actions
-	async updateSettings({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async updateSettings(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const settingsJson = formData.get('settings');
 		const settings = JSON.parse(settingsJson);
@@ -46,9 +30,9 @@ export const actions = {
 		return { success: true };
 	},
 
-	// Column actions
-	async createColumn({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async createColumn(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const title = formData.get('title');
 		const sort_order = parseInt(formData.get('sort_order') || '0');
@@ -57,8 +41,9 @@ export const actions = {
 		return { success: true };
 	},
 
-	async updateColumn({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async updateColumn(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		const title = formData.get('title');
@@ -68,17 +53,18 @@ export const actions = {
 		return { success: true };
 	},
 
-	async deleteColumn({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async deleteColumn(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		await client.from('footer_columns').delete().eq('id', id);
 		return { success: true };
 	},
 
-	// Link actions
-	async createLink({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async createLink(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const column_id = formData.get('column_id');
 		const label = formData.get('label');
@@ -90,8 +76,9 @@ export const actions = {
 		return { success: true };
 	},
 
-	async updateLink({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async updateLink(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		const label = formData.get('label');
@@ -103,17 +90,18 @@ export const actions = {
 		return { success: true };
 	},
 
-	async deleteLink({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async deleteLink(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		await client.from('footer_links').delete().eq('id', id);
 		return { success: true };
 	},
 
-	// Social link actions
-	async createSocialLink({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async createSocialLink(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const platform = formData.get('platform');
 		const label = formData.get('label');
@@ -126,8 +114,9 @@ export const actions = {
 		return { success: true };
 	},
 
-	async updateSocialLink({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async updateSocialLink(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		const platform = formData.get('platform');
@@ -140,8 +129,9 @@ export const actions = {
 		return { success: true };
 	},
 
-	async deleteSocialLink({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async deleteSocialLink(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		await client.from('footer_social_links').delete().eq('id', id);

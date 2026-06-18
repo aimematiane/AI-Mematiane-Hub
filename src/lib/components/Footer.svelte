@@ -3,13 +3,13 @@
 
 	let { footer = {} } = $props();
 
-	const settings = footer.settings || {};
-	const columns = footer.columns || [];
-	const socialLinks = footer.socialLinks || [];
+	const settings = $derived(footer.settings || {});
+	const columns = $derived(footer.columns || []);
+	const socialLinks = $derived(footer.socialLinks || []);
 
-	const siteName = settings.site_name || 'AI Mematiane';
-	const description = settings.footer_description || 'Your global directory of AI models, tools, news, and deep-dive analysis. Stay ahead of the curve.';
-	const copyright = settings.copyright_text || `© ${new Date().getFullYear()} AI Mematiane. All rights reserved.`;
+	const siteName = $derived(settings.site_name || 'AI Mematiane');
+	const description = $derived(settings.footer_description || 'Your global directory of AI models, tools, news, and deep-dive analysis. Stay ahead of the curve.');
+	const copyright = $derived(settings.copyright_text || `© ${new Date().getFullYear()} AI Mematiane. All rights reserved.`);
 
 	function sortedLinks(links) {
 		return [...(links || [])].filter(l => l.is_visible !== false).sort((a, b) => a.sort_order - b.sort_order);

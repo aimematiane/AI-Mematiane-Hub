@@ -9,7 +9,7 @@ const securityHeaders = {
 
 const cspDirectives = [
 	"default-src 'self'",
-	"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
+	"script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
 	"style-src 'self' 'unsafe-inline'",
 	"font-src 'self'",
 	"img-src 'self' data: blob: https://aocnsmmsddvnmrbnneds.supabase.co",
@@ -17,7 +17,8 @@ const cspDirectives = [
 	"frame-ancestors 'none'",
 	"base-uri 'self'",
 	"form-action 'self'",
-	"object-src 'none'"
+	"object-src 'none'",
+	"upgrade-insecure-requests"
 ];
 
 const cspHeader = cspDirectives.join('; ');

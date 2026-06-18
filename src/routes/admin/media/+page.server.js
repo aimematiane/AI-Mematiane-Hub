@@ -1,23 +1,7 @@
-import { getSupabaseServerClient } from '$lib/supabase/server.js';
-import { redirect } from '@sveltejs/kit';
+import { requireAdmin } from '$lib/server/auth.js';
 
-export async function load({ cookies, url }) {
-	const client = await getSupabaseServerClient({ cookies, url });
-	const { data: { user } } = await client.auth.getUser();
-
-	if (!user) {
-		throw redirect(302, '/auth/login');
-	}
-
-	const { data: profile } = await client
-		.from('profiles')
-		.select('role')
-		.eq('id', user.id)
-		.single();
-
-	if (!profile || profile.role === 'user') {
-		throw redirect(302, '/profile');
-	}
+export async function load(event) {
+	const { client, user } = await requireAdmin(event, 'role');
 
 	const { data: media } = await client
 		.from('media_files')
@@ -35,10 +19,9 @@ export async function load({ cookies, url }) {
 }
 
 export const actions = {
-	async upload({ request, cookies, url }) {
-		// Note: In production, you'd use Supabase Storage for actual file uploads
-		// This is a simplified version that accepts URLs
-		const client = await getSupabaseServerClient({ cookies, url });
+	async upload(event) {
+		const { request } = event;
+		const { client, user } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const url_path = formData.get('url');
 		const filename = formData.get('filename');
@@ -51,7 +34,7 @@ export const actions = {
 			mime_type: 'image/jpeg', // Would be determined in real upload
 			size_bytes: 0,
 			url: url_path,
-			uploaded_by: (await client.auth.getUser()).data.user?.id,
+			uploaded_by: user.id,
 			folder,
 			alt_text
 		});
@@ -59,8 +42,9 @@ export const actions = {
 		return { success: true };
 	},
 
-	async delete({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async delete(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 
@@ -68,8 +52,9 @@ export const actions = {
 		return { success: true };
 	},
 
-	async updateMeta({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async updateMeta(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const id = formData.get('id');
 		const alt_text = formData.get('alt_text');

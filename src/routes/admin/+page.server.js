@@ -1,25 +1,8 @@
-import { getSupabaseServerClient } from '$lib/supabase/server.js';
-import { redirect } from '@sveltejs/kit';
+import { requireAdmin } from '$lib/server/auth.js';
 
-export async function load({ cookies, url }) {
-	const client = await getSupabaseServerClient({ cookies, url });
-	const { data: { user } } = await client.auth.getUser();
+export async function load(event) {
+	const { client, user } = await requireAdmin(event, 'role');
 
-	if (!user) {
-		throw redirect(302, '/auth/login');
-	}
-
-	const { data: profile } = await client
-		.from('profiles')
-		.select('role')
-		.eq('id', user.id)
-		.single();
-
-	if (!profile || profile.role === 'user') {
-		throw redirect(302, '/profile');
-	}
-
-	// Get counts
 	const [toolsResult, postsResult, newsResult] = await Promise.all([
 		client.from('ai_tools').select('id', { count: 'exact', head: true }),
 		client.from('posts').select('id', { count: 'exact', head: true }),

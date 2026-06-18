@@ -1,23 +1,7 @@
-import { getSupabaseServerClient } from '$lib/supabase/server.js';
-import { redirect } from '@sveltejs/kit';
+import { requireAdmin } from '$lib/server/auth.js';
 
-export async function load({ cookies, url }) {
-	const client = await getSupabaseServerClient({ cookies, url });
-	const { data: { user } } = await client.auth.getUser();
-
-	if (!user) {
-		throw redirect(302, '/auth/login');
-	}
-
-	const { data: profile } = await client
-		.from('profiles')
-		.select('role')
-		.eq('id', user.id)
-		.single();
-
-	if (!profile || profile.role === 'user') {
-		throw redirect(302, '/profile');
-	}
+export async function load(event) {
+	const { client } = await requireAdmin(event, 'role');
 
 	const { data: settings } = await client
 		.from('site_settings')
@@ -34,8 +18,9 @@ export async function load({ cookies, url }) {
 }
 
 export const actions = {
-	async update({ request, cookies, url }) {
-		const client = await getSupabaseServerClient({ cookies, url });
+	async update(event) {
+		const { request } = event;
+		const { client } = await requireAdmin(event, 'role');
 		const formData = await request.formData();
 		const settingsJson = formData.get('settings');
 		const settings = JSON.parse(settingsJson);

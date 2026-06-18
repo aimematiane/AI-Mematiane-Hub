@@ -32,17 +32,6 @@
 		}
 	});
 
-	// Debug logging
-	$effect(() => {
-		console.log('Page data loaded:', {
-			rolesCount: roles.length,
-			permissionsCount: permissions.length,
-			rolePermissionsCount: role_permissions.length,
-			roles: roles,
-			permissionsByModule: Object.keys(permissionsByModule)
-		});
-	});
-
 	function roleHasPermission(roleId, permId) {
 		return role_permissions.some(rp => rp.role_id === roleId && rp.permission_id === permId);
 	}
@@ -116,7 +105,6 @@
 			}
 
 			const result = await response.json();
-			console.log('Create role response:', result);
 			
 			if (result.success) {
 				message = { type: 'success', text: 'Role created successfully!' };
