@@ -150,7 +150,10 @@
 							<td class="px-6 py-4">
 								<div class="flex items-center gap-3">
 									{#if user.avatar_url}
-										<img src={user.avatar_url} alt="" class="w-10 h-10 rounded-full object-cover" />
+										<img src={user.avatar_url} alt="" class="w-10 h-10 rounded-full object-cover" onerror={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling.style.display = 'flex'; }} />
+										<div style="display: none;" class="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center">
+											<UsersIcon size={18} class="text-surface-500" />
+										</div>
 									{:else}
 										<div class="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center">
 											<UsersIcon size={18} class="text-surface-500" />

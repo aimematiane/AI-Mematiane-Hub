@@ -104,9 +104,10 @@
 		<!-- User Section -->
 		<div class="p-3 border-t border-surface-800">
 			<div class="flex items-center gap-3 p-2 rounded-xl bg-surface-800">
-				<div class="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center shrink-0">
+				<div class="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center shrink-0 overflow-hidden">
 					{#if data.profile.avatar_url}
-						<img src={data.profile.avatar_url} alt="" class="w-8 h-8 rounded-full object-cover" />
+						<img src={data.profile.avatar_url} alt="" class="w-8 h-8 rounded-full object-cover" onerror={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling.style.display = 'block'; }} />
+						<div style="display: none;"><Users size={16} class="text-surface-400" /></div>
 					{:else}
 						<Users size={16} class="text-surface-400" />
 					{/if}

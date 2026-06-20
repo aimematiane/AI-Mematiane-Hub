@@ -2,6 +2,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import { User, Mail, Shield, Bookmark, Calendar, Upload, X } from '@lucide/svelte';
+	import { invalidateAll } from '$app/navigation';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { isAdminRole } from '$lib/utils/roles.js';
@@ -28,7 +29,10 @@
 			.from('profiles')
 			.update({ display_name: displayName, avatar_url: avatarUrl })
 			.eq('id', data.user.id);
-		if (!error) saved = true;
+		if (!error) {
+			saved = true;
+			await invalidateAll();
+		}
 		saving = false;
 	}
 
@@ -89,6 +93,7 @@
 					avatarUploadError = 'Uploaded but failed to save. Try manual save.';
 				} else {
 					saved = true;
+					await invalidateAll();
 					setTimeout(() => { saved = false; }, 3000);
 				}
 			}
