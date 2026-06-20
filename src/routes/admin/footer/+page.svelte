@@ -7,9 +7,12 @@
 
 	let { data } = $props();
 
-	let settings = $state([]);
-	let columns = $state([]);
-	let socialLinks = $state([]);
+	// svelte-ignore state_referenced_locally
+	let settings = $state(structuredClone(data.settings || []));
+	// svelte-ignore state_referenced_locally
+	let columns = $state(structuredClone(data.columns || []));
+	// svelte-ignore state_referenced_locally
+	let socialLinks = $state(structuredClone(data.socialLinks || []));
 	let saving = $state(false);
 	let error = $state('');
 
@@ -298,7 +301,7 @@
 						</button>
 					</div>
 					<ul class="space-y-2">
-						{#each column.links?.sort((a, b) => a.sort_order - b.sort_order) || [] as link}
+						{#each [...(column.links || [])].sort((a, b) => a.sort_order - b.sort_order) as link}
 							<li class="flex items-center justify-between group">
 								<div class="flex items-center gap-2 text-sm text-surface-300">
 									<span>{link.label}</span>
