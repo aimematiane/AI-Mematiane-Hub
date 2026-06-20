@@ -1,5 +1,6 @@
 import { marked } from 'marked';
-import DOMPurify from 'isomorphic-dompurify';
+import { browser } from '$app/environment';
+import DOMPurify from 'dompurify';
 
 marked.setOptions({
 	gfm: true,
@@ -24,14 +25,24 @@ const ALLOWED_ATTRS = [
 export function sanitizeHtml(html) {
 	if (!html) return '';
 
-	return DOMPurify.sanitize(html, {
-		ALLOWED_TAGS,
-		ALLOWED_ATTR: ALLOWED_ATTRS,
-		ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
-		FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button'],
-		FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick'],
-		RETURN_TRUSTED_TYPE: false
-	});
+	if (browser) {
+		return DOMPurify.sanitize(html, {
+			ALLOWED_TAGS,
+			ALLOWED_ATTR: ALLOWED_ATTRS,
+			ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
+			FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button'],
+			FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick'],
+			RETURN_TRUSTED_TYPE: false
+		});
+	}
+
+	// Server-side fallback: lightweight regex sanitization to remove scripts, styles, frames & handlers
+	return html
+		.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+		.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+		.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+		.replace(/on\w+\s*=\s*(['"])(.*?)\1/gi, '')
+		.replace(/javascript:\s*[^"']/gi, '');
 }
 
 export function renderMarkdown(content) {
