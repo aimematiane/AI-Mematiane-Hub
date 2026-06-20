@@ -15,44 +15,81 @@
 
 	const MAX_FILE_BYTES = 10 * 1024 * 1024; // matches Supabase bucket limit
 
-	async function handleUpload(fileList) {
-		if (!fileList || fileList.length === 0) return;
-		uploading = true;
-		uploadError = '';
+	let filesToUpload = $state([]);
+	let currentUploadIndex = $state(-1);
+	let customName = $state('');
+	let currentFile = $derived(filesToUpload[currentUploadIndex]);
 
+	function handleUpload(fileList) {
+		if (!fileList || fileList.length === 0) return;
+		uploadError = '';
+		
+		const validFiles = [];
 		for (const file of fileList) {
 			if (file.size > MAX_FILE_BYTES) {
 				uploadError = `"${file.name}" exceeds the 10 MB limit.`;
-				break;
+				continue;
 			}
-			const ext = file.name.split('.').pop();
-			const timestamp = Date.now();
-			const randomStr = Math.random().toString(36).substring(2, 8);
-			const filePath = `${path}/${timestamp}-${randomStr}.${ext}`;
+			validFiles.push(file);
+		}
 
-			const contentType = file.type || guessMimeType(file.name);
+		if (validFiles.length === 0) return;
 
+		filesToUpload = validFiles;
+		currentUploadIndex = 0;
+		const filename = validFiles[0].name;
+		customName = filename.substring(0, filename.lastIndexOf('.')) || filename;
+	}
+
+	async function submitFileName() {
+		if (!currentFile) return;
+		uploading = true;
+		
+		const slugName = customName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'file';
+		const ext = currentFile.name.split('.').pop();
+		const timestamp = Date.now();
+		const filePath = `${path}/${timestamp}-${slugName}.${ext}`;
+		const contentType = currentFile.type || guessMimeType(currentFile.name);
+
+		try {
 			const { data, error } = await client.storage
 				.from('uploads')
-				.upload(filePath, file, {
+				.upload(filePath, currentFile, {
 					contentType,
 					upsert: false
 				});
 
 			if (error) {
 				console.error('Storage upload error:', error);
-				uploadError = `Failed to upload "${file.name}": ${error.message}`;
-				break;
-			}
-
-			if (data) {
+				uploadError = `Failed to upload "${currentFile.name}": ${error.message}`;
+			} else if (data) {
 				const { data: urlData } = client.storage.from('uploads').getPublicUrl(data.path);
 				files = [...files, urlData.publicUrl];
 			}
+		} catch (err) {
+			console.error('Upload error:', err);
+			uploadError = `Upload failed: ${err.message}`;
 		}
+
 		uploading = false;
-		if (onUploaded && files.length > 0) {
-			onUploaded([...files]);
+		nextFile();
+	}
+
+	function cancelFileName() {
+		nextFile();
+	}
+
+	function nextFile() {
+		currentUploadIndex++;
+		if (currentUploadIndex < filesToUpload.length) {
+			const nextFile = filesToUpload[currentUploadIndex];
+			customName = nextFile.name.substring(0, nextFile.name.lastIndexOf('.')) || nextFile.name;
+		} else {
+			filesToUpload = [];
+			currentUploadIndex = -1;
+			if (onUploaded && files.length > 0) {
+				onUploaded([...files]);
+			}
 		}
 	}
 
@@ -62,8 +99,27 @@
 		handleUpload(e.dataTransfer.files);
 	}
 
-	function removeFile(index) {
+	async function removeFile(index) {
+		const fileUrl = files[index];
 		files = files.filter((_, i) => i !== index);
+
+		if (fileUrl) {
+			const marker = '/storage/v1/object/public/uploads/';
+			const idx = fileUrl.indexOf(marker);
+			if (idx !== -1) {
+				const filePath = fileUrl.substring(idx + marker.length);
+				try {
+					const { error } = await client.storage.from('uploads').remove([filePath]);
+					if (error) {
+						console.error('Failed to delete file from storage:', error);
+					} else {
+						console.log('Successfully deleted file from storage:', filePath);
+					}
+				} catch (err) {
+					console.error('Error deleting file:', err);
+				}
+			}
+		}
 	}
 
 	function isImage(url) {
@@ -106,7 +162,7 @@
 	{#if uploadError}
 		<div class="mt-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 p-2.5 rounded-lg flex items-center justify-between">
 			<span>{uploadError}</span>
-			<button onclick={() => uploadError = ''} class="text-red-400 hover:text-red-300 ml-2" aria-label="Dismiss error">
+			<button type="button" onclick={() => uploadError = ''} class="text-red-400 hover:text-red-300 ml-2" aria-label="Dismiss error">
 				<X size={12} />
 			</button>
 		</div>
@@ -128,6 +184,7 @@
 						{fileUrl.split('/').pop()}
 					</a>
 					<button
+						type="button"
 						onclick={() => removeFile(i)}
 						class="p-1 rounded hover:bg-red-500/10 text-surface-500 hover:text-red-400"
 						aria-label="Remove file"
@@ -139,3 +196,47 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Rename Modal Overlay -->
+{#if currentUploadIndex !== -1 && currentFile}
+	<div class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+		<div class="w-full max-w-md bg-surface-900 border border-surface-700 rounded-2xl p-6 shadow-2xl space-y-4">
+			<div class="flex items-center justify-between">
+				<h3 class="text-lg font-semibold text-white">Rename Upload</h3>
+				<button type="button" onclick={() => { filesToUpload = []; currentUploadIndex = -1; }} class="p-1 rounded-lg hover:bg-surface-800 text-surface-400">
+					<X size={18} />
+				</button>
+			</div>
+			
+			<p class="text-xs text-surface-400">
+				Set a friendly name for <strong>{currentFile.name}</strong>.
+			</p>
+			
+			<div>
+				<label for="custom-filename-input" class="block text-xs text-surface-300 mb-1.5">Filename (no extension)</label>
+				<input
+					id="custom-filename-input"
+					type="text"
+					bind:value={customName}
+					placeholder="Enter filename"
+					class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500"
+					onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitFileName(); } }}
+				/>
+			</div>
+			
+			<div class="flex justify-end gap-3 pt-2">
+				<button type="button" onclick={cancelFileName} class="px-4 py-2 rounded-lg bg-surface-800 text-surface-300 text-sm hover:bg-surface-700 transition-colors">
+					Skip
+				</button>
+				<button type="button" onclick={submitFileName} disabled={uploading} class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-medium transition-colors">
+					{#if uploading}
+						<Loader2 size={14} class="animate-spin" />
+						Uploading...
+					{:else}
+						Upload
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}

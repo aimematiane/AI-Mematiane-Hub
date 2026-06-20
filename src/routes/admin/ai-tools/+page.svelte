@@ -22,6 +22,46 @@
 	let saving = $state(false);
 	let error = $state('');
 
+	$effect(() => {
+		const fileUrl = coverFiles[0] || '';
+		if (form.image_url !== fileUrl) {
+			form.image_url = fileUrl;
+		}
+	});
+
+	$effect(() => {
+		const currentUrl = form.image_url || '';
+		if (currentUrl && coverFiles[0] !== currentUrl) {
+			coverFiles = [currentUrl];
+		} else if (!currentUrl && coverFiles.length > 0) {
+			coverFiles = [];
+		}
+	});
+
+	$effect(() => {
+		if (editingTool && coverFiles) {
+			const newCoverUrl = coverFiles[0] || null;
+			if (editingTool.image_url !== newCoverUrl) {
+				editingTool.image_url = newCoverUrl;
+				client.from('ai_tools').update({ image_url: newCoverUrl }).eq('id', editingTool.id).then(() => {
+					invalidateAll();
+				});
+			}
+		}
+	});
+
+	$effect(() => {
+		if (editingTool && attachments) {
+			const oldAttachments = editingTool.attachments || [];
+			if (JSON.stringify(oldAttachments) !== JSON.stringify(attachments)) {
+				editingTool.attachments = attachments;
+				client.from('ai_tools').update({ attachments }).eq('id', editingTool.id).then(() => {
+					invalidateAll();
+				});
+			}
+		}
+	});
+
 	function openNew() {
 		editingTool = null;
 		form = {

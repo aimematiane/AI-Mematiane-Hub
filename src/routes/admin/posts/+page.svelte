@@ -18,6 +18,46 @@
 	let saving = $state(false);
 	let error = $state('');
 
+	$effect(() => {
+		const fileUrl = coverFiles[0] || '';
+		if (form.cover_image_url !== fileUrl) {
+			form.cover_image_url = fileUrl;
+		}
+	});
+
+	$effect(() => {
+		const currentUrl = form.cover_image_url || '';
+		if (currentUrl && coverFiles[0] !== currentUrl) {
+			coverFiles = [currentUrl];
+		} else if (!currentUrl && coverFiles.length > 0) {
+			coverFiles = [];
+		}
+	});
+
+	$effect(() => {
+		if (editingPost && coverFiles) {
+			const newCoverUrl = coverFiles[0] || null;
+			if (editingPost.cover_image_url !== newCoverUrl) {
+				editingPost.cover_image_url = newCoverUrl;
+				client.from('posts').update({ cover_image_url: newCoverUrl }).eq('id', editingPost.id).then(() => {
+					invalidateAll();
+				});
+			}
+		}
+	});
+
+	$effect(() => {
+		if (editingPost && attachments) {
+			const oldAttachments = editingPost.attachments || [];
+			if (JSON.stringify(oldAttachments) !== JSON.stringify(attachments)) {
+				editingPost.attachments = attachments;
+				client.from('posts').update({ attachments }).eq('id', editingPost.id).then(() => {
+					invalidateAll();
+				});
+			}
+		}
+	});
+
 	function openNew() {
 		editingPost = null;
 		form = { title: '', slug: '', excerpt: '', content: '', cover_image_url: '', category: 'general', tags: '', references_links: '', is_published: false };

@@ -12,21 +12,7 @@
 export function optimizeImageUrl(url, { width = 800, quality = 80, format = 'webp' } = {}) {
 	if (!url) return '';
 
-	// Check if this is a standard Supabase public storage URL
-	if (url.includes('/storage/v1/object/public/')) {
-		// Replace /object/ with /render/image/
-		let optimizedUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
-		
-		// Append transformation query parameters
-		const params = new URLSearchParams();
-		if (width) params.append('width', width.toString());
-		if (quality) params.append('quality', quality.toString());
-		if (format) params.append('format', format);
-
-		// If the original URL already had query parameters (unlikely but possible), preserve them
-		const separator = optimizedUrl.includes('?') ? '&' : '?';
-		return `${optimizedUrl}${separator}${params.toString()}`;
-	}
-
+	// Return the original URL directly because the Supabase Image Transformations API
+	// requires a premium/paid plan and is not enabled for this tenant.
 	return url;
 }

@@ -1,7 +1,7 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
-	import { User, Mail, Shield, Bookmark, Calendar, Upload } from '@lucide/svelte';
+	import { User, Mail, Shield, Bookmark, Calendar, Upload, X } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { isAdminRole } from '$lib/utils/roles.js';
@@ -32,23 +32,34 @@
 		saving = false;
 	}
 
-	async function handleAvatarUpload(files) {
+	let fileToUpload = $state(null);
+	let customAvatarName = $state('');
+	let showAvatarRenameModal = $state(false);
+
+	function startAvatarUpload(files) {
 		if (!files || files.length === 0) return;
-		
+		fileToUpload = files[0];
+		const defaultName = fileToUpload.name.substring(0, fileToUpload.name.lastIndexOf('.')) || fileToUpload.name;
+		customAvatarName = defaultName;
+		showAvatarRenameModal = true;
+	}
+
+	async function confirmAvatarUpload() {
+		if (!fileToUpload) return;
+		showAvatarRenameModal = false;
 		uploadingAvatar = true;
 		avatarUploadError = '';
-		const file = files[0]; // Only use first file
 
 		try {
-			const ext = file.name.split('.').pop();
+			const slugName = customAvatarName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'avatar';
+			const ext = fileToUpload.name.split('.').pop();
 			const timestamp = Date.now();
-			const randomStr = Math.random().toString(36).substring(2, 8);
-			const filePath = `profile-images/${data.user.id}/${timestamp}-${randomStr}.${ext}`;
+			const filePath = `profile-images/${data.user.id}/${timestamp}-${slugName}.${ext}`;
 
 			const { data: uploadData, error: uploadError } = await client.storage
 				.from('uploads')
-				.upload(filePath, file, {
-					contentType: file.type,
+				.upload(filePath, fileToUpload, {
+					contentType: fileToUpload.type,
 					upsert: true // Overwrite previous profile image
 				});
 
@@ -86,6 +97,7 @@
 			avatarUploadError = err.message || 'Upload failed';
 		} finally {
 			uploadingAvatar = false;
+			fileToUpload = null;
 		}
 	}
 
@@ -149,12 +161,11 @@
 							accept="image/jpeg,image/png,image/webp"
 							class="hidden"
 							disabled={uploadingAvatar}
-							onchange={async (e) => {
+							onchange={(e) => {
 								const files = e.target.files;
 								if (files && files.length > 0) {
 									const fileArray = Array.from(files);
-									await handleAvatarUpload(fileArray);
-									// Reset input and update local UI immediately
+									startAvatarUpload(fileArray);
 									e.target.value = '';
 								}
 							}}
@@ -220,3 +231,47 @@
 		</div>
 	</div>
 </section>
+
+<!-- Avatar Rename Modal -->
+{#if showAvatarRenameModal && fileToUpload}
+	<div class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+		<div class="w-full max-w-md bg-surface-900 border border-surface-700 rounded-2xl p-6 shadow-2xl space-y-4">
+			<div class="flex items-center justify-between">
+				<h3 class="text-lg font-semibold text-white">Rename Profile Image</h3>
+				<button type="button" onclick={() => { showAvatarRenameModal = false; fileToUpload = null; }} class="p-1 rounded-lg hover:bg-surface-800 text-surface-400">
+					<X size={18} />
+				</button>
+			</div>
+			
+			<p class="text-xs text-surface-400">
+				Set a friendly name for your new profile picture <strong>{fileToUpload.name}</strong>.
+			</p>
+			
+			<div>
+				<label for="avatar-filename-input" class="block text-xs text-surface-300 mb-1.5">Filename (no extension)</label>
+				<input
+					id="avatar-filename-input"
+					type="text"
+					bind:value={customAvatarName}
+					placeholder="Enter filename"
+					class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500"
+					onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); confirmAvatarUpload(); } }}
+				/>
+			</div>
+			
+			<div class="flex justify-end gap-3 pt-2">
+				<button type="button" onclick={() => { showAvatarRenameModal = false; fileToUpload = null; }} class="px-4 py-2 rounded-lg bg-surface-800 text-surface-300 text-sm hover:bg-surface-700 transition-colors">
+					Cancel
+				</button>
+				<button type="button" onclick={confirmAvatarUpload} disabled={uploadingAvatar} class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-medium transition-colors">
+					{#if uploadingAvatar}
+						<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+						Uploading...
+					{:else}
+						Upload
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
