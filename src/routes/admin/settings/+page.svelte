@@ -22,6 +22,14 @@
 		custom: 'Custom Code'
 	};
 
+	const themePresetOptions = [
+		{ value: 'default', label: 'Default Dark Cyan' },
+		{ value: 'earth', label: 'Earth Green' },
+		{ value: 'apple', label: 'Apple Minimal' },
+		{ value: 'editorial', label: 'Editorial Magazine' },
+		{ value: 'studio', label: 'Warm Studio' }
+	];
+
 	const categories = $derived(
 		[...new Set((data.settings || []).map(s => s.category).filter(c => c && c !== 'social'))]
 	);
@@ -46,6 +54,11 @@
 			const json = JSON.parse(raw);
 			settings = settings.map(s => s.id === id ? { ...s, value_json: json } : s);
 		} catch {}
+	}
+
+	function getSelectOptions(setting) {
+		if (setting.key === 'theme_preset') return themePresetOptions;
+		return setting.value_json?.options || [];
 	}
 
 	async function saveSettings() {
@@ -121,7 +134,18 @@
 								<p class="text-xs text-surface-500 mb-2">{setting.description}</p>
 							{/if}
 
-							{#if setting.input_type === 'text' || setting.input_type === 'url' || setting.input_type === 'email'}
+							{#if setting.key === 'theme_preset' || setting.input_type === 'select'}
+								<select
+									id={`site-setting-${setting.id}`}
+									value={setting.value || 'default'}
+									onchange={(e) => handleInput(setting.id, e.currentTarget.value)}
+									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500"
+								>
+									{#each getSelectOptions(setting) as option}
+										<option value={option.value}>{option.label}</option>
+									{/each}
+								</select>
+							{:else if setting.input_type === 'text' || setting.input_type === 'url' || setting.input_type === 'email'}
 								<input
 									id={`site-setting-${setting.id}`}
 									type={setting.input_type === 'email' ? 'email' : setting.input_type === 'url' ? 'url' : 'text'}
@@ -129,17 +153,6 @@
 									oninput={(e) => handleInput(setting.id, e.currentTarget.value)}
 									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500"
 								/>
-							{:else if setting.input_type === 'select'}
-								<select
-									id={`site-setting-${setting.id}`}
-									value={setting.value || ''}
-									onchange={(e) => handleInput(setting.id, e.currentTarget.value)}
-									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500"
-								>
-									{#each setting.value_json?.options || [] as option}
-										<option value={option.value}>{option.label}</option>
-									{/each}
-								</select>
 							{:else if setting.input_type === 'textarea' || setting.input_type === 'rich_text'}
 								<textarea
 									id={`site-setting-${setting.id}`}
