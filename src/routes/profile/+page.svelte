@@ -1,10 +1,10 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
-	import { User, Mail, Shield, Bookmark, Calendar, Upload, X } from '@lucide/svelte';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
+	import { Mail, Shield, Bookmark, Calendar, Upload, X } from '@lucide/svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
-	import { optimizeImageUrl } from '$lib/utils/image';
 	import { isAdminRole } from '$lib/utils/roles.js';
 
 	let { data } = $props();
@@ -122,13 +122,7 @@
 	<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 space-y-6">
 		<!-- User Info -->
 		<div class="flex items-center gap-4 pb-6 border-b border-surface-800">
-			{#if avatarUrl || data.profile?.avatar_url}
-				<img src={optimizeImageUrl(avatarUrl || data.profile.avatar_url, { width: 120, quality: 80 })} alt="" class="w-16 h-16 rounded-full object-cover" />
-			{:else}
-				<div class="w-16 h-16 rounded-full bg-accent-500/20 flex items-center justify-center">
-					<User size={28} class="text-accent-400" />
-				</div>
-			{/if}
+			<UserAvatar src={avatarUrl || data.profile?.avatar_url} alt="" size="xl" class="bg-accent-500/20" iconClass="text-accent-400" />
 			<div>
 				<h2 class="text-lg font-semibold text-white">{displayName || data.profile?.display_name || 'User'}</h2>
 				<div class="flex items-center gap-3 text-sm text-surface-400">
@@ -156,7 +150,7 @@
 					Upload Profile Image
 				</h3>
 				<p class="text-xs text-surface-400">
-					Upload a new profile picture (JPG, PNG, WebP). Only you can access this image.
+					Upload a new profile picture (JPG, PNG, WebP). It may be shown publicly next to your posts and comments.
 				</p>
 				<div class="relative">
 					<label for="profileImageInput" class="block border-2 border-dashed border-surface-700 rounded-xl p-6 text-center cursor-pointer hover:border-surface-600 transition-all">

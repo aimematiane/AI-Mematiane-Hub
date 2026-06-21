@@ -5,7 +5,8 @@
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
 	import CommentsSection from '$lib/components/CommentsSection.svelte';
-	import { Clock, Bookmark, BookmarkCheck, User, List, ExternalLink, Heart } from '@lucide/svelte';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
+	import { Clock, Bookmark, BookmarkCheck, List, ExternalLink, Heart } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -114,13 +115,7 @@
 					<div class="flex items-center gap-4 mt-6">
 						{#if post.author}
 							<div class="flex items-center gap-3">
-								{#if post.author.avatar_url}
-									<img src={optimizeImageUrl(post.author.avatar_url, { width: 100, quality: 80 })} alt="" class="w-10 h-10 rounded-full object-cover" />
-								{:else}
-									<div class="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center">
-										<User size={16} class="text-surface-400" />
-									</div>
-								{/if}
+								<UserAvatar src={post.author.avatar_url} alt="" size="lg" />
 								<div>
 									<p class="text-sm font-medium text-white">{post.author.display_name}</p>
 									<p class="text-xs text-surface-500">Author</p>

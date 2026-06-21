@@ -1,8 +1,8 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { Star, MessageSquare, Trash2, Send, Loader2, User } from '@lucide/svelte';
+	import { Star, MessageSquare, Trash2, Send, Loader2 } from '@lucide/svelte';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
-	import { optimizeImageUrl } from '$lib/utils/image';
 
 	let { itemId, itemType } = $props();
 	const client = getSupabaseBrowserClient();
@@ -213,13 +213,7 @@
 					<div class="flex items-start justify-between gap-4">
 						<!-- User profile header -->
 						<div class="flex items-center gap-3">
-							{#if c.user?.avatar_url}
-								<img src={optimizeImageUrl(c.user.avatar_url, { width: 100, quality: 80 })} alt="" class="w-9 h-9 rounded-full object-cover border border-white/10" />
-							{:else}
-								<div class="w-9 h-9 rounded-full bg-surface-800 flex items-center justify-center border border-white/5 text-surface-400">
-									<User size={14} />
-								</div>
-							{/if}
+							<UserAvatar src={c.user?.avatar_url} alt="" size="md" class="border border-white/10" />
 							<div>
 								<div class="flex items-center gap-2 flex-wrap">
 									<span class="font-bold text-white text-sm">{c.user?.display_name || 'Anonymous User'}</span>
