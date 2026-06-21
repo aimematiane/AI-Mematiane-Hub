@@ -12,7 +12,7 @@ export async function load({ url, cookies, setHeaders }) {
 
 	let query = client
 		.from('news')
-		.select('id, title, slug, excerpt, cover_image_url, category, tags, reading_time_min, published_at', { count: 'exact' })
+		.select('id, title, slug, excerpt, cover_image_url, category, tags, created_at, author:profiles(display_name, avatar_url)', { count: 'exact' })
 		.range((page - 1) * perPage, page * perPage - 1);
 
 	query = applyNewsQueryFilters(query, { category });

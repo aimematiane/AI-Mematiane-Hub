@@ -2,7 +2,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
-	import { Clock, Loader2 } from '@lucide/svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { applyNewsQueryFilters } from '$lib/utils/pagination.js';
@@ -84,16 +84,15 @@
 					<div class="p-6">
 						<div class="flex items-center gap-3 mb-3">
 							<CategoryBadge category={item.category} size="xs" />
-							<span class="inline-flex items-center gap-1 text-xs text-surface-500">
-								<Clock size={10} />
-								{item.reading_time_min || '-'} min read
-							</span>
+							{#if item.author}
+								<span class="text-xs text-surface-500">{item.author.display_name}</span>
+							{/if}
+							{#if item.created_at}
+								<time class="text-xs text-surface-500">{formatDate(item.created_at)}</time>
+							{/if}
 						</div>
 						<h2 class="text-xl font-bold text-white group-hover:text-rose-400 transition-colors mb-2 tracking-tight">{item.title}</h2>
 						<p class="text-sm text-surface-400 leading-relaxed line-clamp-3 mb-4">{item.excerpt}</p>
-						{#if item.published_at}
-							<time class="text-xs text-surface-500">{formatDate(item.published_at)}</time>
-						{/if}
 					</div>
 				</a>
 			{/each}

@@ -64,8 +64,3 @@ export function extractHeadings(content) {
 	}
 	return headings;
 }
-
-export function estimateReadingTime(content) {
-	const words = content.split(/\s+/).length;
-	return Math.max(1, Math.ceil(words / 200));
-}

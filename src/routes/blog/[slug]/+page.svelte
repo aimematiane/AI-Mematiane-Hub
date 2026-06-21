@@ -5,8 +5,7 @@
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
 	import CommentsSection from '$lib/components/CommentsSection.svelte';
-	import UserAvatar from '$lib/components/UserAvatar.svelte';
-	import { Clock, Bookmark, BookmarkCheck, List, ExternalLink, Heart } from '@lucide/svelte';
+	import { Bookmark, BookmarkCheck, List, ExternalLink, Heart } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -83,7 +82,7 @@
 		url={`/blog/${post.slug}`}
 		type="article"
 		schemaType="Article"
-		publishedTime={post.published_at}
+		publishedTime={post.created_at}
 		authorName={post.author?.display_name || ''}
 		tags={[post.category, ...(post.tags || [])]}
 		preloadImage={post.cover_image_url || ''}
@@ -102,27 +101,15 @@
 				<header class="mb-8">
 					<div class="flex items-center gap-3 mb-4 flex-wrap">
 						<CategoryBadge category={post.category} />
-						<span class="inline-flex items-center gap-1 text-sm text-surface-500">
-							<Clock size={12} />
-							{post.reading_time_min} min read
-						</span>
-						{#if post.published_at}
-							<time class="text-sm text-surface-500">{formatDate(post.published_at)}</time>
+						{#if post.author}
+							<span class="text-sm text-surface-500">{post.author.display_name}</span>
+						{/if}
+						{#if post.created_at}
+							<time class="text-sm text-surface-500">{formatDate(post.created_at)}</time>
 						{/if}
 					</div>
 					<h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">{post.title}</h1>
 					<p class="text-lg text-surface-400 leading-relaxed">{post.excerpt}</p>
-					<div class="flex items-center gap-4 mt-6">
-						{#if post.author}
-							<div class="flex items-center gap-3">
-								<UserAvatar src={post.author.avatar_url} alt="" size="lg" />
-								<div>
-									<p class="text-sm font-medium text-white">{post.author.display_name}</p>
-									<p class="text-xs text-surface-500">Author</p>
-								</div>
-							</div>
-						{/if}
-					</div>
 				</header>
 
 				{#if post.cover_image_url}

@@ -10,7 +10,7 @@ export async function load({ url, cookies, setHeaders }) {
 
 	const { data: posts, count, error } = await client
 		.from('posts')
-		.select('id, title, slug, excerpt, cover_image_url, category, tags, reading_time_min, published_at, author:profiles(display_name, avatar_url)', { count: 'exact' })
+		.select('id, title, slug, excerpt, cover_image_url, category, tags, created_at, author:profiles(display_name, avatar_url)', { count: 'exact' })
 		.eq('is_published', true)
 		.order('published_at', { ascending: false })
 		.range((page - 1) * perPage, page * perPage - 1);

@@ -3,7 +3,7 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
-	import { Clock, Loader2 } from '@lucide/svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
@@ -28,7 +28,7 @@
 		const nextPage = page + 1;
 		const { data: newPosts, error } = await client
 			.from('posts')
-			.select('id, title, slug, excerpt, cover_image_url, category, tags, reading_time_min, published_at, author:profiles(display_name, avatar_url)')
+			.select('id, title, slug, excerpt, cover_image_url, category, tags, created_at, author:profiles(display_name, avatar_url)')
 			.eq('is_published', true)
 			.order('published_at', { ascending: false })
 			.range((nextPage - 1) * data.perPage, nextPage * data.perPage - 1);
@@ -99,22 +99,21 @@
 					<div class="p-6">
 						<div class="flex items-center gap-3 mb-3">
 							<CategoryBadge category={post.category} size="xs" />
-							<span class="inline-flex items-center gap-1 text-xs text-surface-500">
-								<Clock size={10} />
-								{post.reading_time_min} min read
-							</span>
+							{#if post.author}
+								<span class="text-xs text-surface-500">{post.author.display_name}</span>
+							{/if}
+							{#if post.created_at}
+								<time class="text-xs text-surface-500">{formatDate(post.created_at)}</time>
+							{/if}
 						</div>
 						<h2 class="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors mb-2 tracking-tight">{post.title}</h2>
 						<p class="text-sm text-surface-400 leading-relaxed line-clamp-3 mb-4">{post.excerpt}</p>
-						<div class="flex items-center justify-between">
+						<div class="flex items-center">
 							{#if post.author}
 								<div class="flex items-center gap-2">
 									<UserAvatar src={post.author.avatar_url} alt="" size="xs" />
 									<span class="text-xs text-surface-400">{post.author.display_name}</span>
 								</div>
-							{/if}
-							{#if post.published_at}
-								<time class="text-xs text-surface-500">{formatDate(post.published_at)}</time>
 							{/if}
 						</div>
 					</div>

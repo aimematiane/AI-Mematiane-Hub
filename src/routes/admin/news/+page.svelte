@@ -5,7 +5,6 @@
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
 	import { Plus, Pencil, Trash2, X, Save, Eye, EyeOff } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
-	import { estimateReadingTime } from '$lib/utils/marked';
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
@@ -100,7 +99,6 @@
 			references_links: form.references_links.split(',').map(l => l.trim()).filter(Boolean),
 			attachments: attachments,
 			is_published: form.is_published,
-			reading_time_min: estimateReadingTime(form.content),
 			author_id: data.userId,
 			...(form.is_published && !editingItem?.published_at ? { published_at: new Date().toISOString() } : {})
 		};

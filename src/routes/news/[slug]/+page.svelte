@@ -5,8 +5,7 @@
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import ShareButtons from '$lib/components/ShareButtons.svelte';
 	import CommentsSection from '$lib/components/CommentsSection.svelte';
-	import UserAvatar from '$lib/components/UserAvatar.svelte';
-	import { Clock, ExternalLink, Bookmark, BookmarkCheck, Heart } from '@lucide/svelte';
+	import { ExternalLink, Bookmark, BookmarkCheck, Heart } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { renderMarkdown } from '$lib/utils/marked';
 	import { optimizeImageUrl } from '$lib/utils/image';
@@ -75,7 +74,7 @@
 		url={`/news/${item.slug}`}
 		type="article"
 		schemaType="NewsArticle"
-		publishedTime={item.published_at}
+		publishedTime={item.created_at}
 		authorName={item.author?.display_name || ''}
 		tags={[item.category, ...(item.tags || [])]}
 		preloadImage={item.cover_image_url || ''}
@@ -91,23 +90,16 @@
 		<header class="mb-8">
 			<div class="flex items-center gap-3 mb-4">
 				<CategoryBadge category={item.category} />
-				<span class="inline-flex items-center gap-1 text-sm text-surface-500">
-					<Clock size={12} />
-					{item.reading_time_min} min read
-				</span>
-				{#if item.published_at}
-					<time class="text-sm text-surface-500">{formatDate(item.published_at)}</time>
+				{#if item.author}
+					<span class="text-sm text-surface-500">{item.author.display_name}</span>
+				{/if}
+				{#if item.created_at}
+					<time class="text-sm text-surface-500">{formatDate(item.created_at)}</time>
 				{/if}
 			</div>
 			<h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">{item.title}</h1>
 			<p class="text-lg text-surface-400 leading-relaxed">{item.excerpt}</p>
 			<div class="flex items-center gap-4 mt-6">
-				{#if item.author}
-					<div class="flex items-center gap-2">
-						<UserAvatar src={item.author.avatar_url} alt="" size="sm" />
-						<span class="text-sm text-surface-300">{item.author.display_name}</span>
-					</div>
-				{/if}
 				{#if item.source_url}
 					<a href={item.source_url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-sm text-accent-400 hover:text-accent-300">
 						<ExternalLink size={12} />
