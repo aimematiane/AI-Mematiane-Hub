@@ -2,14 +2,37 @@ import { getSupabaseServerClient } from '$lib/supabase/server.js';
 import { error } from '@sveltejs/kit';
 import { sanitizeHtml } from '$lib/utils/marked.js';
 
+function ensureArray(value) {
+	return Array.isArray(value) ? value : [];
+}
+
+function normalizeItems(items, prefix) {
+	return ensureArray(items).filter(Boolean).map((item, index) => ({
+		...item,
+		id: item.id || `${prefix}-${index}`
+	}));
+}
+
 function sanitizeSections(sections = []) {
-	return sections.map((section) => {
-		if (section?.type !== 'rich_text') return section;
-		return {
+	return ensureArray(sections).filter(Boolean).map((section, index) => {
+		const data = section.data && typeof section.data === 'object' ? section.data : {};
+		const normalized = {
 			...section,
+			id: section.id || `${section.type || 'section'}-${index}`,
 			data: {
-				...section.data,
-				content: sanitizeHtml(section.data?.content || '')
+				...data,
+				cards: normalizeItems(data.cards, `${section.type || 'section'}-${index}-card`),
+				items: normalizeItems(data.items, `${section.type || 'section'}-${index}-item`),
+				images: normalizeItems(data.images, `${section.type || 'section'}-${index}-image`)
+			}
+		};
+
+		if (section?.type !== 'rich_text') return normalized;
+		return {
+			...normalized,
+			data: {
+				...normalized.data,
+				content: sanitizeHtml(data.content || '')
 			}
 		};
 	});

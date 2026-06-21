@@ -21,30 +21,34 @@
 
 <div class="min-h-screen">
 	{#each sections as section (section.id)}
+		{@const sectionData = section.data || {}}
+		{@const sectionCards = sectionData.cards || []}
+		{@const sectionItems = sectionData.items || []}
+		{@const sectionImages = sectionData.images || []}
 
 		<!-- HERO -->
 		{#if section.type === 'hero'}
 			<section class="py-16 md:py-24 px-4">
-				<div class="max-w-4xl mx-auto text-{section.data.alignment || 'center'}">
+				<div class="max-w-4xl mx-auto text-{sectionData.alignment || 'center'}">
 					<h1 class="font-bold text-white leading-tight mb-4
-						{section.data.size === 'small' ? 'text-2xl md:text-3xl' : section.data.size === 'medium' ? 'text-3xl md:text-4xl' : 'text-4xl md:text-6xl'}">
-						{section.data.title}
+						{sectionData.size === 'small' ? 'text-2xl md:text-3xl' : sectionData.size === 'medium' ? 'text-3xl md:text-4xl' : 'text-4xl md:text-6xl'}">
+						{sectionData.title}
 					</h1>
-					{#if section.data.subtitle}
+					{#if sectionData.subtitle}
 						<p class="text-surface-400 max-w-2xl leading-relaxed
-							{section.data.alignment === 'center' ? 'mx-auto' : ''}
-							{section.data.size === 'small' ? 'text-base' : section.data.size === 'medium' ? 'text-lg' : 'text-xl'}">
-							{section.data.subtitle}
+							{sectionData.alignment === 'center' ? 'mx-auto' : ''}
+							{sectionData.size === 'small' ? 'text-base' : sectionData.size === 'medium' ? 'text-lg' : 'text-xl'}">
+							{sectionData.subtitle}
 						</p>
 					{/if}
-					<div class="mt-8 h-px bg-gradient-to-r from-transparent via-accent-500/30 to-transparent max-w-md {section.data.alignment === 'center' ? 'mx-auto' : ''}"></div>
-					{#if section.data.primaryText || section.data.secondaryText}
-						<div class="mt-8 flex flex-wrap gap-3 {section.data.alignment === 'center' ? 'justify-center' : section.data.alignment === 'right' ? 'justify-end' : 'justify-start'}">
-							{#if section.data.primaryText}
-								<a href={section.data.primaryUrl || '/'} class="inline-flex items-center px-6 py-3 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{section.data.primaryText}</a>
+					<div class="mt-8 h-px bg-gradient-to-r from-transparent via-accent-500/30 to-transparent max-w-md {sectionData.alignment === 'center' ? 'mx-auto' : ''}"></div>
+					{#if sectionData.primaryText || sectionData.secondaryText}
+						<div class="mt-8 flex flex-wrap gap-3 {sectionData.alignment === 'center' ? 'justify-center' : sectionData.alignment === 'right' ? 'justify-end' : 'justify-start'}">
+							{#if sectionData.primaryText}
+								<a href={sectionData.primaryUrl || '/'} class="inline-flex items-center px-6 py-3 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{sectionData.primaryText}</a>
 							{/if}
-							{#if section.data.secondaryText}
-								<a href={section.data.secondaryUrl || '/'} class="inline-flex items-center px-6 py-3 rounded-xl border border-surface-700 hover:border-accent-500/50 text-surface-200 text-sm font-semibold transition-colors">{section.data.secondaryText}</a>
+							{#if sectionData.secondaryText}
+								<a href={sectionData.secondaryUrl || '/'} class="inline-flex items-center px-6 py-3 rounded-xl border border-surface-700 hover:border-accent-500/50 text-surface-200 text-sm font-semibold transition-colors">{sectionData.secondaryText}</a>
 							{/if}
 						</div>
 					{/if}
@@ -64,7 +68,7 @@
 					prose-ul:text-surface-300 prose-ol:text-surface-300
 					prose-hr:border-surface-700
 					prose-img:rounded-xl">
-					{@html section.data.content}
+					{@html sectionData.content || ''}
 				</div>
 			</section>
 
@@ -72,21 +76,21 @@
 		{:else if section.type === 'media_text'}
 			<section class="py-12 px-4">
 				<div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-					<div class="{section.data.mediaPosition === 'right' ? 'lg:order-2' : ''}">
-						{#if section.data.imageUrl}
-							<img src={section.data.imageUrl} alt={section.data.imageAlt || section.data.title || ''} class="w-full rounded-2xl border border-surface-800 object-cover aspect-video" loading="lazy" />
+					<div class="{sectionData.mediaPosition === 'right' ? 'lg:order-2' : ''}">
+						{#if sectionData.imageUrl}
+							<img src={sectionData.imageUrl} alt={sectionData.imageAlt || sectionData.title || ''} class="w-full rounded-2xl border border-surface-800 object-cover aspect-video" loading="lazy" />
 						{:else}
 							<div class="aspect-video rounded-2xl border border-dashed border-surface-700 bg-surface-900"></div>
 						{/if}
 					</div>
 					<div>
-						{#if section.data.eyebrow}
-							<p class="text-xs font-semibold uppercase tracking-wider text-accent-400 mb-3">{section.data.eyebrow}</p>
+						{#if sectionData.eyebrow}
+							<p class="text-xs font-semibold uppercase tracking-wider text-accent-400 mb-3">{sectionData.eyebrow}</p>
 						{/if}
-						<h2 class="text-2xl md:text-4xl font-bold text-white mb-4">{section.data.title}</h2>
-						<p class="text-surface-300 leading-relaxed whitespace-pre-line">{section.data.text}</p>
-						{#if section.data.buttonText}
-							<a href={section.data.buttonUrl || '/'} class="inline-flex mt-6 px-5 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{section.data.buttonText}</a>
+						<h2 class="text-2xl md:text-4xl font-bold text-white mb-4">{sectionData.title}</h2>
+						<p class="text-surface-300 leading-relaxed whitespace-pre-line">{sectionData.text}</p>
+						{#if sectionData.buttonText}
+							<a href={sectionData.buttonUrl || '/'} class="inline-flex mt-6 px-5 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{sectionData.buttonText}</a>
 						{/if}
 					</div>
 				</div>
@@ -96,12 +100,12 @@
 		{:else if section.type === 'cards'}
 			<section class="py-12 px-4">
 				<div class="max-w-6xl mx-auto grid gap-5
-					{section.data.columns == 2 ? 'grid-cols-1 md:grid-cols-2' : section.data.columns == 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}">
-					{#each section.data.cards as card (card.id)}
+					{sectionData.columns == 2 ? 'grid-cols-1 md:grid-cols-2' : sectionData.columns == 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}">
+					{#each sectionCards as card (card.id)}
 						<div class="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1
-							{section.data.style === 'gradient'
+							{sectionData.style === 'gradient'
 								? 'bg-gradient-to-br from-surface-800 to-surface-900 border border-surface-700/50 hover:border-accent-500/30 shadow-lg hover:shadow-accent-500/5'
-								: section.data.style === 'bordered'
+								: sectionData.style === 'bordered'
 									? 'bg-surface-900 border-2 border-surface-700 hover:border-accent-500/40'
 									: 'bg-surface-900/80 border border-surface-800 hover:border-surface-700 hover:bg-surface-800/80'}">
 							{#if card.icon}
@@ -118,11 +122,11 @@
 		{:else if section.type === 'stats'}
 			<section class="py-12 px-4">
 				<div class="max-w-6xl mx-auto">
-					{#if section.data.title}
-						<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-8">{section.data.title}</h2>
+					{#if sectionData.title}
+						<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-8">{sectionData.title}</h2>
 					{/if}
 					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-						{#each section.data.items as item (item.id)}
+						{#each sectionItems as item (item.id)}
 							<div class="rounded-2xl border border-surface-800 bg-surface-900/80 p-6 text-center">
 								<div class="text-3xl font-bold text-accent-400 mb-1">{item.value}</div>
 								<div class="text-sm font-semibold text-white">{item.label}</div>
@@ -138,11 +142,11 @@
 			<section class="py-12 px-4">
 				<div class="max-w-5xl mx-auto">
 					<div class="max-w-2xl mb-8">
-						<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{section.data.title}</h2>
-						{#if section.data.intro}<p class="text-surface-400 leading-relaxed">{section.data.intro}</p>{/if}
+						<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{sectionData.title}</h2>
+						{#if sectionData.intro}<p class="text-surface-400 leading-relaxed">{sectionData.intro}</p>{/if}
 					</div>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{#each section.data.items as item (item.id)}
+						{#each sectionItems as item (item.id)}
 							<div class="flex gap-3 rounded-2xl border border-surface-800 bg-surface-900/70 p-5">
 								<div class="mt-0.5 w-7 h-7 rounded-full bg-accent-500/15 text-accent-400 flex items-center justify-center shrink-0"><Check size={15} /></div>
 								<div>
@@ -159,9 +163,9 @@
 		{:else if section.type === 'steps'}
 			<section class="py-12 px-4">
 				<div class="max-w-4xl mx-auto">
-					<h2 class="text-2xl md:text-3xl font-bold text-white mb-8">{section.data.title}</h2>
+					<h2 class="text-2xl md:text-3xl font-bold text-white mb-8">{sectionData.title}</h2>
 					<div class="space-y-4">
-						{#each section.data.items as item, idx (item.id)}
+						{#each sectionItems as item, idx (item.id)}
 							<div class="flex gap-4 rounded-2xl border border-surface-800 bg-surface-900/70 p-5">
 								<div class="w-9 h-9 rounded-full bg-accent-500 text-white flex items-center justify-center text-sm font-bold shrink-0">{idx + 1}</div>
 								<div>
@@ -178,9 +182,9 @@
 		{:else if section.type === 'testimonials'}
 			<section class="py-12 px-4">
 				<div class="max-w-6xl mx-auto">
-					<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-8">{section.data.title}</h2>
+					<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-8">{sectionData.title}</h2>
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-						{#each section.data.items as item (item.id)}
+						{#each sectionItems as item (item.id)}
 							<figure class="rounded-2xl border border-surface-800 bg-surface-900/80 p-6">
 								<blockquote class="text-surface-300 leading-relaxed">"{item.quote}"</blockquote>
 								<figcaption class="mt-5">
@@ -197,9 +201,9 @@
 		{:else if section.type === 'pricing'}
 			<section class="py-12 px-4">
 				<div class="max-w-6xl mx-auto">
-					<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-8">{section.data.title}</h2>
+					<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-8">{sectionData.title}</h2>
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-						{#each section.data.items as item (item.id)}
+						{#each sectionItems as item (item.id)}
 							<div class="rounded-2xl border border-surface-800 bg-surface-900/80 p-6 flex flex-col">
 								<h3 class="text-lg font-bold text-white">{item.name}</h3>
 								<div class="text-3xl font-bold text-accent-400 mt-3">{item.price}</div>
@@ -221,8 +225,8 @@
 		<!-- GALLERY -->
 		{:else if section.type === 'gallery'}
 			<section class="py-12 px-4">
-				<div class="max-w-6xl mx-auto grid gap-4 {section.data.columns == 2 ? 'grid-cols-1 md:grid-cols-2' : section.data.columns == 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}">
-					{#each section.data.images as image (image.id)}
+				<div class="max-w-6xl mx-auto grid gap-4 {sectionData.columns == 2 ? 'grid-cols-1 md:grid-cols-2' : sectionData.columns == 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}">
+					{#each sectionImages as image (image.id)}
 						<figure class="rounded-2xl overflow-hidden border border-surface-800 bg-surface-900">
 							{#if image.url}<img src={image.url} alt={image.alt || image.caption || ''} class="w-full aspect-video object-cover" loading="lazy" />{/if}
 							{#if image.caption}<figcaption class="p-3 text-sm text-surface-400">{image.caption}</figcaption>{/if}
@@ -235,15 +239,15 @@
 		{:else if section.type === 'contact'}
 			<section class="py-12 px-4">
 				<div class="max-w-4xl mx-auto rounded-2xl border border-surface-800 bg-surface-900/80 p-8">
-					<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{section.data.title}</h2>
-					{#if section.data.description}<p class="text-surface-400 mb-6">{section.data.description}</p>{/if}
+					<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{sectionData.title}</h2>
+					{#if sectionData.description}<p class="text-surface-400 mb-6">{sectionData.description}</p>{/if}
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-						{#if section.data.email}<a href="mailto:{section.data.email}" class="flex items-center gap-2 text-surface-300 hover:text-accent-400"><Mail size={16} />{section.data.email}</a>{/if}
-						{#if section.data.phone}<a href="tel:{section.data.phone}" class="flex items-center gap-2 text-surface-300 hover:text-accent-400"><Phone size={16} />{section.data.phone}</a>{/if}
-						{#if section.data.address}<span class="flex items-center gap-2 text-surface-300"><MapPin size={16} />{section.data.address}</span>{/if}
+						{#if sectionData.email}<a href="mailto:{sectionData.email}" class="flex items-center gap-2 text-surface-300 hover:text-accent-400"><Mail size={16} />{sectionData.email}</a>{/if}
+						{#if sectionData.phone}<a href="tel:{sectionData.phone}" class="flex items-center gap-2 text-surface-300 hover:text-accent-400"><Phone size={16} />{sectionData.phone}</a>{/if}
+						{#if sectionData.address}<span class="flex items-center gap-2 text-surface-300"><MapPin size={16} />{sectionData.address}</span>{/if}
 					</div>
-					{#if section.data.buttonText}
-						<a href={section.data.buttonUrl || '/'} class="inline-flex mt-7 px-5 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{section.data.buttonText}</a>
+					{#if sectionData.buttonText}
+						<a href={sectionData.buttonUrl || '/'} class="inline-flex mt-7 px-5 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{sectionData.buttonText}</a>
 					{/if}
 				</div>
 			</section>
@@ -252,13 +256,13 @@
 		{:else if section.type === 'embed'}
 			<section class="py-12 px-4">
 				<div class="max-w-5xl mx-auto">
-					{#if section.data.title}<h2 class="text-2xl md:text-3xl font-bold text-white mb-5">{section.data.title}</h2>{/if}
-					{#if section.data.embedUrl}
-						<div class="rounded-2xl overflow-hidden border border-surface-800 bg-surface-900 {section.data.aspect === 'square' ? 'aspect-square' : section.data.aspect === 'map' ? 'aspect-[16/10]' : 'aspect-video'}">
-							<iframe src={section.data.embedUrl} title={section.data.title || 'Embedded content'} class="w-full h-full" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+					{#if sectionData.title}<h2 class="text-2xl md:text-3xl font-bold text-white mb-5">{sectionData.title}</h2>{/if}
+					{#if sectionData.embedUrl}
+						<div class="rounded-2xl overflow-hidden border border-surface-800 bg-surface-900 {sectionData.aspect === 'square' ? 'aspect-square' : sectionData.aspect === 'map' ? 'aspect-[16/10]' : 'aspect-video'}">
+							<iframe src={sectionData.embedUrl} title={sectionData.title || 'Embedded content'} class="w-full h-full" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
 						</div>
 					{/if}
-					{#if section.data.caption}<p class="text-sm text-surface-500 mt-3">{section.data.caption}</p>{/if}
+					{#if sectionData.caption}<p class="text-sm text-surface-500 mt-3">{sectionData.caption}</p>{/if}
 				</div>
 			</section>
 
@@ -266,11 +270,11 @@
 		{:else if section.type === 'faq'}
 			<section class="py-12 px-4">
 				<div class="max-w-3xl mx-auto">
-					{#if section.data.title}
-						<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-10">{section.data.title}</h2>
+					{#if sectionData.title}
+						<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-10">{sectionData.title}</h2>
 					{/if}
 					<div class="space-y-3">
-						{#each section.data.items as item (item.id)}
+						{#each sectionItems as item (item.id)}
 							<div class="bg-surface-900 border border-surface-800 rounded-xl overflow-hidden transition-colors
 								{openFaq[item.id] ? 'border-accent-500/30' : 'hover:border-surface-700'}">
 								<button
@@ -302,19 +306,19 @@
 		{:else if section.type === 'cta'}
 			<section class="py-12 px-4">
 				<div class="max-w-4xl mx-auto rounded-2xl p-10 md:p-14 text-center
-					{section.data.style === 'gradient'
+					{sectionData.style === 'gradient'
 						? 'bg-gradient-to-br from-accent-600/20 via-surface-900 to-cyan-600/20 border border-accent-500/20'
-						: section.data.style === 'outlined'
+						: sectionData.style === 'outlined'
 							? 'border-2 border-surface-700'
 							: 'bg-surface-800'}">
-					<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{section.data.title}</h2>
-					{#if section.data.description}
-						<p class="text-surface-400 max-w-xl mx-auto mb-8 leading-relaxed">{section.data.description}</p>
+					<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{sectionData.title}</h2>
+					{#if sectionData.description}
+						<p class="text-surface-400 max-w-xl mx-auto mb-8 leading-relaxed">{sectionData.description}</p>
 					{/if}
-					{#if section.data.buttonText}
-						<a href={section.data.buttonUrl || '/'}
+					{#if sectionData.buttonText}
+						<a href={sectionData.buttonUrl || '/'}
 							class="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-accent-500 to-cyan-500 hover:from-accent-600 hover:to-cyan-600 text-white shadow-lg shadow-accent-500/25 hover:shadow-accent-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
-							{section.data.buttonText}
+							{sectionData.buttonText}
 						</a>
 					{/if}
 				</div>
@@ -323,16 +327,16 @@
 		<!-- DIVIDER -->
 		{:else if section.type === 'divider'}
 			<div class="max-w-4xl mx-auto px-4
-				{section.data.spacing === 'small' ? 'py-4' : section.data.spacing === 'large' ? 'py-16' : 'py-8'}">
-				{#if section.data.style === 'line'}
+				{sectionData.spacing === 'small' ? 'py-4' : sectionData.spacing === 'large' ? 'py-16' : 'py-8'}">
+				{#if sectionData.style === 'line'}
 					<hr class="border-surface-800" />
-				{:else if section.data.style === 'dots'}
+				{:else if sectionData.style === 'dots'}
 					<div class="flex items-center justify-center gap-2">
 						<span class="w-1.5 h-1.5 rounded-full bg-surface-600"></span>
 						<span class="w-1.5 h-1.5 rounded-full bg-surface-600"></span>
 						<span class="w-1.5 h-1.5 rounded-full bg-surface-600"></span>
 					</div>
-				{:else if section.data.style === 'gradient'}
+				{:else if sectionData.style === 'gradient'}
 					<div class="h-px bg-gradient-to-r from-transparent via-accent-500/30 to-transparent"></div>
 				{/if}
 				<!-- 'space' style renders nothing, just spacing -->
