@@ -1,6 +1,34 @@
 import { requireAdmin } from '$lib/server/auth.js';
 import { redirect, error } from '@sveltejs/kit';
 
+function ensureArray(value) {
+	return Array.isArray(value) ? value : [];
+}
+
+function normalizeItems(items, prefix) {
+	return ensureArray(items).filter(Boolean).map((item, index) => ({
+		...item,
+		id: item.id || `${prefix}-${index}`
+	}));
+}
+
+function normalizeSections(sections = []) {
+	return ensureArray(sections).filter(Boolean).map((section, index) => {
+		const data = section.data && typeof section.data === 'object' ? section.data : {};
+		return {
+			...section,
+			id: section.id || `${section.type || 'section'}-${index}`,
+			type: section.type || 'rich_text',
+			data: {
+				...data,
+				cards: normalizeItems(data.cards, `${section.type || 'section'}-${index}-card`),
+				items: normalizeItems(data.items, `${section.type || 'section'}-${index}-item`),
+				images: normalizeItems(data.images, `${section.type || 'section'}-${index}-image`)
+			}
+		};
+	});
+}
+
 export async function load(event) {
 	const { params } = event;
 	const { client } = await requireAdmin(event, 'role');
@@ -13,6 +41,7 @@ export async function load(event) {
 		.single();
 
 	if (pageError || !page) throw error(404, 'Page not found');
+	page.sections = normalizeSections(page.sections || []);
 
 	return { page };
 }

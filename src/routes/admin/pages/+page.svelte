@@ -2,6 +2,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { FileText, Plus, Edit, Trash2, Eye, EyeOff, Globe, Calendar } from '@lucide/svelte';
+	import { submitAction } from '$lib/utils/adminFetch.js';
 
 	let { data } = $props();
 
@@ -9,6 +10,7 @@
 	let showCreateModal = $state(false);
 	let newPage = $state({ title: '', slug: '' });
 	let creating = $state(false);
+	let createError = $state('');
 
 	// Re-sync whenever server data refreshes (after any action)
 	$effect(() => {
@@ -22,22 +24,26 @@
 	async function createPage() {
 		if (!newPage.title) return;
 		creating = true;
+		createError = '';
 
 		const formData = new FormData();
 		formData.append('title', newPage.title);
 		formData.append('slug', newPage.slug);
 
-		const response = await fetch('?/create', { method: 'POST', body: formData });
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error('Failed to create page:', response.status, errorText);
+		try {
+			const result = await submitAction('create', formData, '/admin/pages');
+			const id = result.data?.id;
+			showCreateModal = false;
+			newPage = { title: '', slug: '' };
+			await invalidateAll();
+			if (id) {
+				await goto(`/admin/pages/${id}`);
+			}
+		} catch (err) {
+			createError = err.message || 'Failed to create page.';
+		} finally {
 			creating = false;
-			return;
 		}
-		creating = false;
-		showCreateModal = false;
-		newPage = { title: '', slug: '' };
-		await invalidateAll();
 	}
 
 	async function deletePage(id) {
@@ -46,20 +52,26 @@
 		const formData = new FormData();
 		formData.append('id', id);
 
-		await fetch('?/delete', { method: 'POST', body: formData });
-		await invalidateAll();
+		try {
+			await submitAction('delete', formData, '/admin/pages');
+			await invalidateAll();
+		} catch (err) {
+			createError = err.message || 'Failed to delete page.';
+			showCreateModal = true;
+		}
 	}
 
 	async function publishPage(id, currentlyPublished) {
 		const formData = new FormData();
 		formData.append('id', id);
 
-		if (currentlyPublished) {
-			await fetch('?/unpublish', { method: 'POST', body: formData });
-		} else {
-			await fetch('?/publish', { method: 'POST', body: formData });
+		try {
+			await submitAction(currentlyPublished ? 'unpublish' : 'publish', formData, '/admin/pages');
+			await invalidateAll();
+		} catch (err) {
+			createError = err.message || 'Failed to update page status.';
+			showCreateModal = true;
 		}
-		await invalidateAll();
 	}
 
 	function generateSlug() {
@@ -160,6 +172,11 @@
 	<div role="presentation" tabindex="-1" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onkeydown={(e) => { if (e.key === 'Escape') showCreateModal = false; }} onclick={(e) => { if (e.target === e.currentTarget) showCreateModal = false; }}>
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 w-full max-w-md">
 			<h3 class="text-lg font-semibold text-white mb-4">Create New Page</h3>
+			{#if createError}
+				<div class="mb-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+					{createError}
+				</div>
+			{/if}
 			<div class="space-y-4">
 				<div>
 					<label for="new-page-title" class="block text-sm text-surface-300 mb-1.5">Page Title</label>
