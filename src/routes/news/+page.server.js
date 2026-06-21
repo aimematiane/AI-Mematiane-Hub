@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { loadContentMetrics } from '$lib/server/contentMetrics.js';
 import { applyNewsQueryFilters } from '$lib/utils/pagination.js';
 
 export async function load({ url, cookies, setHeaders }) {
@@ -18,9 +19,10 @@ export async function load({ url, cookies, setHeaders }) {
 	query = applyNewsQueryFilters(query, { category });
 
 	const { data: newsItems, count, error } = await query;
+	const metrics = await loadContentMetrics(client, 'news', (newsItems || []).map((item) => item.id));
 
 	return {
-		newsItems: newsItems || [],
+		newsItems: (newsItems || []).map((item) => ({ ...item, metrics: metrics[item.id] })),
 		totalCount: count || 0,
 		page,
 		perPage,

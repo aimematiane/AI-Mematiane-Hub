@@ -2,7 +2,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
-	import { Loader2 } from '@lucide/svelte';
+	import { Bookmark, Heart, Loader2, MessageCircle, Share2 } from '@lucide/svelte';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { applyNewsQueryFilters } from '$lib/utils/pagination.js';
@@ -31,10 +31,38 @@
 		const { data: newItems, error } = await query.range((nextPage - 1) * data.perPage, nextPage * data.perPage - 1);
 
 		if (!error && newItems && newItems.length > 0) {
-			newsItems.push(...newItems);
+			const metrics = await fetchMetrics('news', newItems.map((item) => item.id));
+			newsItems.push(...newItems.map((item) => ({ ...item, metrics: metrics[item.id] || emptyMetrics() })));
 			page = nextPage;
 		}
 		loading = false;
+	}
+
+	function emptyMetrics() {
+		return { upvotes: 0, bookmarks: 0, comments: 0 };
+	}
+
+	async function fetchMetrics(itemType, itemIds) {
+		const { data: metrics } = await client.rpc('get_content_metrics', {
+			p_item_type: itemType,
+			p_item_ids: itemIds
+		});
+		return Object.fromEntries((metrics || []).map((row) => [row.item_id, {
+			upvotes: row.upvotes_count || 0,
+			bookmarks: row.bookmarks_count || 0,
+			comments: row.comments_count || 0
+		}]));
+	}
+
+	async function shareCard(event, item) {
+		event.preventDefault();
+		event.stopPropagation();
+		const url = `${window.location.origin}/news/${item.slug}`;
+		if (navigator.share) {
+			await navigator.share({ title: item.title, text: item.excerpt, url });
+		} else {
+			await navigator.clipboard?.writeText(url);
+		}
 	}
 
 	$effect(() => {
@@ -50,13 +78,14 @@
 	const prevUrl = $derived(data.page > 1 ? (data.page > 2 ? `/news?page=${data.page - 1}` : '/news') : '');
 	const nextUrl = $derived(data.page < Math.ceil(data.totalCount / data.perPage) ? `/news?page=${data.page + 1}` : '');
 	const siteName = $derived(data.site?.site_name || 'AI Mematiane');
+	const siteDescription = $derived(data.site?.site_description || 'Latest stories, updates, and announcements.');
 
 	function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
 </script>
 
 <SeoHead
 	title={data.page > 1 ? `News - Page ${data.page}` : `AI News — ${siteName}`}
-	description="Latest news and analysis from the world of AI."
+	description={siteDescription}
 	url={canonicalUrl}
 	prevUrl={prevUrl}
 	nextUrl={nextUrl}
@@ -68,7 +97,7 @@
 
 	<div class="mb-6">
 		<h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">News</h1>
-		<p class="text-surface-400">Latest news, research, and announcements in AI.</p>
+		<p class="text-surface-400">{siteDescription}</p>
 	</div>
 
 	{#if newsItems.length > 0}
@@ -93,6 +122,16 @@
 						</div>
 						<h2 class="text-xl font-bold text-white group-hover:text-rose-400 transition-colors mb-2 tracking-tight">{item.title}</h2>
 						<p class="text-sm text-surface-400 leading-relaxed line-clamp-3 mb-4">{item.excerpt}</p>
+						<div class="flex items-center justify-between gap-3 text-xs text-surface-500">
+							<div class="flex items-center gap-3">
+								<span class="inline-flex items-center gap-1" title="Likes"><Heart size={13} />{item.metrics?.upvotes || 0}</span>
+								<span class="inline-flex items-center gap-1" title="Saves"><Bookmark size={13} />{item.metrics?.bookmarks || 0}</span>
+								<span class="inline-flex items-center gap-1" title="Comments"><MessageCircle size={13} />{item.metrics?.comments || 0}</span>
+							</div>
+							<button type="button" onclick={(event) => shareCard(event, item)} class="inline-flex items-center gap-1 hover:text-accent-400 transition-colors" title="Share">
+								<Share2 size={13} />
+							</button>
+						</div>
 					</div>
 				</a>
 			{/each}

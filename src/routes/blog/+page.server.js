@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
+import { loadContentMetrics } from '$lib/server/contentMetrics.js';
 
 export async function load({ url, cookies, setHeaders }) {
 	setHeaders({
@@ -15,8 +16,10 @@ export async function load({ url, cookies, setHeaders }) {
 		.order('published_at', { ascending: false })
 		.range((page - 1) * perPage, page * perPage - 1);
 
+	const metrics = await loadContentMetrics(client, 'post', (posts || []).map((post) => post.id));
+
 	return {
-		posts: posts || [],
+		posts: (posts || []).map((post) => ({ ...post, metrics: metrics[post.id] })),
 		totalCount: count || 0,
 		page,
 		perPage

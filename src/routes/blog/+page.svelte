@@ -3,7 +3,7 @@
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import CategoryBadge from '$lib/components/CategoryBadge.svelte';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
-	import { Loader2 } from '@lucide/svelte';
+	import { Bookmark, Heart, Loader2, MessageCircle, Share2 } from '@lucide/svelte';
 	import { optimizeImageUrl } from '$lib/utils/image';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
@@ -34,10 +34,38 @@
 			.range((nextPage - 1) * data.perPage, nextPage * data.perPage - 1);
 		
 		if (!error && newPosts && newPosts.length > 0) {
-			posts.push(...newPosts);
+			const metrics = await fetchMetrics('post', newPosts.map((post) => post.id));
+			posts.push(...newPosts.map((post) => ({ ...post, metrics: metrics[post.id] || emptyMetrics() })));
 			page = nextPage;
 		}
 		loading = false;
+	}
+
+	function emptyMetrics() {
+		return { upvotes: 0, bookmarks: 0, comments: 0 };
+	}
+
+	async function fetchMetrics(itemType, itemIds) {
+		const { data: metrics } = await client.rpc('get_content_metrics', {
+			p_item_type: itemType,
+			p_item_ids: itemIds
+		});
+		return Object.fromEntries((metrics || []).map((row) => [row.item_id, {
+			upvotes: row.upvotes_count || 0,
+			bookmarks: row.bookmarks_count || 0,
+			comments: row.comments_count || 0
+		}]));
+	}
+
+	async function shareCard(event, post) {
+		event.preventDefault();
+		event.stopPropagation();
+		const url = `${window.location.origin}/blog/${post.slug}`;
+		if (navigator.share) {
+			await navigator.share({ title: post.title, text: post.excerpt, url });
+		} else {
+			await navigator.clipboard?.writeText(url);
+		}
 	}
 
 	$effect(() => {
@@ -108,13 +136,21 @@
 						</div>
 						<h2 class="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors mb-2 tracking-tight">{post.title}</h2>
 						<p class="text-sm text-surface-400 leading-relaxed line-clamp-3 mb-4">{post.excerpt}</p>
-						<div class="flex items-center">
+						<div class="flex items-center justify-between gap-3">
 							{#if post.author}
 								<div class="flex items-center gap-2">
 									<UserAvatar src={post.author.avatar_url} alt="" size="xs" />
 									<span class="text-xs text-surface-400">{post.author.display_name}</span>
 								</div>
 							{/if}
+							<div class="flex items-center gap-3 text-xs text-surface-500">
+								<span class="inline-flex items-center gap-1" title="Likes"><Heart size={13} />{post.metrics?.upvotes || 0}</span>
+								<span class="inline-flex items-center gap-1" title="Saves"><Bookmark size={13} />{post.metrics?.bookmarks || 0}</span>
+								<span class="inline-flex items-center gap-1" title="Comments"><MessageCircle size={13} />{post.metrics?.comments || 0}</span>
+								<button type="button" onclick={(event) => shareCard(event, post)} class="inline-flex items-center gap-1 hover:text-accent-400 transition-colors" title="Share">
+									<Share2 size={13} />
+								</button>
+							</div>
 						</div>
 					</div>
 				</a>
