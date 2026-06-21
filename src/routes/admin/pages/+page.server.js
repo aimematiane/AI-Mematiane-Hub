@@ -46,7 +46,17 @@ export const actions = {
 		const formData = await request.formData();
 		const id = formData.get('id');
 
-		await client.from('pages').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+		const { error } = await client
+			.from('pages')
+			.update({
+				deleted_at: new Date().toISOString(),
+				is_published: false,
+				show_in_menu: false,
+				published_at: null
+			})
+			.eq('id', id);
+
+		if (error) return fail(400, { message: error.message });
 		return { success: true };
 	},
 

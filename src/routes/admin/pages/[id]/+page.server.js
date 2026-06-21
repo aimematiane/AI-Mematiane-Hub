@@ -1,5 +1,5 @@
 import { requireAdmin } from '$lib/server/auth.js';
-import { redirect, error } from '@sveltejs/kit';
+import { redirect, error, fail } from '@sveltejs/kit';
 
 function ensureArray(value) {
 	return Array.isArray(value) ? value : [];
@@ -79,27 +79,35 @@ export const actions = {
 	async publish(event) {
 		const { params } = event;
 		const { client } = await requireAdmin(event, 'role');
-		await client.from('pages')
+		const { error: publishError } = await client.from('pages')
 			.update({ is_published: true, published_at: new Date().toISOString() })
 			.eq('id', params.id);
+		if (publishError) return fail(400, { message: publishError.message });
 		return { success: true };
 	},
 
 	async unpublish(event) {
 		const { params } = event;
 		const { client } = await requireAdmin(event, 'role');
-		await client.from('pages')
-			.update({ is_published: false })
+		const { error: unpublishError } = await client.from('pages')
+			.update({ is_published: false, show_in_menu: false, published_at: null })
 			.eq('id', params.id);
+		if (unpublishError) return fail(400, { message: unpublishError.message });
 		return { success: true };
 	},
 
 	async delete(event) {
 		const { params } = event;
 		const { client } = await requireAdmin(event, 'role');
-		await client.from('pages')
-			.update({ deleted_at: new Date().toISOString() })
+		const { error: deleteError } = await client.from('pages')
+			.update({
+				deleted_at: new Date().toISOString(),
+				is_published: false,
+				show_in_menu: false,
+				published_at: null
+			})
 			.eq('id', params.id);
+		if (deleteError) return fail(400, { message: deleteError.message });
 		throw redirect(302, '/admin/pages');
 	}
 };

@@ -30,18 +30,34 @@ export async function load({ cookies, url }) {
 		profile = profileData;
 	}
 
-	const { data: navPages } = await client
-		.from('pages')
-		.select('id, title, slug')
-		.eq('is_published', true)
-		.eq('show_in_menu', true)
-		.is('deleted_at', null)
-		.order('created_at', { ascending: true });
+	let navPages = [];
+	let siteSettings = [];
 
-	const { data: siteSettings } = await client
-		.from('site_settings')
-		.select('key, value, value_json')
-		.eq('is_public', true);
+	try {
+		const [navPagesResult, siteSettingsResult] = await Promise.all([
+			client
+				.from('pages')
+				.select('id, title, slug')
+				.eq('is_published', true)
+				.eq('show_in_menu', true)
+				.is('deleted_at', null)
+				.order('created_at', { ascending: true }),
+			client
+				.from('site_settings')
+				.select('key, value, value_json')
+				.eq('is_public', true)
+		]);
+		if (navPagesResult.error) {
+			console.error('Failed to load navigation pages', navPagesResult.error.message);
+		}
+		if (siteSettingsResult.error) {
+			console.error('Failed to load site settings', siteSettingsResult.error.message);
+		}
+		navPages = navPagesResult.data || [];
+		siteSettings = siteSettingsResult.data || [];
+	} catch (err) {
+		console.error('Failed to load global navigation/settings', err?.message || err);
+	}
 
 	const site = settingsToMap(siteSettings || []);
 
@@ -57,20 +73,32 @@ export async function load({ cookies, url }) {
 		};
 	}
 
-	const [footerSettingsResult, footerColumnsResult, footerSocialResult, themeSettingsResult] = await Promise.all([
-		client.from('footer_settings').select('key, value').order('sort_order'),
-		client.from('footer_columns')
-			.select('id, title, sort_order, is_visible, links:footer_links(label, url, is_external, sort_order, is_visible)')
-			.eq('is_visible', true)
-			.order('sort_order'),
-		client.from('footer_social_links')
-			.select('id, platform, label, url, icon_key, sort_order')
-			.eq('is_visible', true)
-			.order('sort_order'),
-		client.from('theme_settings')
-			.select('css_variable, value')
-			.not('css_variable', 'is', null)
-	]);
+	let footerSettingsResult = { data: [] };
+	let footerColumnsResult = { data: [] };
+	let footerSocialResult = { data: [] };
+	let themeSettingsResult = { data: [] };
+
+	try {
+		[footerSettingsResult, footerColumnsResult, footerSocialResult, themeSettingsResult] = await Promise.all([
+			client.from('footer_settings').select('key, value').order('sort_order'),
+			client.from('footer_columns')
+				.select('id, title, sort_order, is_visible, links:footer_links(label, url, is_external, sort_order, is_visible)')
+				.eq('is_visible', true)
+				.order('sort_order'),
+			client.from('footer_social_links')
+				.select('id, platform, label, url, icon_key, sort_order')
+				.eq('is_visible', true)
+				.order('sort_order'),
+			client.from('theme_settings')
+				.select('css_variable, value')
+				.not('css_variable', 'is', null)
+		]);
+		for (const result of [footerSettingsResult, footerColumnsResult, footerSocialResult, themeSettingsResult]) {
+			if (result.error) console.error('Failed to load global chrome data', result.error.message);
+		}
+	} catch (err) {
+		console.error('Failed to load global footer/theme data', err?.message || err);
+	}
 
 	const footerSettingsMap = {};
 	for (const s of footerSettingsResult.data || []) {
