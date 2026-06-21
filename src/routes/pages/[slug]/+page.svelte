@@ -1,6 +1,6 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
-	import { Calendar, ChevronDown } from '@lucide/svelte';
+	import { Calendar, Check, ChevronDown, Mail, MapPin, Phone } from '@lucide/svelte';
 	import { resolveMetaTitle, resolveMetaDescription } from '$lib/config/site.js';
 
 	let { data } = $props();
@@ -38,6 +38,16 @@
 						</p>
 					{/if}
 					<div class="mt-8 h-px bg-gradient-to-r from-transparent via-accent-500/30 to-transparent max-w-md {section.data.alignment === 'center' ? 'mx-auto' : ''}"></div>
+					{#if section.data.primaryText || section.data.secondaryText}
+						<div class="mt-8 flex flex-wrap gap-3 {section.data.alignment === 'center' ? 'justify-center' : section.data.alignment === 'right' ? 'justify-end' : 'justify-start'}">
+							{#if section.data.primaryText}
+								<a href={section.data.primaryUrl || '/'} class="inline-flex items-center px-6 py-3 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{section.data.primaryText}</a>
+							{/if}
+							{#if section.data.secondaryText}
+								<a href={section.data.secondaryUrl || '/'} class="inline-flex items-center px-6 py-3 rounded-xl border border-surface-700 hover:border-accent-500/50 text-surface-200 text-sm font-semibold transition-colors">{section.data.secondaryText}</a>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</section>
 
@@ -55,6 +65,30 @@
 					prose-hr:border-surface-700
 					prose-img:rounded-xl">
 					{@html section.data.content}
+				</div>
+			</section>
+
+		<!-- MEDIA + TEXT -->
+		{:else if section.type === 'media_text'}
+			<section class="py-12 px-4">
+				<div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+					<div class="{section.data.mediaPosition === 'right' ? 'lg:order-2' : ''}">
+						{#if section.data.imageUrl}
+							<img src={section.data.imageUrl} alt={section.data.imageAlt || section.data.title || ''} class="w-full rounded-2xl border border-surface-800 object-cover aspect-video" loading="lazy" />
+						{:else}
+							<div class="aspect-video rounded-2xl border border-dashed border-surface-700 bg-surface-900"></div>
+						{/if}
+					</div>
+					<div>
+						{#if section.data.eyebrow}
+							<p class="text-xs font-semibold uppercase tracking-wider text-accent-400 mb-3">{section.data.eyebrow}</p>
+						{/if}
+						<h2 class="text-2xl md:text-4xl font-bold text-white mb-4">{section.data.title}</h2>
+						<p class="text-surface-300 leading-relaxed whitespace-pre-line">{section.data.text}</p>
+						{#if section.data.buttonText}
+							<a href={section.data.buttonUrl || '/'} class="inline-flex mt-6 px-5 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{section.data.buttonText}</a>
+						{/if}
+					</div>
 				</div>
 			</section>
 
@@ -77,6 +111,154 @@
 							<p class="text-sm text-surface-400 leading-relaxed">{card.description}</p>
 						</div>
 					{/each}
+				</div>
+			</section>
+
+		<!-- STATS -->
+		{:else if section.type === 'stats'}
+			<section class="py-12 px-4">
+				<div class="max-w-6xl mx-auto">
+					{#if section.data.title}
+						<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-8">{section.data.title}</h2>
+					{/if}
+					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+						{#each section.data.items as item (item.id)}
+							<div class="rounded-2xl border border-surface-800 bg-surface-900/80 p-6 text-center">
+								<div class="text-3xl font-bold text-accent-400 mb-1">{item.value}</div>
+								<div class="text-sm font-semibold text-white">{item.label}</div>
+								{#if item.description}<p class="text-xs text-surface-500 mt-2">{item.description}</p>{/if}
+							</div>
+						{/each}
+					</div>
+				</div>
+			</section>
+
+		<!-- FEATURES -->
+		{:else if section.type === 'features'}
+			<section class="py-12 px-4">
+				<div class="max-w-5xl mx-auto">
+					<div class="max-w-2xl mb-8">
+						<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{section.data.title}</h2>
+						{#if section.data.intro}<p class="text-surface-400 leading-relaxed">{section.data.intro}</p>{/if}
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						{#each section.data.items as item (item.id)}
+							<div class="flex gap-3 rounded-2xl border border-surface-800 bg-surface-900/70 p-5">
+								<div class="mt-0.5 w-7 h-7 rounded-full bg-accent-500/15 text-accent-400 flex items-center justify-center shrink-0"><Check size={15} /></div>
+								<div>
+									<h3 class="font-semibold text-white mb-1">{item.title}</h3>
+									<p class="text-sm text-surface-400 leading-relaxed">{item.description}</p>
+								</div>
+							</div>
+						{/each}
+					</div>
+				</div>
+			</section>
+
+		<!-- STEPS -->
+		{:else if section.type === 'steps'}
+			<section class="py-12 px-4">
+				<div class="max-w-4xl mx-auto">
+					<h2 class="text-2xl md:text-3xl font-bold text-white mb-8">{section.data.title}</h2>
+					<div class="space-y-4">
+						{#each section.data.items as item, idx (item.id)}
+							<div class="flex gap-4 rounded-2xl border border-surface-800 bg-surface-900/70 p-5">
+								<div class="w-9 h-9 rounded-full bg-accent-500 text-white flex items-center justify-center text-sm font-bold shrink-0">{idx + 1}</div>
+								<div>
+									<h3 class="font-semibold text-white mb-1">{item.title}</h3>
+									<p class="text-sm text-surface-400 leading-relaxed">{item.description}</p>
+								</div>
+							</div>
+						{/each}
+					</div>
+				</div>
+			</section>
+
+		<!-- TESTIMONIALS -->
+		{:else if section.type === 'testimonials'}
+			<section class="py-12 px-4">
+				<div class="max-w-6xl mx-auto">
+					<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-8">{section.data.title}</h2>
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+						{#each section.data.items as item (item.id)}
+							<figure class="rounded-2xl border border-surface-800 bg-surface-900/80 p-6">
+								<blockquote class="text-surface-300 leading-relaxed">"{item.quote}"</blockquote>
+								<figcaption class="mt-5">
+									<div class="font-semibold text-white text-sm">{item.name}</div>
+									{#if item.role}<div class="text-xs text-surface-500">{item.role}</div>{/if}
+								</figcaption>
+							</figure>
+						{/each}
+					</div>
+				</div>
+			</section>
+
+		<!-- PRICING -->
+		{:else if section.type === 'pricing'}
+			<section class="py-12 px-4">
+				<div class="max-w-6xl mx-auto">
+					<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-8">{section.data.title}</h2>
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+						{#each section.data.items as item (item.id)}
+							<div class="rounded-2xl border border-surface-800 bg-surface-900/80 p-6 flex flex-col">
+								<h3 class="text-lg font-bold text-white">{item.name}</h3>
+								<div class="text-3xl font-bold text-accent-400 mt-3">{item.price}</div>
+								<p class="text-sm text-surface-400 mt-2">{item.description}</p>
+								<ul class="space-y-2 mt-5 mb-6 text-sm text-surface-300">
+									{#each (item.features || '').split('\n').filter(Boolean) as feature}
+										<li class="flex gap-2"><Check size={14} class="text-accent-400 mt-0.5 shrink-0" />{feature}</li>
+									{/each}
+								</ul>
+								{#if item.buttonText}
+									<a href={item.buttonUrl || '/'} class="mt-auto text-center px-4 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{item.buttonText}</a>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</div>
+			</section>
+
+		<!-- GALLERY -->
+		{:else if section.type === 'gallery'}
+			<section class="py-12 px-4">
+				<div class="max-w-6xl mx-auto grid gap-4 {section.data.columns == 2 ? 'grid-cols-1 md:grid-cols-2' : section.data.columns == 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}">
+					{#each section.data.images as image (image.id)}
+						<figure class="rounded-2xl overflow-hidden border border-surface-800 bg-surface-900">
+							{#if image.url}<img src={image.url} alt={image.alt || image.caption || ''} class="w-full aspect-video object-cover" loading="lazy" />{/if}
+							{#if image.caption}<figcaption class="p-3 text-sm text-surface-400">{image.caption}</figcaption>{/if}
+						</figure>
+					{/each}
+				</div>
+			</section>
+
+		<!-- CONTACT -->
+		{:else if section.type === 'contact'}
+			<section class="py-12 px-4">
+				<div class="max-w-4xl mx-auto rounded-2xl border border-surface-800 bg-surface-900/80 p-8">
+					<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{section.data.title}</h2>
+					{#if section.data.description}<p class="text-surface-400 mb-6">{section.data.description}</p>{/if}
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+						{#if section.data.email}<a href="mailto:{section.data.email}" class="flex items-center gap-2 text-surface-300 hover:text-accent-400"><Mail size={16} />{section.data.email}</a>{/if}
+						{#if section.data.phone}<a href="tel:{section.data.phone}" class="flex items-center gap-2 text-surface-300 hover:text-accent-400"><Phone size={16} />{section.data.phone}</a>{/if}
+						{#if section.data.address}<span class="flex items-center gap-2 text-surface-300"><MapPin size={16} />{section.data.address}</span>{/if}
+					</div>
+					{#if section.data.buttonText}
+						<a href={section.data.buttonUrl || '/'} class="inline-flex mt-7 px-5 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors">{section.data.buttonText}</a>
+					{/if}
+				</div>
+			</section>
+
+		<!-- EMBED -->
+		{:else if section.type === 'embed'}
+			<section class="py-12 px-4">
+				<div class="max-w-5xl mx-auto">
+					{#if section.data.title}<h2 class="text-2xl md:text-3xl font-bold text-white mb-5">{section.data.title}</h2>{/if}
+					{#if section.data.embedUrl}
+						<div class="rounded-2xl overflow-hidden border border-surface-800 bg-surface-900 {section.data.aspect === 'square' ? 'aspect-square' : section.data.aspect === 'map' ? 'aspect-[16/10]' : 'aspect-video'}">
+							<iframe src={section.data.embedUrl} title={section.data.title || 'Embedded content'} class="w-full h-full" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+						</div>
+					{/if}
+					{#if section.data.caption}<p class="text-sm text-surface-500 mt-3">{section.data.caption}</p>{/if}
 				</div>
 			</section>
 

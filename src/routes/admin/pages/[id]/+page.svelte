@@ -4,7 +4,9 @@
 	import {
 		FileText, Save, Globe, EyeOff, Trash2, ArrowLeft, AlertCircle, CheckCircle2,
 		Eye, Navigation, Plus, GripVertical, ChevronUp, ChevronDown, X,
-		Type, LayoutGrid, HelpCircle, Megaphone, Minus, AlignCenter, Copy
+		Type, LayoutGrid, HelpCircle, Megaphone, Minus, AlignCenter, Copy,
+		Image as ImageIcon, BarChart3, ListChecks, Quote, DollarSign, MapPin,
+		Code2, Link as LinkIcon
 	} from '@lucide/svelte';
 	import { enhance } from '$app/forms';
 	import { sanitizeHtml } from '$lib/utils/marked.js';
@@ -40,12 +42,21 @@
 
 	// Section types configuration
 	const sectionTypes = [
-		{ type: 'hero', label: 'Hero Banner', icon: '🎯', description: 'Large title with subtitle' },
-		{ type: 'rich_text', label: 'Rich Text', icon: '📝', description: 'Formatted text content' },
-		{ type: 'cards', label: 'Cards Grid', icon: '🃏', description: 'Grid of info cards' },
-		{ type: 'faq', label: 'FAQ', icon: '❓', description: 'Collapsible Q&A' },
-		{ type: 'cta', label: 'Call to Action', icon: '📢', description: 'Banner with button' },
-		{ type: 'divider', label: 'Divider', icon: '➖', description: 'Visual separator' },
+		{ type: 'hero', label: 'Hero Banner', icon: Type, description: 'Title, subtitle and optional buttons' },
+		{ type: 'rich_text', label: 'Text Editor', icon: FileText, description: 'Formatted long-form content' },
+		{ type: 'media_text', label: 'Image + Text', icon: ImageIcon, description: 'Split content with media' },
+		{ type: 'cards', label: 'Cards Grid', icon: LayoutGrid, description: 'Services, features or resources' },
+		{ type: 'stats', label: 'Stats', icon: BarChart3, description: 'Numbers and proof points' },
+		{ type: 'features', label: 'Feature List', icon: ListChecks, description: 'Compact benefit list' },
+		{ type: 'steps', label: 'Steps', icon: GripVertical, description: 'Process, itinerary or timeline' },
+		{ type: 'testimonials', label: 'Testimonials', icon: Quote, description: 'Quotes, reviews or references' },
+		{ type: 'pricing', label: 'Pricing', icon: DollarSign, description: 'Plans, packages or offers' },
+		{ type: 'gallery', label: 'Gallery', icon: ImageIcon, description: 'Image gallery with captions' },
+		{ type: 'contact', label: 'Contact Block', icon: MapPin, description: 'Email, phone, address and CTA' },
+		{ type: 'embed', label: 'Embed', icon: Code2, description: 'Maps, video or iframe embed' },
+		{ type: 'faq', label: 'FAQ', icon: HelpCircle, description: 'Collapsible Q&A' },
+		{ type: 'cta', label: 'Call to Action', icon: Megaphone, description: 'Banner with button' },
+		{ type: 'divider', label: 'Divider', icon: Minus, description: 'Visual separator' },
 	];
 
 	function genId() {
@@ -54,13 +65,38 @@
 
 	function getDefaultData(type) {
 		switch (type) {
-			case 'hero': return { title: 'Your Heading', subtitle: 'Add a description here', alignment: 'center', size: 'large' };
+			case 'hero': return { title: 'Your Heading', subtitle: 'Add a description here', alignment: 'center', size: 'large', primaryText: 'Get Started', primaryUrl: '/', secondaryText: '', secondaryUrl: '' };
 			case 'rich_text': return { content: '<p>Start writing your content here...</p>' };
+			case 'media_text': return { eyebrow: '', title: 'Tell your story visually', text: 'Use this block for destinations, product details, services, case studies, or important announcements.', imageUrl: '', imageAlt: '', mediaPosition: 'left', buttonText: '', buttonUrl: '' };
 			case 'cards': return { columns: 3, style: 'default', cards: [
 				{ id: genId(), icon: '🚀', title: 'Card Title', description: 'Card description goes here.' },
 				{ id: genId(), icon: '⚡', title: 'Card Title', description: 'Card description goes here.' },
 				{ id: genId(), icon: '🎯', title: 'Card Title', description: 'Card description goes here.' }
 			]};
+			case 'stats': return { title: 'Key numbers', items: [
+				{ id: genId(), value: '100+', label: 'Projects', description: 'Delivered successfully' },
+				{ id: genId(), value: '24/7', label: 'Support', description: 'Always available' },
+				{ id: genId(), value: '5★', label: 'Rating', description: 'Trusted by customers' }
+			]};
+			case 'features': return { title: 'What you get', intro: 'Use this for benefits, inclusions, services or highlights.', items: [
+				{ id: genId(), title: 'Important feature', description: 'Short explanation of the value.' },
+				{ id: genId(), title: 'Another benefit', description: 'Short explanation of the value.' }
+			]};
+			case 'steps': return { title: 'How it works', items: [
+				{ id: genId(), title: 'First step', description: 'Explain what happens here.' },
+				{ id: genId(), title: 'Second step', description: 'Explain the next part.' }
+			]};
+			case 'testimonials': return { title: 'What people say', items: [
+				{ id: genId(), quote: 'A short testimonial or review goes here.', name: 'Customer Name', role: 'Role or company' }
+			]};
+			case 'pricing': return { title: 'Plans', items: [
+				{ id: genId(), name: 'Starter', price: '$49', description: 'For small projects', features: 'Feature one\nFeature two\nFeature three', buttonText: 'Choose Plan', buttonUrl: '/' }
+			]};
+			case 'gallery': return { columns: 3, images: [
+				{ id: genId(), url: '', alt: '', caption: 'Gallery caption' }
+			]};
+			case 'contact': return { title: 'Contact us', description: 'Add your contact details or booking information.', email: '', phone: '', address: '', buttonText: 'Send Message', buttonUrl: '/contact' };
+			case 'embed': return { title: 'Embedded content', embedUrl: '', aspect: 'video', caption: '' };
 			case 'faq': return { title: 'Frequently Asked Questions', items: [
 				{ id: genId(), question: 'What is this about?', answer: 'This is an answer to the question.' }
 			]};
@@ -141,7 +177,23 @@
 		return sectionTypes.find(s => s.type === type)?.label || type;
 	}
 	function getSectionIcon(type) {
-		return sectionTypes.find(s => s.type === type)?.icon || '📄';
+		return sectionTypes.find(s => s.type === type)?.icon || FileText;
+	}
+
+	function updateSectionData(sectionId, patch) {
+		sections = sections.map(s => s.id === sectionId ? { ...s, data: { ...s.data, ...patch } } : s);
+	}
+
+	function addItem(sectionId, key, item) {
+		sections = sections.map(s => s.id === sectionId
+			? { ...s, data: { ...s.data, [key]: [...(s.data[key] || []), { id: genId(), ...item }] } }
+			: s);
+	}
+
+	function removeItem(sectionId, key, itemId) {
+		sections = sections.map(s => s.id === sectionId
+			? { ...s, data: { ...s.data, [key]: (s.data[key] || []).filter(item => item.id !== itemId) } }
+			: s);
 	}
 
 	// ---- Rich Text Editor helpers ----
@@ -152,6 +204,11 @@
 	function insertLink() {
 		const url = prompt('Enter URL:');
 		if (url) execCmd('createLink', url);
+	}
+
+	function insertImage() {
+		const url = prompt('Enter image URL:');
+		if (url) execCmd('insertImage', url);
 	}
 
 	function syncRichText(sectionId) {
@@ -271,6 +328,7 @@
 				{:else}
 					<div class="space-y-3">
 						{#each sections as section, idx (section.id)}
+							{@const SectionIcon = getSectionIcon(section.type)}
 							<div class="border border-surface-700 rounded-xl overflow-hidden transition-all
 								{activeSection === section.id ? 'border-accent-500/50 ring-1 ring-accent-500/20' : 'hover:border-surface-600'}">
 
@@ -279,7 +337,7 @@
 									onclick={() => activeSection = activeSection === section.id ? null : section.id}
 									onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activeSection = activeSection === section.id ? null : section.id; } }}
 									class="w-full flex items-center gap-3 px-4 py-3 bg-surface-800/50 text-left group cursor-pointer">
-									<span class="text-lg">{getSectionIcon(section.type)}</span>
+									<SectionIcon size={18} class="text-accent-400 shrink-0" />
 									<div class="flex-1 min-w-0">
 										<span class="text-sm font-medium text-white">{getSectionLabel(section.type)}</span>
 										{#if section.type === 'hero'}
@@ -333,6 +391,28 @@
 													</select>
 												</div>
 											</div>
+											<div class="grid grid-cols-2 gap-3">
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Primary Button</span>
+													<input type="text" bind:value={section.data.primaryText}
+														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
+												</div>
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Primary URL</span>
+													<input type="text" bind:value={section.data.primaryUrl}
+														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm font-mono focus:outline-none focus:border-accent-500" />
+												</div>
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Secondary Button</span>
+													<input type="text" bind:value={section.data.secondaryText}
+														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500" />
+												</div>
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Secondary URL</span>
+													<input type="text" bind:value={section.data.secondaryUrl}
+														class="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm font-mono focus:outline-none focus:border-accent-500" />
+												</div>
+											</div>
 
 										{:else if section.type === 'rich_text'}
 											<div>
@@ -362,9 +442,13 @@
 													<button type="button" onclick={() => execCmd('justifyCenter')} title="Align Center" class="rte-btn">☰</button>
 													<button type="button" onclick={() => execCmd('justifyRight')} title="Align Right" class="rte-btn">⫸</button>
 													<span class="w-px h-5 bg-surface-600 mx-1"></span>
+													<button type="button" onclick={() => execCmd('foreColor', '#22d3ee')} title="Accent Color" class="rte-btn text-accent-400">A</button>
+													<button type="button" onclick={() => execCmd('hiliteColor', '#334155')} title="Highlight" class="rte-btn">▣</button>
+													<span class="w-px h-5 bg-surface-600 mx-1"></span>
 
 													<!-- Extras -->
 													<button type="button" onclick={() => insertLink()} title="Insert Link" class="rte-btn">🔗</button>
+													<button type="button" onclick={() => insertImage()} title="Insert Image" class="rte-btn">▧</button>
 													<button type="button" onclick={() => execCmd('formatBlock', 'blockquote')} title="Quote" class="rte-btn">❝</button>
 													<button type="button" onclick={() => execCmd('insertHorizontalRule')} title="Horizontal Rule" class="rte-btn">―</button>
 													<button type="button" onclick={() => execCmd('removeFormat')} title="Clear Formatting" class="rte-btn text-rose-400">✕</button>
@@ -380,6 +464,47 @@
 														prose-ul:text-surface-300 prose-ol:text-surface-300 prose-code:text-accent-300 prose-code:bg-surface-700 prose-code:px-1 prose-code:rounded
 														prose-hr:border-surface-600"
 												>{@html sanitizeHtml(section.data.content)}</div>
+											</div>
+
+										{:else if section.type === 'media_text'}
+											<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Eyebrow</span>
+													<input type="text" bind:value={section.data.eyebrow} class="admin-input" />
+												</div>
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Media Position</span>
+													<select bind:value={section.data.mediaPosition} class="admin-input">
+														<option value="left">Image Left</option>
+														<option value="right">Image Right</option>
+													</select>
+												</div>
+											</div>
+											<div>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Title</span>
+												<input type="text" bind:value={section.data.title} class="admin-input" />
+											</div>
+											<div>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Text</span>
+												<textarea bind:value={section.data.text} rows="4" class="admin-textarea"></textarea>
+											</div>
+											<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Image URL</span>
+													<input type="url" bind:value={section.data.imageUrl} class="admin-input" />
+												</div>
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Image Alt</span>
+													<input type="text" bind:value={section.data.imageAlt} class="admin-input" />
+												</div>
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Button Text</span>
+													<input type="text" bind:value={section.data.buttonText} class="admin-input" />
+												</div>
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Button URL</span>
+													<input type="text" bind:value={section.data.buttonUrl} class="admin-input" />
+												</div>
 											</div>
 
 										{:else if section.type === 'cards'}
@@ -434,6 +559,148 @@
 												class="w-full py-2 rounded-lg border border-dashed border-surface-600 text-surface-400 hover:text-accent-400 hover:border-accent-500 text-sm transition-colors flex items-center justify-center gap-1.5">
 												<Plus size={14} /> Add Card
 											</button>
+
+										{:else if section.type === 'stats'}
+											<div>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Section Title</span>
+												<input type="text" bind:value={section.data.title} class="admin-input" />
+											</div>
+											<div class="space-y-2">
+												{#each section.data.items as item (item.id)}
+													<div class="bg-surface-800 rounded-lg p-3 space-y-2 relative group/item">
+														<button type="button" onclick={() => removeItem(section.id, 'items', item.id)} class="absolute top-2 right-2 p-1 rounded text-surface-500 hover:text-rose-400 opacity-0 group-hover/item:opacity-100 transition-opacity"><X size={13} /></button>
+														<div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+															<input type="text" bind:value={item.value} placeholder="100+" class="admin-input" />
+															<input type="text" bind:value={item.label} placeholder="Label" class="admin-input" />
+															<input type="text" bind:value={item.description} placeholder="Description" class="admin-input" />
+														</div>
+													</div>
+												{/each}
+											</div>
+											<button type="button" onclick={() => addItem(section.id, 'items', { value: '10+', label: 'Metric', description: 'Short detail' })} class="add-row-btn"><Plus size={14} /> Add Stat</button>
+
+										{:else if section.type === 'features' || section.type === 'steps'}
+											<div>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Section Title</span>
+												<input type="text" bind:value={section.data.title} class="admin-input" />
+											</div>
+											{#if section.type === 'features'}
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Intro</span>
+													<textarea bind:value={section.data.intro} rows="2" class="admin-textarea"></textarea>
+												</div>
+											{/if}
+											<div class="space-y-2">
+												{#each section.data.items as item (item.id)}
+													<div class="bg-surface-800 rounded-lg p-3 space-y-2 relative group/item">
+														<button type="button" onclick={() => removeItem(section.id, 'items', item.id)} class="absolute top-2 right-2 p-1 rounded text-surface-500 hover:text-rose-400 opacity-0 group-hover/item:opacity-100 transition-opacity"><X size={13} /></button>
+														<input type="text" bind:value={item.title} placeholder="Title" class="admin-input" />
+														<textarea bind:value={item.description} rows="2" placeholder="Description" class="admin-textarea"></textarea>
+													</div>
+												{/each}
+											</div>
+											<button type="button" onclick={() => addItem(section.id, 'items', { title: 'New item', description: 'Description' })} class="add-row-btn"><Plus size={14} /> Add Item</button>
+
+										{:else if section.type === 'testimonials'}
+											<div>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Section Title</span>
+												<input type="text" bind:value={section.data.title} class="admin-input" />
+											</div>
+											<div class="space-y-2">
+												{#each section.data.items as item (item.id)}
+													<div class="bg-surface-800 rounded-lg p-3 space-y-2 relative group/item">
+														<button type="button" onclick={() => removeItem(section.id, 'items', item.id)} class="absolute top-2 right-2 p-1 rounded text-surface-500 hover:text-rose-400 opacity-0 group-hover/item:opacity-100 transition-opacity"><X size={13} /></button>
+														<textarea bind:value={item.quote} rows="3" placeholder="Quote" class="admin-textarea"></textarea>
+														<div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+															<input type="text" bind:value={item.name} placeholder="Name" class="admin-input" />
+															<input type="text" bind:value={item.role} placeholder="Role or company" class="admin-input" />
+														</div>
+													</div>
+												{/each}
+											</div>
+											<button type="button" onclick={() => addItem(section.id, 'items', { quote: 'A short testimonial goes here.', name: 'Name', role: 'Role' })} class="add-row-btn"><Plus size={14} /> Add Testimonial</button>
+
+										{:else if section.type === 'pricing'}
+											<div>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Section Title</span>
+												<input type="text" bind:value={section.data.title} class="admin-input" />
+											</div>
+											<div class="space-y-2">
+												{#each section.data.items as item (item.id)}
+													<div class="bg-surface-800 rounded-lg p-3 space-y-2 relative group/item">
+														<button type="button" onclick={() => removeItem(section.id, 'items', item.id)} class="absolute top-2 right-2 p-1 rounded text-surface-500 hover:text-rose-400 opacity-0 group-hover/item:opacity-100 transition-opacity"><X size={13} /></button>
+														<div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+															<input type="text" bind:value={item.name} placeholder="Plan name" class="admin-input" />
+															<input type="text" bind:value={item.price} placeholder="$49" class="admin-input" />
+															<input type="text" bind:value={item.description} placeholder="Short description" class="admin-input" />
+														</div>
+														<textarea bind:value={item.features} rows="4" placeholder="One feature per line" class="admin-textarea"></textarea>
+														<div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+															<input type="text" bind:value={item.buttonText} placeholder="Button text" class="admin-input" />
+															<input type="text" bind:value={item.buttonUrl} placeholder="Button URL" class="admin-input" />
+														</div>
+													</div>
+												{/each}
+											</div>
+											<button type="button" onclick={() => addItem(section.id, 'items', { name: 'New Plan', price: '$99', description: 'Plan description', features: 'Feature one\nFeature two', buttonText: 'Choose Plan', buttonUrl: '/' })} class="add-row-btn"><Plus size={14} /> Add Plan</button>
+
+										{:else if section.type === 'gallery'}
+											<div>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Columns</span>
+												<select bind:value={section.data.columns} class="admin-input">
+													<option value={2}>2 Columns</option>
+													<option value={3}>3 Columns</option>
+													<option value={4}>4 Columns</option>
+												</select>
+											</div>
+											<div class="space-y-2">
+												{#each section.data.images as image (image.id)}
+													<div class="bg-surface-800 rounded-lg p-3 space-y-2 relative group/item">
+														<button type="button" onclick={() => removeItem(section.id, 'images', image.id)} class="absolute top-2 right-2 p-1 rounded text-surface-500 hover:text-rose-400 opacity-0 group-hover/item:opacity-100 transition-opacity"><X size={13} /></button>
+														<input type="url" bind:value={image.url} placeholder="Image URL" class="admin-input" />
+														<div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+															<input type="text" bind:value={image.alt} placeholder="Alt text" class="admin-input" />
+															<input type="text" bind:value={image.caption} placeholder="Caption" class="admin-input" />
+														</div>
+													</div>
+												{/each}
+											</div>
+											<button type="button" onclick={() => addItem(section.id, 'images', { url: '', alt: '', caption: 'Caption' })} class="add-row-btn"><Plus size={14} /> Add Image</button>
+
+										{:else if section.type === 'contact'}
+											<div>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Title</span>
+												<input type="text" bind:value={section.data.title} class="admin-input" />
+											</div>
+											<textarea bind:value={section.data.description} rows="3" class="admin-textarea"></textarea>
+											<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+												<input type="email" bind:value={section.data.email} placeholder="Email" class="admin-input" />
+												<input type="text" bind:value={section.data.phone} placeholder="Phone" class="admin-input" />
+												<input type="text" bind:value={section.data.address} placeholder="Address" class="admin-input" />
+												<input type="text" bind:value={section.data.buttonText} placeholder="Button Text" class="admin-input" />
+												<input type="text" bind:value={section.data.buttonUrl} placeholder="Button URL" class="admin-input md:col-span-2" />
+											</div>
+
+										{:else if section.type === 'embed'}
+											<div>
+												<span class="block text-xs font-medium text-surface-400 mb-1">Title</span>
+												<input type="text" bind:value={section.data.title} class="admin-input" />
+											</div>
+											<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+												<div class="md:col-span-2">
+													<span class="block text-xs font-medium text-surface-400 mb-1">Embed URL</span>
+													<input type="url" bind:value={section.data.embedUrl} placeholder="https://www.youtube.com/embed/..." class="admin-input" />
+												</div>
+												<div>
+													<span class="block text-xs font-medium text-surface-400 mb-1">Aspect</span>
+													<select bind:value={section.data.aspect} class="admin-input">
+														<option value="video">Video</option>
+														<option value="map">Map/Wide</option>
+														<option value="square">Square</option>
+													</select>
+												</div>
+											</div>
+											<input type="text" bind:value={section.data.caption} placeholder="Caption" class="admin-input" />
 
 										{:else if section.type === 'faq'}
 											<div>
@@ -539,9 +806,10 @@
 					{#if showAddMenu}
 						<div class="absolute bottom-full left-0 right-0 mb-2 bg-surface-800 border border-surface-700 rounded-xl shadow-2xl shadow-black/40 p-2 z-20 grid grid-cols-2 gap-1.5">
 							{#each sectionTypes as st}
+								{@const AddIcon = st.icon}
 								<button type="button" onclick={() => addSection(st.type)}
 									class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-700 text-left transition-colors group/add">
-									<span class="text-xl">{st.icon}</span>
+									<AddIcon size={18} class="text-accent-400 shrink-0" />
 									<div>
 										<p class="text-sm font-medium text-white group-hover/add:text-accent-400 transition-colors">{st.label}</p>
 										<p class="text-xs text-surface-500">{st.description}</p>
@@ -668,12 +936,53 @@
 		background: rgba(255, 255, 255, 0.15);
 		transform: scale(0.95);
 	}
+	:global(.admin-input) {
+		width: 100%;
+		border-radius: 0.5rem;
+		border: 1px solid var(--color-surface-700);
+		background: var(--color-surface-800);
+		padding: 0.5rem 0.75rem;
+		color: white;
+		font-size: 0.875rem;
+	}
+	:global(.admin-textarea) {
+		width: 100%;
+		border-radius: 0.5rem;
+		border: 1px solid var(--color-surface-700);
+		background: var(--color-surface-800);
+		padding: 0.5rem 0.75rem;
+		color: white;
+		font-size: 0.875rem;
+		resize: vertical;
+	}
+	:global(.admin-input:focus),
+	:global(.admin-textarea:focus) {
+		outline: none;
+		border-color: var(--color-accent-500);
+	}
+	:global(.add-row-btn) {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.375rem;
+		border-radius: 0.5rem;
+		border: 1px dashed var(--color-surface-600);
+		padding: 0.5rem;
+		color: var(--color-surface-400);
+		font-size: 0.875rem;
+		transition: all 0.15s;
+	}
+	:global(.add-row-btn:hover) {
+		border-color: var(--color-accent-500);
+		color: var(--color-accent-400);
+	}
 	:global([contenteditable]:focus) {
 		outline: none;
-		border-color: rgb(var(--color-accent-500));
+		border-color: var(--color-accent-500);
 	}
 	:global([contenteditable] a) {
-		color: rgb(var(--color-accent-400));
+		color: var(--color-accent-400);
 		text-decoration: underline;
 	}
 </style>
