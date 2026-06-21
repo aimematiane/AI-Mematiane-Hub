@@ -1,4 +1,5 @@
 <script>
+	import { page } from '$app/stores';
 	import { SITE_URL, absoluteUrl } from '$lib/config/site.js';
 
 	let {
@@ -20,10 +21,16 @@
 		imageHeight = 675
 	} = $props();
 
+	const site = $derived($page.data.site || {});
+	const siteName = $derived(site.site_name || 'AI Mematiane');
+	const siteDescription = $derived(site.site_description || 'AI Mematiane is a global directory of AI tools, news and analysis.');
+	const siteLogo = $derived(site.logo_url || '/logo.png');
+	const siteFavicon = $derived(site.favicon_url || '/favicon.svg');
+	const defaultImage = $derived(site.og_image_url || '');
 	const resolvedUrl = $derived(absoluteUrl(url));
-	const resolvedImage = $derived(image ? absoluteUrl(image) : '');
-	const metaTitle = $derived(title || 'AI Mematiane');
-	const metaDescription = $derived(description || 'AI Mematiane is a global directory of AI tools, news and analysis.');
+	const resolvedImage = $derived(image ? absoluteUrl(image) : defaultImage ? absoluteUrl(defaultImage) : '');
+	const metaTitle = $derived(title || siteName);
+	const metaDescription = $derived(description || siteDescription);
 	const canonicalUrl = $derived(resolvedUrl || SITE_URL);
 	const resolvedPrevUrl = $derived(prevUrl ? absoluteUrl(prevUrl) : '');
 	const resolvedNextUrl = $derived(nextUrl ? absoluteUrl(nextUrl) : '');
@@ -41,10 +48,10 @@
 					...(authorName ? { author: { '@type': 'Person', name: authorName } } : {}),
 					publisher: {
 						'@type': 'Organization',
-						name: 'AI Mematiane',
+						name: siteName,
 						logo: {
 							'@type': 'ImageObject',
-							url: `${SITE_URL}/logo.png`
+							url: absoluteUrl(siteLogo)
 						}
 					}
 				}
@@ -68,8 +75,10 @@
 	<meta property="og:description" content={metaDescription} />
 	<meta property="og:type" content={type} />
 	<meta property="og:url" content={canonicalUrl} />
-	<meta property="og:site_name" content="AI Mematiane" />
+	<meta property="og:site_name" content={siteName} />
 	<meta property="og:locale" content="en_US" />
+	<link rel="icon" href={absoluteUrl(siteFavicon)} />
+	<link rel="apple-touch-icon" href={absoluteUrl(siteLogo)} />
 	{#if resolvedImage}
 		<meta property="og:image" content={resolvedImage} />
 		<meta property="og:image:secure_url" content={resolvedImage} />

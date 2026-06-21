@@ -1,12 +1,19 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { Brain, Sparkles, Newspaper, BookOpen, ArrowRight } from '@lucide/svelte';
-	import { SITE_URL } from '$lib/config/site.js';
+	import { SITE_URL, absoluteUrl } from '$lib/config/site.js';
+
+	let { data } = $props();
+
+	const site = $derived(data.site || {});
+	const siteName = $derived(site.site_name || 'AI Mematiane');
+	const siteDescription = $derived(site.site_description || 'Your global directory of AI models, tools, news, and deep-dive analysis');
+	const logoUrl = $derived(absoluteUrl(site.logo_url || '/logo.png'));
 </script>
 
 <SeoHead
-	title="AI Mematiane — Global Directory of AI Tools, News & Analysis"
-	description="AI Mematiane - Your global directory of AI models, tools, news, and deep-dive analysis"
+	title={`${siteName} — Global Directory of AI Tools, News & Analysis`}
+	description={siteDescription}
 	url="/"
 />
 
@@ -18,11 +25,11 @@
 				{
 					"@type": "Organization",
 					"@id": `${SITE_URL}/#organization`,
-					"name": "AI Mematiane",
+					"name": siteName,
 					"url": SITE_URL,
 					"logo": {
 						"@type": "ImageObject",
-						"url": `${SITE_URL}/logo.png`
+						"url": logoUrl
 					},
 					"sameAs": [
 						"https://x.com/AIMematiane",
@@ -34,7 +41,7 @@
 					"@type": "WebSite",
 					"@id": `${SITE_URL}/#website`,
 					"url": SITE_URL,
-					"name": "AI Mematiane",
+					"name": siteName,
 					"publisher": {
 						"@id": `${SITE_URL}/#organization`
 					},

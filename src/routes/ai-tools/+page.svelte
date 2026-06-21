@@ -53,10 +53,11 @@
 	const canonicalUrl = $derived(data.page > 1 ? `/ai-tools?page=${data.page}` : '/ai-tools');
 	const prevUrl = $derived(data.page > 1 ? (data.page > 2 ? `/ai-tools?page=${data.page - 1}` : '/ai-tools') : '');
 	const nextUrl = $derived(data.page < Math.ceil(data.totalCount / data.perPage) ? `/ai-tools?page=${data.page + 1}` : '');
+	const siteName = $derived(data.site?.site_name || 'AI Mematiane');
 </script>
 
 <SeoHead
-	title={data.page > 1 ? `AI Tools - Page ${data.page}` : 'AI Showcase — AI Mematiane'}
+	title={data.page > 1 ? `AI Tools - Page ${data.page}` : `AI Showcase — ${siteName}`}
 	description="Directory of AI tools, models, and applications across categories."
 	url={canonicalUrl}
 	prevUrl={prevUrl}
@@ -107,4 +108,3 @@
 		</div>
 	{/if}
 </section>
-

@@ -5,9 +5,10 @@
 	// SvelteKit error details are available via the page store
 	const status = $derived(page.status || 500);
 	const message = $derived(page.error?.message || 'An unexpected error occurred');
+	const siteName = $derived(page.data?.site?.site_name || 'this site');
 
-	const title = $derived(`Error ${status} | AI Mematiane`);
-	const description = $derived(`Something went wrong on AI Mematiane. Error ${status}: ${message}`);
+	const title = $derived(`Error ${status} | ${siteName}`);
+	const description = $derived(`Something went wrong on ${siteName}. Error ${status}: ${message}`);
 </script>
 
 <SeoHead {title} {description} noindex={true} />

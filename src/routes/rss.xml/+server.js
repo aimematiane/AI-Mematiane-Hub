@@ -1,6 +1,15 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
 import { SITE_URL } from '$lib/config/site.js';
 
+function escapeXml(value = '') {
+	return String(value)
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&apos;');
+}
+
 export async function GET(event) {
 	const client = await getSupabaseServerClient(event);
 	const siteUrl = SITE_URL;
@@ -9,6 +18,15 @@ export async function GET(event) {
 		client.from('posts').select('title, slug, excerpt, published_at').eq('is_published', true).order('published_at', { ascending: false }).limit(20),
 		client.from('news').select('title, slug, excerpt, published_at').eq('is_published', true).order('published_at', { ascending: false }).limit(20)
 	]);
+
+	const { data: settings } = await client
+		.from('site_settings')
+		.select('key, value')
+		.in('key', ['site_name', 'site_description']);
+
+	const siteSettings = Object.fromEntries((settings || []).map(setting => [setting.key, setting.value || '']));
+	const siteName = siteSettings.site_name || 'AI Mematiane';
+	const siteDescription = siteSettings.site_description || 'Global directory of AI models, tools, news, and deep-dive analysis';
 
 	const feedItems = [
 		...(posts || []).map(p => ({
@@ -33,9 +51,9 @@ export async function GET(event) {
 	const xml = `<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-	<title>AI Mematiane</title>
+	<title>${escapeXml(siteName)}</title>
 	<link>${siteUrl}</link>
-	<description>Global directory of AI models, tools, news, and deep-dive analysis</description>
+	<description>${escapeXml(siteDescription)}</description>
 	<language>en-us</language>
 	<lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 	<atom:link href="${siteUrl}/rss.xml" rel="self" type="application/rss+xml" />

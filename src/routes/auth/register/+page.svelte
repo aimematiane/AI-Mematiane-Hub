@@ -5,7 +5,9 @@
 	import { Mail, Lock, User, Eye, EyeOff } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
+	let { data } = $props();
 	const client = getSupabaseBrowserClient();
+	const siteName = $derived(data.site?.site_name || 'this site');
 
 	let email = $state('');
 	let password = $state('');
@@ -53,7 +55,7 @@
 	}
 </script>
 
-<SeoHead title="Sign Up" description="Create your AI Mematiane account" url="/auth/register" noindex={true} />
+<SeoHead title="Sign Up" description={`Create your ${siteName} account`} url="/auth/register" noindex={true} />
 
 <section class="min-h-[80vh] flex items-center justify-center px-4 py-10">
 	<div class="w-full max-w-md">
@@ -63,7 +65,7 @@
 		]} />
 		<div class="text-center mb-8">
 			<h1 class="text-2xl font-bold text-white mb-2">Create an account</h1>
-			<p class="text-surface-400">Join AI Mematiane to bookmark articles and more</p>
+			<p class="text-surface-400">Join {siteName} to bookmark articles and more</p>
 		</div>
 
 		<div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 space-y-5">

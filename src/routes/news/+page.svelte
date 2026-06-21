@@ -49,12 +49,13 @@
 	const canonicalUrl = $derived(data.page > 1 ? `/news?page=${data.page}` : '/news');
 	const prevUrl = $derived(data.page > 1 ? (data.page > 2 ? `/news?page=${data.page - 1}` : '/news') : '');
 	const nextUrl = $derived(data.page < Math.ceil(data.totalCount / data.perPage) ? `/news?page=${data.page + 1}` : '');
+	const siteName = $derived(data.site?.site_name || 'AI Mematiane');
 
 	function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
 </script>
 
 <SeoHead
-	title={data.page > 1 ? `News - Page ${data.page}` : 'AI News — AI Mematiane'}
+	title={data.page > 1 ? `News - Page ${data.page}` : `AI News — ${siteName}`}
 	description="Latest news and analysis from the world of AI."
 	url={canonicalUrl}
 	prevUrl={prevUrl}
@@ -114,4 +115,3 @@
 		</div>
 	{/if}
 </section>
-

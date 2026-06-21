@@ -9,7 +9,7 @@
 
 	const siteName = $derived(settings.site_name || 'AI Mematiane');
 	const description = $derived(settings.footer_description || 'Your global directory of AI models, tools, news, and deep-dive analysis. Stay ahead of the curve.');
-	const copyright = $derived(settings.copyright_text || `© ${new Date().getFullYear()} AI Mematiane. All rights reserved.`);
+	const copyright = $derived(settings.copyright_text || `© ${new Date().getFullYear()} ${siteName}. All rights reserved.`);
 	const newsletterEnabled = $derived(settings.footer_newsletter_enabled === 'true');
 	const newsletterTitle = $derived(settings.footer_newsletter_title || 'Subscribe to be Updated');
 
@@ -25,9 +25,9 @@
 			<div class="md:col-span-1">
 				<a href="/" class="flex items-center gap-2 mb-4">
 					{#if settings.logo_url}
-						<img src={settings.logo_url} alt={siteName} class="w-10 h-10 rounded-md object-cover" />
+						<img src={settings.logo_url} alt={siteName} class="w-10 h-10 rounded-md object-contain" />
 					{:else}
-						<img src="/logo.png" alt={siteName} class="w-10 h-10 rounded-md object-cover" />
+						<img src="/logo.png" alt={siteName} class="w-10 h-10 rounded-md object-contain" />
 					{/if}
 					<span class="text-lg font-bold text-white">{siteName}</span>
 				</a>

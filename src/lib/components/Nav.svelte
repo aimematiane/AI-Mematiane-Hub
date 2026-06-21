@@ -1,15 +1,16 @@
 <script>
 import { invalidateAll } from '$app/navigation';
-import { Menu, X, LogIn, LogOut, User, Shield } from '@lucide/svelte';
+import { Menu, X, LogIn, LogOut, User, Shield, Moon, Sun } from '@lucide/svelte';
 import { getSupabaseBrowserClient } from '$lib/supabase/client';
 import { isAdminRole } from '$lib/utils/roles.js';
 import { page } from '$app/stores';
 
 const client = getSupabaseBrowserClient();
 
-let { navPages = [], user = null, profile = null } = $props();
+let { navPages = [], user = null, profile = null, site = {} } = $props();
 
 let mobileOpen = $state(false);
+let themeMode = $state('dark');
 
 $effect(() => {
 	const { data: { subscription } } = client.auth.onAuthStateChange((event) => {
@@ -20,6 +21,19 @@ $effect(() => {
 	});
 	return () => subscription?.unsubscribe();
 });
+
+$effect(() => {
+	if (typeof document === 'undefined') return;
+	themeMode = document.documentElement.dataset.theme || 'dark';
+});
+
+function toggleTheme() {
+	themeMode = themeMode === 'light' ? 'dark' : 'light';
+	document.documentElement.dataset.theme = themeMode;
+	try {
+		localStorage.setItem('theme', themeMode);
+	} catch {}
+}
 
 async function handleLogout() {
 	await client.auth.signOut();
@@ -38,6 +52,9 @@ let allNavLinks = $derived([
 	...navPages.map(p => ({ href: `/pages/${p.slug}`, label: p.title }))
 ]);
 
+const siteName = $derived(site.site_name || 'AI Mematiane');
+const logoUrl = $derived(site.logo_dark_url || site.logo_url || '/logo.png');
+
 function isActive(href) {
 	return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/');
 }
@@ -48,8 +65,8 @@ function isActive(href) {
 		<div class="flex items-center justify-between h-16">
 
 			<a href="/" class="flex items-center gap-2.5 group transition-opacity duration-300 hover:opacity-95">
-				<img src="/logo.png" alt="AI Mematiane" class="w-8 h-8 rounded-lg object-cover transition-transform duration-500 group-hover:rotate-6 group-hover:scale-105" />
-				<span class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-surface-100 to-cyan-400 bg-clip-text text-transparent group-hover:to-cyan-300">AI Mematiane</span>
+				<img src={logoUrl} alt={siteName} class="w-8 h-8 rounded-lg object-contain transition-transform duration-500 group-hover:rotate-6 group-hover:scale-105" />
+				<span class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-surface-100 to-cyan-400 bg-clip-text text-transparent group-hover:to-cyan-300">{siteName}</span>
 			</a>
 
 			<nav aria-label="Main navigation" class="hidden md:flex items-center gap-1">
@@ -65,6 +82,19 @@ function isActive(href) {
 			</nav>
 
 			<div class="hidden md:flex items-center gap-2">
+				<button
+					type="button"
+					onclick={toggleTheme}
+					class="p-2 rounded-lg text-surface-300 hover:text-white hover:bg-white/5 transition-all duration-300"
+					aria-label={themeMode === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+					aria-pressed={themeMode === 'light'}
+				>
+					{#if themeMode === 'light'}
+						<Moon size={16} aria-hidden="true" />
+					{:else}
+						<Sun size={16} aria-hidden="true" />
+					{/if}
+				</button>
 				{#if user}
 					{#if isAdminRole(profile?.role)}
 						<a href="/admin" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-amber-400 hover:bg-amber-500/10 transition-all duration-300">
@@ -120,6 +150,15 @@ function isActive(href) {
 					</a>
 				{/each}
 				<div class="border-t border-surface-800 pt-2 mt-2">
+					<button onclick={toggleTheme} class="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:text-white hover:bg-surface-800">
+						{#if themeMode === 'light'}
+							<Moon size={16} aria-hidden="true" />
+							Dark Mode
+						{:else}
+							<Sun size={16} aria-hidden="true" />
+							Light Mode
+						{/if}
+					</button>
 					{#if user}
 						{#if isAdminRole(profile?.role)}
 							<a href="/admin" onclick={() => mobileOpen = false} class="block px-3 py-2.5 rounded-lg text-sm text-amber-400 hover:bg-amber-500/10">

@@ -29,7 +29,7 @@
 </a>
 
 <div class="min-h-screen flex flex-col">
-  <Nav navPages={data.navPages} user={data.user} profile={data.profile} />
+  <Nav navPages={data.navPages} user={data.user} profile={data.profile} site={data.site} />
   <main id="main-content" class="flex-1">
     {@render children()}
   </main>
@@ -37,4 +37,3 @@
     <Footer footer={data.footer} />
   {/if}
 </div>
-

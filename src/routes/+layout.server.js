@@ -1,5 +1,13 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
 
+function settingsToMap(settings = []) {
+	const map = {};
+	for (const setting of settings) {
+		map[setting.key] = setting.value_json ?? setting.value ?? '';
+	}
+	return map;
+}
+
 export async function load({ cookies, url }) {
 	const client = await getSupabaseServerClient({ cookies, url });
 	const isAdminRoute = url.pathname.startsWith('/admin');
@@ -30,12 +38,20 @@ export async function load({ cookies, url }) {
 		.is('deleted_at', null)
 		.order('created_at', { ascending: true });
 
+	const { data: siteSettings } = await client
+		.from('site_settings')
+		.select('key, value, value_json')
+		.eq('is_public', true);
+
+	const site = settingsToMap(siteSettings || []);
+
 	// Admin routes skip heavy global chrome data — admin has its own layout
 	if (isAdminRoute) {
 		return {
 			user,
 			profile,
 			navPages: navPages || [],
+			site,
 			footer: { settings: {}, columns: [], socialLinks: [] },
 			theme: {}
 		};
@@ -72,8 +88,9 @@ export async function load({ cookies, url }) {
 		user,
 		profile,
 		navPages: navPages || [],
+		site,
 		footer: {
-			settings: footerSettingsMap,
+			settings: { ...site, ...footerSettingsMap },
 			columns: footerColumnsResult.data || [],
 			socialLinks: footerSocialResult.data || []
 		},

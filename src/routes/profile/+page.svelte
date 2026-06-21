@@ -9,6 +9,7 @@
 
 	let { data } = $props();
 	const client = getSupabaseBrowserClient();
+	const siteName = $derived(data.site?.site_name || 'this site');
 
 	let displayName = $state('');
 	let avatarUrl = $state('');
@@ -109,7 +110,7 @@
 	function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
 </script>
 
-<SeoHead title="Profile" description="Your AI Mematiane profile" url="/profile" noindex={true} />
+<SeoHead title="Profile" description={`Your ${siteName} profile`} url="/profile" noindex={true} />
 
 <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	<Breadcrumbs items={[
