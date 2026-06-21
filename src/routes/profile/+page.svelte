@@ -2,7 +2,8 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
-	import { Mail, Shield, Bookmark, Calendar, Upload, X } from '@lucide/svelte';
+	import MailIcon from '$lib/components/icons/MailIcon.svelte';
+	import { Shield, Bookmark, Calendar, Upload, X } from '@lucide/svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 	import { isAdminRole } from '$lib/utils/roles.js';
@@ -127,7 +128,7 @@
 			<div>
 				<h2 class="text-lg font-semibold text-white">{displayName || data.profile?.display_name || 'User'}</h2>
 				<div class="flex items-center gap-3 text-sm text-surface-400">
-					<span class="inline-flex items-center gap-1"><Mail size={12} />{data.user.email}</span>
+					<span class="inline-flex items-center gap-1"><MailIcon size={12} />{data.user.email}</span>
 					{#if isAdminRole(data.profile?.role)}
 						<span class="inline-flex items-center gap-1 text-amber-400"><Shield size={12} />Admin</span>
 					{/if}

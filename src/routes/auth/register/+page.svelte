@@ -2,7 +2,8 @@
 	import { goto } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
-	import { Mail, Lock, User, Eye, EyeOff } from '@lucide/svelte';
+	import MailIcon from '$lib/components/icons/MailIcon.svelte';
+	import { Lock, User, Eye, EyeOff } from '@lucide/svelte';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
 
 	let { data } = $props();
@@ -107,7 +108,7 @@
 				<div>
 					<label for="email" class="block text-sm text-surface-300 mb-1.5">Email</label>
 					<div class="relative">
-						<Mail size={16} class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500" />
+						<MailIcon size={16} class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500" />
 						<input id="email" type="email" bind:value={email} required placeholder="you@example.com"
 							class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-surface-500 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 text-sm" />
 					</div>

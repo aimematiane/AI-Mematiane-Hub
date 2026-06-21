@@ -1,7 +1,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
-	import { Users as UsersIcon, Shield, Mail, Calendar, MoreVertical, Check, Ban, UserX, Search, Filter } from '@lucide/svelte';
+	import { Users as UsersIcon, Shield, Calendar, MoreVertical, Check, Ban, UserX, Search, Filter } from '@lucide/svelte';
 
 	let { data } = $props();
 

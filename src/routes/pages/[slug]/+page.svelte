@@ -1,6 +1,7 @@
 <script>
 	import SeoHead from '$lib/components/SeoHead.svelte';
-	import { Calendar, Check, ChevronDown, Mail, MapPin, Phone } from '@lucide/svelte';
+	import MailIcon from '$lib/components/icons/MailIcon.svelte';
+	import { Calendar, Check, ChevronDown, MapPin, Phone } from '@lucide/svelte';
 	import { resolveMetaTitle, resolveMetaDescription } from '$lib/config/site.js';
 
 	let { data } = $props();
@@ -242,7 +243,7 @@
 					<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{sectionData.title}</h2>
 					{#if sectionData.description}<p class="text-surface-400 mb-6">{sectionData.description}</p>{/if}
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-						{#if sectionData.email}<a href="mailto:{sectionData.email}" class="flex items-center gap-2 text-surface-300 hover:text-accent-400"><Mail size={16} />{sectionData.email}</a>{/if}
+						{#if sectionData.email}<a href="mailto:{sectionData.email}" class="flex items-center gap-2 text-surface-300 hover:text-accent-400"><MailIcon size={16} />{sectionData.email}</a>{/if}
 						{#if sectionData.phone}<a href="tel:{sectionData.phone}" class="flex items-center gap-2 text-surface-300 hover:text-accent-400"><Phone size={16} />{sectionData.phone}</a>{/if}
 						{#if sectionData.address}<span class="flex items-center gap-2 text-surface-300"><MapPin size={16} />{sectionData.address}</span>{/if}
 					</div>
