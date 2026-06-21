@@ -600,10 +600,11 @@ CREATE POLICY "select_footer_social_links" ON public.footer_social_links FOR SEL
 CREATE POLICY "manage_footer_social_links" ON public.footer_social_links FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- Media Files
-CREATE POLICY "select_media_files" ON public.media_files FOR SELECT TO anon, authenticated USING (deleted_at IS NULL);
+CREATE POLICY "select_media_files" ON public.media_files FOR SELECT TO anon, authenticated USING (deleted_at IS NULL OR auth.uid() = uploaded_by OR public.is_admin());
 CREATE POLICY "insert_media_files" ON public.media_files FOR INSERT TO authenticated WITH CHECK (auth.uid() = uploaded_by);
 CREATE POLICY "update_media_files" ON public.media_files FOR UPDATE TO authenticated USING (auth.uid() = uploaded_by OR public.is_admin()) WITH CHECK (auth.uid() = uploaded_by OR public.is_admin());
 CREATE POLICY "delete_media_files" ON public.media_files FOR DELETE TO authenticated USING (auth.uid() = uploaded_by OR public.is_admin());
+
 
 -- Audit Logs
 CREATE POLICY "select_audit_logs" ON public.audit_logs FOR SELECT TO authenticated USING (public.is_admin());

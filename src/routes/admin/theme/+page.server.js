@@ -1,9 +1,9 @@
-import { requireAdmin } from '$lib/server/auth.js';
+import { requireAdmin, requirePermission } from '$lib/server/auth.js';
 import { logAudit } from '$lib/server/audit.js';
 import { fail } from '@sveltejs/kit';
 
 export async function load(event) {
-	const { client } = await requireAdmin(event, 'role');
+	const { client } = await requirePermission(event, 'theme.view');
 
 	const { data: themeSettings } = await client
 		.from('theme_settings')
@@ -22,7 +22,7 @@ export async function load(event) {
 export const actions = {
 	async update(event) {
 		const { request } = event;
-		const { client, user } = await requireAdmin(event, 'role');
+		const { client, user } = await requirePermission(event, 'theme.edit');
 		const formData = await request.formData();
 		const settings = JSON.parse(formData.get('settings'));
 

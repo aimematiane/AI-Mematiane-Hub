@@ -1,4 +1,4 @@
-import { requireAdmin } from '$lib/server/auth.js';
+import { requireAdmin, requirePermission } from '$lib/server/auth.js';
 import { logAudit } from '$lib/server/audit.js';
 import { guessMimeType } from '$lib/utils/media.js';
 import { fail } from '@sveltejs/kit';
@@ -79,7 +79,7 @@ function getPathFromUrl(url) {
 }
 
 export async function load(event) {
-	const { client, user } = await requireAdmin(event, 'role');
+	const { client, user } = await requirePermission(event, 'media.view');
 
 	// Helper to normalize folder paths consistently
 	const normalizeFolder = (f) => {
@@ -256,7 +256,7 @@ export async function load(event) {
 export const actions = {
 	async upload(event) {
 		const { request } = event;
-		const { client, user } = await requireAdmin(event, 'role');
+		const { client, user } = await requirePermission(event, 'media.upload');
 		const formData = await request.formData();
 		const url_path = formData.get('url')?.toString() || '';
 		const filename = formData.get('filename')?.toString() || url_path.split('/').pop() || 'file';
@@ -297,7 +297,7 @@ export const actions = {
 
 	async delete(event) {
 		const { request } = event;
-		const { client, user } = await requireAdmin(event, 'role');
+		const { client, user } = await requirePermission(event, 'media.delete');
 		const formData = await request.formData();
 		const id = formData.get('id')?.toString() || '';
 
@@ -344,7 +344,7 @@ export const actions = {
 
 	async updateMeta(event) {
 		const { request } = event;
-		const { client, user } = await requireAdmin(event, 'role');
+		const { client, user } = await requirePermission(event, 'media.edit');
 		const formData = await request.formData();
 		const id = formData.get('id')?.toString() || '';
 		const alt_text = formData.get('alt_text')?.toString() || '';
@@ -412,7 +412,7 @@ export const actions = {
 
 	async createFolder(event) {
 		const { request } = event;
-		const { client, user } = await requireAdmin(event, 'role');
+		const { client, user } = await requirePermission(event, 'media.upload');
 		const formData = await request.formData();
 		const parentPath = formData.get('parentPath')?.toString() || '';
 		const folderName = formData.get('folderName')?.toString() || '';
@@ -438,7 +438,7 @@ export const actions = {
 
 	async renameFolder(event) {
 		const { request } = event;
-		const { client, user } = await requireAdmin(event, 'role');
+		const { client, user } = await requirePermission(event, 'media.edit');
 		const formData = await request.formData();
 		const oldFolder = formData.get('oldFolder')?.toString() || '';
 		const newFolderName = formData.get('newFolderName')?.toString() || '';
@@ -486,7 +486,7 @@ export const actions = {
 
 	async deleteFolder(event) {
 		const { request } = event;
-		const { client, user } = await requireAdmin(event, 'role');
+		const { client, user } = await requirePermission(event, 'media.delete');
 		const formData = await request.formData();
 		const folderPath = formData.get('folderPath')?.toString() || '';
 

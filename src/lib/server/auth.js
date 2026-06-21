@@ -35,6 +35,19 @@ export async function requireAdmin(event, columns = 'id, email, display_name, av
 	return { client, user, profile };
 }
 
+export async function requirePermission(event, permissionName) {
+	const { client, user, profile } = await requireAdmin(event);
+	if (profile.role === 'super_admin') {
+		return { client, user, profile };
+	}
+	const allowed = await hasPermission(client, user.id, permissionName);
+	if (!allowed) {
+		throw redirect(302, '/admin');
+	}
+	return { client, user, profile };
+}
+
+
 export async function hasPermission(client, userId, permissionName) {
 	const { data: profile } = await client
 		.from('profiles')
@@ -64,7 +77,7 @@ export async function hasPermission(client, userId, permissionName) {
 
 	const { data: rpData } = await client
 		.from('role_permissions')
-		.select('id')
+		.select('role_id')
 		.eq('role_id', roleData.id)
 		.eq('permission_id', permData.id)
 		.limit(1);

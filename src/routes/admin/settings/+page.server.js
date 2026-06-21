@@ -1,9 +1,9 @@
-import { requireAdmin } from '$lib/server/auth.js';
+import { requireAdmin, requirePermission } from '$lib/server/auth.js';
 import { logAudit } from '$lib/server/audit.js';
 import { fail } from '@sveltejs/kit';
 
 export async function load(event) {
-	const { client } = await requireAdmin(event, 'role');
+	const { client } = await requirePermission(event, 'site_settings.view');
 
 	const { data: settings } = await client
 		.from('site_settings')
@@ -22,7 +22,7 @@ export async function load(event) {
 export const actions = {
 	async update(event) {
 		const { request } = event;
-		const { client, user } = await requireAdmin(event, 'role');
+		const { client, user } = await requirePermission(event, 'site_settings.edit');
 		const formData = await request.formData();
 		const settingsJson = formData.get('settings');
 		const settings = JSON.parse(settingsJson);
