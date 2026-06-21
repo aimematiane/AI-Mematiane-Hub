@@ -15,19 +15,21 @@ function normalizeItems(items, prefix) {
 
 function sanitizeSections(sections = []) {
 	return ensureArray(sections).filter(Boolean).map((section, index) => {
+		const type = typeof section.type === 'string' && section.type ? section.type : 'rich_text';
 		const data = section.data && typeof section.data === 'object' ? section.data : {};
 		const normalized = {
 			...section,
-			id: section.id || `${section.type || 'section'}-${index}`,
+			id: section.id || `${type}-${index}`,
+			type,
 			data: {
 				...data,
-				cards: normalizeItems(data.cards, `${section.type || 'section'}-${index}-card`),
-				items: normalizeItems(data.items, `${section.type || 'section'}-${index}-item`),
-				images: normalizeItems(data.images, `${section.type || 'section'}-${index}-image`)
+				cards: normalizeItems(data.cards, `${type}-${index}-card`),
+				items: normalizeItems(data.items, `${type}-${index}-item`),
+				images: normalizeItems(data.images, `${type}-${index}-image`)
 			}
 		};
 
-		if (section?.type !== 'rich_text') return normalized;
+		if (type !== 'rich_text') return normalized;
 		return {
 			...normalized,
 			data: {
@@ -51,8 +53,18 @@ export async function load({ cookies, url, params }) {
 
 	if (pageError || !page) throw error(404, 'Page not found');
 
-	page.content = sanitizeHtml(page.content || '');
-	page.sections = sanitizeSections(page.sections || []);
+	const safePage = { ...page };
+	try {
+		safePage.content = sanitizeHtml(page.content || '');
+		safePage.sections = sanitizeSections(page.sections || []);
+	} catch (err) {
+		console.error('Failed to normalize public page content', {
+			slug: params.slug,
+			message: err?.message
+		});
+		safePage.content = sanitizeHtml(page.content || '');
+		safePage.sections = [];
+	}
 
-	return { page };
+	return { page: safePage };
 }

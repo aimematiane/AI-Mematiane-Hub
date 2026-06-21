@@ -23,10 +23,11 @@ const ALLOWED_ATTRS = [
 ];
 
 export function sanitizeHtml(html) {
-	if (!html) return '';
+	const value = typeof html === 'string' ? html : String(html ?? '');
+	if (!value) return '';
 
 	if (browser) {
-		return DOMPurify.sanitize(html, {
+		return DOMPurify.sanitize(value, {
 			ALLOWED_TAGS,
 			ALLOWED_ATTR: ALLOWED_ATTRS,
 			ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
@@ -37,7 +38,7 @@ export function sanitizeHtml(html) {
 	}
 
 	// Server-side fallback: lightweight regex sanitization to remove scripts, styles, frames & handlers
-	return html
+	return value
 		.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
 		.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
 		.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
@@ -46,13 +47,14 @@ export function sanitizeHtml(html) {
 }
 
 export function renderMarkdown(content) {
-	if (!content) return '';
-	return sanitizeHtml(marked(content));
+	const value = typeof content === 'string' ? content : String(content ?? '');
+	if (!value) return '';
+	return sanitizeHtml(marked(value));
 }
 
 export function extractHeadings(content) {
 	const headings = [];
-	const lines = content.split('\n');
+	const lines = (typeof content === 'string' ? content : String(content ?? '')).split('\n');
 	for (const line of lines) {
 		const match = line.match(/^(#{2,3})\s+(.+)/);
 		if (match) {
