@@ -15,8 +15,12 @@
 
   // Apply theme CSS variables when data changes
   $effect(() => {
-    if (data.theme && typeof document !== 'undefined') {
-      const root = document.documentElement;
+    if (typeof document === 'undefined') return;
+
+    const root = document.documentElement;
+    root.dataset.themePreset = data.site?.theme_preset || 'default';
+
+    if (data.theme) {
       for (const [variable, value] of Object.entries(data.theme)) {
         root.style.setProperty(variable, value);
       }

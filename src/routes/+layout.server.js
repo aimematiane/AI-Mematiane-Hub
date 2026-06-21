@@ -3,7 +3,7 @@ import { getSupabaseServerClient } from '$lib/supabase/server.js';
 function settingsToMap(settings = []) {
 	const map = {};
 	for (const setting of settings) {
-		map[setting.key] = setting.value_json ?? setting.value ?? '';
+		map[setting.key] = setting.value ?? setting.value_json ?? '';
 	}
 	return map;
 }

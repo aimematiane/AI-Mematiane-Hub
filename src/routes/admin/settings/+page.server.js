@@ -28,9 +28,10 @@ export const actions = {
 		const settings = JSON.parse(settingsJson);
 
 		for (const setting of settings) {
-			const payload = setting.value_json !== undefined && setting.value_json !== null
-				? { value_json: setting.value_json }
-				: { value: setting.value };
+			const payload = { value: setting.value };
+			if (setting.value_json !== undefined && setting.value_json !== null) {
+				payload.value_json = setting.value_json;
+			}
 
 			const { error } = await client.from('site_settings').update(payload).eq('id', setting.id);
 			if (error) return fail(400, { message: error.message });

@@ -129,6 +129,17 @@
 									oninput={(e) => handleInput(setting.id, e.currentTarget.value)}
 									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500"
 								/>
+							{:else if setting.input_type === 'select'}
+								<select
+									id={`site-setting-${setting.id}`}
+									value={setting.value || ''}
+									onchange={(e) => handleInput(setting.id, e.currentTarget.value)}
+									class="w-full px-4 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-sm focus:outline-none focus:border-accent-500"
+								>
+									{#each setting.value_json?.options || [] as option}
+										<option value={option.value}>{option.label}</option>
+									{/each}
+								</select>
 							{:else if setting.input_type === 'textarea' || setting.input_type === 'rich_text'}
 								<textarea
 									id={`site-setting-${setting.id}`}
