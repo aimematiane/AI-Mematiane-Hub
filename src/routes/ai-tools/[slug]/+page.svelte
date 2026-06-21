@@ -108,11 +108,30 @@
 	/>
 
 	<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-		<Breadcrumbs items={[
-			{ label: 'Home', href: '/' },
-			{ label: 'AI Showcase', href: '/ai-tools' },
-			{ label: tool.name }
-		]} />
+		<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+			<Breadcrumbs items={[
+				{ label: 'Home', href: '/' },
+				{ label: 'AI Showcase', href: '/ai-tools' },
+				{ label: tool.name }
+			]} />
+
+			<div class="flex items-center gap-2 flex-wrap sm:justify-end">
+				<CategoryBadge category={tool.category} size="sm" />
+				{#if tool.is_featured}
+					<span class="inline-flex items-center gap-1 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full">
+						<Star size={12} fill="currentColor" />
+						Featured
+					</span>
+				{/if}
+				{#if tool.pricing}
+					<span class="text-xs text-surface-300 bg-surface-800 border border-surface-700 px-2.5 py-1 rounded-full">
+						{tool.pricing}
+					</span>
+				{/if}
+			</div>
+		</div>
+
+		<h1 class="text-3xl sm:text-4xl font-bold text-white mb-6">{tool.name}</h1>
 
 		{#if tool.image_url}
 			<div class="aspect-video rounded-2xl overflow-hidden bg-surface-800 mb-8">
@@ -130,23 +149,15 @@
 			</div>
 		{/if}
 
-		<div class="flex items-start gap-4 mb-4">
-			<h1 class="text-3xl sm:text-4xl font-bold text-white">{tool.name}</h1>
-		</div>
+		{#if tool.long_description}
+			<div class="md-content prose max-w-none text-surface-300 leading-relaxed">
+				{@html renderMarkdown(tool.long_description)}
+			</div>
+		{:else}
+			<p class="text-surface-400 leading-relaxed">{tool.description}</p>
+		{/if}
 
-		<div class="flex items-center gap-3 mb-6 flex-wrap">
-			<CategoryBadge category={tool.category} size="md" />
-			{#if tool.is_featured}
-				<span class="inline-flex items-center gap-1 text-sm text-amber-400"><Star size={14} fill="currentColor" /> Featured</span>
-			{/if}
-			{#if tool.tags?.length > 0}
-				{#each tool.tags as tag}
-					<span class="text-xs text-surface-500 bg-surface-800 px-2 py-1 rounded">{tag}</span>
-				{/each}
-			{/if}
-		</div>
-
-		<div class="flex items-center gap-3 mb-8 flex-wrap">
+		<div class="flex items-center gap-3 mt-8 flex-wrap">
 			{#if tool.website_url}
 				<a href={tool.website_url} target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-sm transition-colors">
 					<ExternalLink size={14} />
@@ -171,20 +182,7 @@
 					Research Paper
 				</a>
 			{/if}
-			{#if tool.pricing}
-				<span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-800 text-surface-200 text-sm border border-surface-700">
-					{tool.pricing}
-				</span>
-			{/if}
 		</div>
-
-		{#if tool.long_description}
-			<div class="md-content prose max-w-none text-surface-300 leading-relaxed">
-				{@html renderMarkdown(tool.long_description)}
-			</div>
-		{:else}
-			<p class="text-surface-400 leading-relaxed">{tool.description}</p>
-		{/if}
 
 		{#if tool.attachments && tool.attachments.length > 0}
 			<div class="mt-10 pt-8 border-t border-surface-800">
