@@ -53,6 +53,9 @@ export function handle({ event, resolve }) {
 				response.headers.set(key, value);
 			}
 			response.headers.set('Content-Security-Policy', cspHeader);
+			response.headers.set('Cache-Control', 'no-store, max-age=0, must-revalidate');
+			response.headers.set('Pragma', 'no-cache');
+			response.headers.set('Expires', '0');
 		}
 		return response;
 	});
