@@ -75,9 +75,11 @@
 		type="article"
 		schemaType="NewsArticle"
 		publishedTime={item.created_at}
+		modifiedTime={item.updated_at}
 		authorName={item.author?.display_name || ''}
 		tags={[item.category, ...(item.tags || [])]}
 		preloadImage={item.cover_image_url || ''}
+		imageAlt={item.title}
 	/>
 
 	<article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

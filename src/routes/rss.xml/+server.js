@@ -10,6 +10,11 @@ function escapeXml(value = '') {
 		.replaceAll("'", '&apos;');
 }
 
+function formatRssDate(value) {
+	const date = new Date(value);
+	return Number.isNaN(date.getTime()) ? new Date().toUTCString() : date.toUTCString();
+}
+
 export async function GET(event) {
 	const client = await getSupabaseServerClient(event);
 	const siteUrl = SITE_URL;
@@ -33,14 +38,14 @@ export async function GET(event) {
 			title: p.title,
 			link: `${siteUrl}/blog/${p.slug}`,
 			description: p.excerpt,
-			pubDate: new Date(p.published_at).toUTCString(),
+			pubDate: formatRssDate(p.published_at),
 			guid: `${siteUrl}/blog/${p.slug}`
 		})),
 		...(news || []).map(n => ({
 			title: n.title,
 			link: `${siteUrl}/news/${n.slug}`,
 			description: n.excerpt,
-			pubDate: new Date(n.published_at).toUTCString(),
+			pubDate: formatRssDate(n.published_at),
 			guid: `${siteUrl}/news/${n.slug}`
 		}))
 	];
@@ -60,8 +65,8 @@ export async function GET(event) {
 	${feedItems.map(item => `
 	<item>
 		<title><![CDATA[${item.title}]]></title>
-		<link>${item.link}</link>
-		<guid>${item.guid}</guid>
+		<link>${escapeXml(item.link)}</link>
+		<guid>${escapeXml(item.guid)}</guid>
 		<pubDate>${item.pubDate}</pubDate>
 		<description><![CDATA[${item.description}]]></description>
 	</item>`).join('')}

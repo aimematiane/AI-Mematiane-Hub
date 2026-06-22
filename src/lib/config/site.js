@@ -7,12 +7,24 @@ export function absoluteUrl(path = '/') {
 	return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+export function cleanMetaText(value = '') {
+	return String(value).replace(/\s+/g, ' ').trim();
+}
+
+export function truncateMetaText(value = '', maxLength = 160) {
+	const cleaned = cleanMetaText(value);
+	if (cleaned.length <= maxLength) return cleaned;
+	const truncated = cleaned.slice(0, maxLength - 1).trimEnd();
+	const lastSpace = truncated.lastIndexOf(' ');
+	return `${truncated.slice(0, lastSpace > 80 ? lastSpace : truncated.length).trimEnd()}…`;
+}
+
 export function resolveMetaTitle(metaTitle, fallback) {
-	const trimmed = metaTitle?.trim();
-	return trimmed || fallback;
+	const trimmed = cleanMetaText(metaTitle);
+	return truncateMetaText(trimmed || fallback, 60);
 }
 
 export function resolveMetaDescription(metaDescription, fallback) {
-	const trimmed = metaDescription?.trim();
-	return trimmed || fallback;
+	const trimmed = cleanMetaText(metaDescription);
+	return truncateMetaText(trimmed || fallback, 160);
 }

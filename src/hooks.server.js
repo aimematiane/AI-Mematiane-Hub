@@ -56,6 +56,8 @@ export function handle({ event, resolve }) {
 			response.headers.set('Cache-Control', 'no-store, max-age=0, must-revalidate');
 			response.headers.set('Pragma', 'no-cache');
 			response.headers.set('Expires', '0');
+			response.headers.append('Link', `<${SITE_URL}/sitemap.xml>; rel="sitemap"; type="application/xml"`);
+			response.headers.append('Link', `<${SITE_URL}/rss.xml>; rel="alternate"; type="application/rss+xml"; title="RSS"`);
 		}
 		return response;
 	});

@@ -1,6 +1,22 @@
 import { getSupabaseServerClient } from '$lib/supabase/server.js';
 import { SITE_URL } from '$lib/config/site.js';
 
+function escapeXml(value = '') {
+	return String(value)
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&apos;');
+}
+
+function formatLastmod(value) {
+	if (!value) return '';
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return '';
+	return date.toISOString().split('T')[0];
+}
+
 export async function GET(event) {
 	const client = await getSupabaseServerClient(event);
 	const siteUrl = SITE_URL;
@@ -46,11 +62,11 @@ export async function GET(event) {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
 	xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls.map(u => `  <url>
-    <loc>${u.loc}</loc>
-    ${u.lastmod ? `<lastmod>${new Date(u.lastmod).toISOString().split('T')[0]}</lastmod>` : ''}
+    <loc>${escapeXml(u.loc)}</loc>
+    ${formatLastmod(u.lastmod) ? `<lastmod>${formatLastmod(u.lastmod)}</lastmod>` : ''}
     <changefreq>${u.changefreq || 'weekly'}</changefreq>
     <priority>${u.priority || '0.7'}</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="${u.loc}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(u.loc)}" />
   </url>`).join('\n')}
 </urlset>`;
 

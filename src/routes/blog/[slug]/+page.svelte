@@ -83,9 +83,11 @@
 		type="article"
 		schemaType="Article"
 		publishedTime={post.created_at}
+		modifiedTime={post.updated_at}
 		authorName={post.author?.display_name || ''}
 		tags={[post.category, ...(post.tags || [])]}
 		preloadImage={post.cover_image_url || ''}
+		imageAlt={post.title}
 	/>
 
 	<article class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

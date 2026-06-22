@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import { SITE_URL, absoluteUrl } from '$lib/config/site.js';
+	import { SITE_URL, absoluteUrl, resolveMetaTitle, resolveMetaDescription } from '$lib/config/site.js';
 
 	let {
 		title = '',
@@ -9,6 +9,7 @@
 		image = '',
 		type = 'website',
 		publishedTime = '',
+		modifiedTime = '',
 		authorName = '',
 		tags = [],
 		noindex = false,
@@ -18,7 +19,8 @@
 		schemaType = '',
 		customSchema = null,
 		imageWidth = 1200,
-		imageHeight = 675
+		imageHeight = 675,
+		imageAlt = ''
 	} = $props();
 
 	const site = $derived($page.data.site || {});
@@ -29,11 +31,12 @@
 	const defaultImage = $derived(site.og_image_url || '');
 	const resolvedUrl = $derived(absoluteUrl(url));
 	const resolvedImage = $derived(image ? absoluteUrl(image) : defaultImage ? absoluteUrl(defaultImage) : '');
-	const metaTitle = $derived(title || siteName);
-	const metaDescription = $derived(description || siteDescription);
+	const metaTitle = $derived(resolveMetaTitle(title, siteName));
+	const metaDescription = $derived(resolveMetaDescription(description, siteDescription));
 	const canonicalUrl = $derived(resolvedUrl || SITE_URL);
 	const resolvedPrevUrl = $derived(prevUrl ? absoluteUrl(prevUrl) : '');
 	const resolvedNextUrl = $derived(nextUrl ? absoluteUrl(nextUrl) : '');
+	const resolvedImageAlt = $derived(imageAlt || metaTitle);
 
 	const articleSchema = $derived(
 		schemaType === 'Article' || schemaType === 'NewsArticle'
@@ -58,19 +61,22 @@
 			: null
 	);
 
-	const structuredData = $derived(
-		customSchema
-			? typeof customSchema === 'string'
-				? JSON.parse(customSchema)
-				: customSchema
-			: articleSchema
-	);
+	const structuredData = $derived.by(() => {
+		if (!customSchema) return articleSchema;
+		if (typeof customSchema !== 'string') return customSchema;
+		try {
+			return JSON.parse(customSchema);
+		} catch {
+			return null;
+		}
+	});
 </script>
 
 <svelte:head>
 	<title>{metaTitle}</title>
 	<meta name="description" content={metaDescription} />
 	<meta name="theme-color" content="#0f172a" />
+	<meta name="robots" content={noindex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'} />
 	<meta property="og:title" content={metaTitle} />
 	<meta property="og:description" content={metaDescription} />
 	<meta property="og:type" content={type} />
@@ -84,10 +90,15 @@
 		<meta property="og:image:secure_url" content={resolvedImage} />
 		<meta property="og:image:width" content={String(imageWidth)} />
 		<meta property="og:image:height" content={String(imageHeight)} />
+		<meta property="og:image:alt" content={resolvedImageAlt} />
 		<meta property="twitter:image" content={resolvedImage} />
+		<meta name="twitter:image:alt" content={resolvedImageAlt} />
 	{/if}
 	{#if type === 'article' && publishedTime}
 		<meta property="article:published_time" content={publishedTime} />
+	{/if}
+	{#if type === 'article' && modifiedTime}
+		<meta property="article:modified_time" content={modifiedTime} />
 	{/if}
 	{#if type === 'article' && authorName}
 		<meta property="article:author" content={authorName} />
@@ -97,9 +108,9 @@
 			<meta property="article:tag" content={tag} />
 		{/each}
 	{/if}
-	<meta property="twitter:card" content="summary_large_image" />
-	<meta property="twitter:title" content={metaTitle} />
-	<meta property="twitter:description" content={metaDescription} />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content={metaTitle} />
+	<meta name="twitter:description" content={metaDescription} />
 	<link rel="canonical" href={canonicalUrl} />
 	<link rel="alternate" href={canonicalUrl} hreflang="en" />
 	<link rel="alternate" href={canonicalUrl} hreflang="x-default" />
@@ -111,9 +122,6 @@
 	{/if}
 	{#if preloadImage}
 		<link rel="preload" as="image" href={absoluteUrl(preloadImage)} />
-	{/if}
-	{#if noindex}
-		<meta name="robots" content="noindex,nofollow" />
 	{/if}
 	{#if structuredData}
 		<script type="application/ld+json">
