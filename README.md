@@ -36,6 +36,31 @@ npm run dev -- --open
 
 Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
 
+## Authentication
+
+This project uses Supabase Auth for email/password, Google, and GitHub sign-in.
+
+Required environment variables:
+
+```sh
+VITE_SUPABASE_URL=your-supabase-project-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+Enable the OAuth providers in Supabase:
+
+1. In Supabase, open Authentication > Providers.
+2. Enable Google and GitHub.
+3. Add your provider client ID and client secret.
+4. Add these redirect URLs to the provider and Supabase allow list:
+
+```txt
+http://localhost:5173/auth/callback
+https://your-domain.com/auth/callback
+```
+
+Google and GitHub sign-in buttons are available on `/auth/login` and `/auth/register`.
+
 ## Building
 
 To build your library:
