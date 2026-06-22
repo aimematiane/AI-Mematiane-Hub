@@ -1,7 +1,7 @@
 UPDATE public.site_settings
 SET
 	value = COALESCE(NULLIF(value, ''), 'default'),
-	value_json = '{"options":[{"value":"default","label":"Default Dark Cyan"},{"value":"earth","label":"Earth Green"},{"value":"apple","label":"Apple Minimal"},{"value":"editorial","label":"Editorial Magazine"},{"value":"studio","label":"Warm Studio"}]}'::jsonb,
+	value_json = '{"options":[{"value":"default","label":"Default Dark Cyan"},{"value":"earth","label":"Earth Green"},{"value":"apple","label":"Apple Minimal"},{"value":"editorial","label":"Editorial Magazine"},{"value":"studio","label":"Warm Studio"},{"value":"midnight","label":"Midnight Prism"},{"value":"aurora","label":"Aurora Signal"},{"value":"graphite","label":"Graphite Pro"},{"value":"custom","label":"Custom Unsaved"}]}'::jsonb,
 	category = 'branding',
 	display_name = 'Theme Preset',
 	description = 'Changes the global color system for the whole website',
@@ -26,7 +26,7 @@ SELECT
 	'9fe8235b-dfe3-4ef7-a836-5f7e0be5d133',
 	'theme_preset',
 	'default',
-	'{"options":[{"value":"default","label":"Default Dark Cyan"},{"value":"earth","label":"Earth Green"},{"value":"apple","label":"Apple Minimal"},{"value":"editorial","label":"Editorial Magazine"},{"value":"studio","label":"Warm Studio"}]}'::jsonb,
+	'{"options":[{"value":"default","label":"Default Dark Cyan"},{"value":"earth","label":"Earth Green"},{"value":"apple","label":"Apple Minimal"},{"value":"editorial","label":"Editorial Magazine"},{"value":"studio","label":"Warm Studio"},{"value":"midnight","label":"Midnight Prism"},{"value":"aurora","label":"Aurora Signal"},{"value":"graphite","label":"Graphite Pro"},{"value":"custom","label":"Custom Unsaved"}]}'::jsonb,
 	'branding',
 	'Theme Preset',
 	'Changes the global color system for the whole website',

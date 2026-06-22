@@ -271,6 +271,17 @@ CREATE TABLE public.theme_settings (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Custom Theme Presets table (CMS)
+CREATE TABLE public.custom_theme_presets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL UNIQUE,
+  description TEXT,
+  tokens JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Navigation Menus table (CMS)
 CREATE TABLE public.navigation_menus (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -451,6 +462,7 @@ CREATE INDEX idx_site_settings_key ON public.site_settings(key);
 -- Theme Settings indexes
 CREATE INDEX idx_theme_settings_category ON public.theme_settings(category);
 CREATE INDEX idx_theme_settings_key ON public.theme_settings(key);
+CREATE INDEX idx_custom_theme_presets_updated_at ON public.custom_theme_presets(updated_at DESC);
 
 -- Navigation indexes
 CREATE INDEX idx_navigation_items_menu ON public.navigation_items(menu_id);
@@ -493,6 +505,11 @@ CREATE TRIGGER update_site_settings_updated_at
 
 CREATE TRIGGER update_theme_settings_updated_at
   BEFORE UPDATE ON public.theme_settings
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_custom_theme_presets_updated_at
+  BEFORE UPDATE ON public.custom_theme_presets
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at();
 
@@ -549,6 +566,7 @@ ALTER TABLE public.upvotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.theme_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.custom_theme_presets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.navigation_menus ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.navigation_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pages ENABLE ROW LEVEL SECURITY;
@@ -615,6 +633,10 @@ CREATE POLICY "manage_site_settings" ON public.site_settings FOR ALL TO authenti
 -- Theme Settings
 CREATE POLICY "select_theme_settings" ON public.theme_settings FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "manage_theme_settings" ON public.theme_settings FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- Custom Theme Presets
+CREATE POLICY "select_custom_theme_presets" ON public.custom_theme_presets FOR SELECT TO authenticated USING (public.is_admin());
+CREATE POLICY "manage_custom_theme_presets" ON public.custom_theme_presets FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- Navigation
 CREATE POLICY "select_navigation_menus" ON public.navigation_menus FOR SELECT TO anon, authenticated USING (true);
@@ -905,7 +927,9 @@ INSERT INTO public.site_settings (id, key, value, value_json, category, display_
 ('ace23947-3311-4a75-a532-409984c0fe23', 'logo_dark_url', 'https://aocnsmmsddvnmrbnneds.supabase.co/storage/v1/object/public/uploads/media/1781697794154-4euhcg.svg', null, 'branding', 'Dark Logo URL', 'URL to your dark mode logo', 'image', 2, true),
 ('44701c23-e203-46a2-9b1d-ae288fd8f84c', 'favicon_url', 'https://aocnsmmsddvnmrbnneds.supabase.co/storage/v1/object/public/uploads/media/1781697794154-4euhcg.svg', null, 'branding', 'Favicon URL', 'URL to your favicon', 'image', 3, true),
 ('56187762-4ac1-4773-b2c2-c8648644e307', 'og_image_url', 'https://aocnsmmsddvnmrbnneds.supabase.co/storage/v1/object/public/uploads/media/1781697794154-4euhcg.svg', null, 'branding', 'Default OG Image', 'Default Open Graph image for social sharing', 'image', 4, true),
-('9fe8235b-dfe3-4ef7-a836-5f7e0be5d133', 'theme_preset', 'default', '{"options":[{"value":"default","label":"Default Dark Cyan"},{"value":"earth","label":"Earth Green"},{"value":"apple","label":"Apple Minimal"},{"value":"editorial","label":"Editorial Magazine"},{"value":"studio","label":"Warm Studio"}]}'::jsonb, 'branding', 'Theme Preset', 'Changes the global color system for the whole website', 'select', 5, true),
+('9fe8235b-dfe3-4ef7-a836-5f7e0be5d133', 'theme_preset', 'default', '{"options":[{"value":"default","label":"Default Dark Cyan"},{"value":"earth","label":"Earth Green"},{"value":"apple","label":"Apple Minimal"},{"value":"editorial","label":"Editorial Magazine"},{"value":"studio","label":"Warm Studio"},{"value":"midnight","label":"Midnight Prism"},{"value":"aurora","label":"Aurora Signal"},{"value":"graphite","label":"Graphite Pro"},{"value":"custom","label":"Custom Unsaved"}]}'::jsonb, 'branding', 'Theme Preset', 'Changes the global color system for the whole website', 'select', 5, true),
+('4c6ab483-d25e-4f88-a3cb-f232a9c2b11f', 'active_custom_theme_id', '', null, 'branding', 'Active Custom Theme ID', 'Internal reference for the active saved custom theme', 'text', 6, true),
+('4a1b1c47-31f2-49dd-a8d8-e43e3394764b', 'active_custom_theme_name', '', null, 'branding', 'Active Custom Theme Name', 'Display name for the active saved custom theme', 'text', 7, true),
 ('aa910835-d9a5-4808-8ea0-3894dd1de457', 'contact_email', 'AIMEMATIANE@GMAIL.COM', null, 'contact', 'Contact Email', 'Primary contact email address', 'email', 1, true),
 ('0613b17f-2b5a-4ada-977d-828a5c31ebce', 'contact_phone', '+49 174 530 9791', null, 'contact', 'Contact Phone', 'Contact phone number', 'text', 2, true),
 ('1ef420b2-661e-4deb-a7fb-b041aad18829', 'contact_address', 'Germany Berlin Lichtenberg', null, 'contact', 'Contact Address', 'Physical address', 'textarea', 3, true),
@@ -952,6 +976,12 @@ INSERT INTO public.theme_settings (id, key, value, category, display_name, css_v
 ('0e23a6af-cacb-49b6-a829-f9ddd7ee5b7f', 'radius_md', '8px', 'layout', 'Medium Radius', '--radius-md', 61),
 ('4805e3e0-4f63-4aa0-9d14-1c21d34feeb0', 'radius_lg', '12px', 'layout', 'Large Radius', '--radius-lg', 62),
 ('9622a1a9-0e36-4857-b0a9-242d084586b2', 'radius_xl', '16px', 'layout', 'Extra Large Radius', '--radius-xl', 63),
+('2e9d6e72-3c33-4a3e-9f9d-61a3643f7341', 'color_light_bg_primary', '#ffffff', 'colors', 'Light Page Background', '--light-bg-primary', 80),
+('55b34ad6-8fc6-4985-b4c9-bd2ee2ac2386', 'color_light_bg_secondary', '#f8fafc', 'colors', 'Light Panel Background', '--light-bg-secondary', 81),
+('559a5bea-2802-41bd-9db5-081ab016cbda', 'color_light_bg_tertiary', '#d1d5db', 'colors', 'Light Border Surface', '--light-bg-tertiary', 82),
+('e70813c3-3e73-49d8-a245-28b0c9602b96', 'color_light_text_primary', '#0f172a', 'colors', 'Light Text Primary', '--light-text-primary', 83),
+('a60d994b-6f38-4f83-af7d-83ed1d176e76', 'color_light_text_secondary', '#334155', 'colors', 'Light Text Secondary', '--light-text-secondary', 84),
+('beca2a5f-b1c6-4f3f-b3c5-282a736e8453', 'color_light_text_muted', '#64748b', 'colors', 'Light Text Muted', '--light-text-muted', 85),
 ('140df806-fe5b-4065-b684-d9a35aa2c28f', 'shadow_sm', '0 1px 2px 0 rgb(0 0 0 / 0.05)', 'layout', 'Small Shadow', '--shadow-sm', 70),
 ('f8928fc8-0a42-4d18-aafc-a8bb36b33580', 'shadow_md', '0 4px 6px -1px rgb(0 0 0 / 0.1)', 'layout', 'Medium Shadow', '--shadow-md', 71),
 ('0e0f91e7-8d94-42c3-b3f5-a3613947ebc5', 'shadow_lg', '0 10px 15px -3px rgb(0 0 0 / 0.1)', 'layout', 'Large Shadow', '--shadow-lg', 72)
