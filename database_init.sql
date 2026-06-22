@@ -645,7 +645,21 @@ CREATE POLICY "select_navigation_items" ON public.navigation_items FOR SELECT TO
 CREATE POLICY "manage_navigation_items" ON public.navigation_items FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- Pages
-CREATE POLICY "select_published_pages" ON public.pages FOR SELECT TO anon, authenticated USING (is_published = true OR author_id = auth.uid());
+CREATE POLICY "select_published_pages" ON public.pages
+  FOR SELECT TO anon
+  USING (
+    deleted_at IS NULL
+    AND is_published = true
+  );
+
+CREATE POLICY "select_own_or_admin_pages" ON public.pages
+  FOR SELECT TO authenticated
+  USING (
+    (deleted_at IS NULL AND is_published = true)
+    OR author_id = auth.uid()
+    OR public.is_admin()
+  );
+
 CREATE POLICY "manage_pages" ON public.pages FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin') OR author_id = auth.uid());
 
 -- Footer
@@ -738,8 +752,6 @@ INSERT INTO public.permissions (id, name, display_name, module, action, descript
 ('aa3baddf-e4d4-4854-b27a-0be95212bb99', 'site_settings.view', 'View Site Settings', 'site_settings', 'view', 'View site settings'),
 ('02f9f26a-694a-42aa-9143-c53456f43b21', 'taxonomy.edit', 'Edit Taxonomy', 'taxonomy', 'edit', 'Manage categories and tags'),
 ('b1b6025a-db18-4cc7-a3bd-4b05d7129eaf', 'taxonomy.view', 'View Taxonomy', 'taxonomy', 'view', 'View categories and tags'),
-('825835e6-b7d0-412e-ac85-c8122ba83ba2', 'theme.edit', 'Edit Theme Settings', 'theme', 'edit', 'Edit theme settings'),
-('423d0968-4cf4-416d-a306-d4f2dbb7b811', 'theme.view', 'View Theme Settings', 'theme', 'view', 'View theme settings'),
 ('fe296719-75af-4145-b56c-e2be6388e138', 'users.delete', 'Delete Users', 'users', 'delete', 'Delete users'),
 ('1f96ea79-5f45-4d8b-984b-919a63d939ec', 'users.edit', 'Edit Users', 'users', 'edit', 'Edit user profiles'),
 ('34938a20-09e6-4764-acb4-4608b4538daf', 'users.manage_roles', 'Manage User Roles', 'users', 'manage_roles', 'Assign roles to users'),
@@ -749,7 +761,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Role-Permission mappings
 INSERT INTO public.role_permissions (role_id, permission_id) VALUES
--- super_admin: all 41 permissions
+-- super_admin: all 39 permissions
 ('96caadf9-13cd-409c-8024-944316873e18', '29800588-ec53-439d-bf10-23b244c6fbb6'),
 ('96caadf9-13cd-409c-8024-944316873e18', '5ba4aa5c-8b25-46fa-82e2-2f463f632646'),
 ('96caadf9-13cd-409c-8024-944316873e18', '23dafb6e-571a-4acc-867e-29913527d7d3'),
@@ -784,14 +796,12 @@ INSERT INTO public.role_permissions (role_id, permission_id) VALUES
 ('96caadf9-13cd-409c-8024-944316873e18', 'aa3baddf-e4d4-4854-b27a-0be95212bb99'),
 ('96caadf9-13cd-409c-8024-944316873e18', '02f9f26a-694a-42aa-9143-c53456f43b21'),
 ('96caadf9-13cd-409c-8024-944316873e18', 'b1b6025a-db18-4cc7-a3bd-4b05d7129eaf'),
-('96caadf9-13cd-409c-8024-944316873e18', '825835e6-b7d0-412e-ac85-c8122ba83ba2'),
-('96caadf9-13cd-409c-8024-944316873e18', '423d0968-4cf4-416d-a306-d4f2dbb7b811'),
 ('96caadf9-13cd-409c-8024-944316873e18', 'fe296719-75af-4145-b56c-e2be6388e138'),
 ('96caadf9-13cd-409c-8024-944316873e18', '1f96ea79-5f45-4d8b-984b-919a63d939ec'),
 ('96caadf9-13cd-409c-8024-944316873e18', '34938a20-09e6-4764-acb4-4608b4538daf'),
 ('96caadf9-13cd-409c-8024-944316873e18', 'ff526172-2f60-4485-ad57-68b2236de446'),
 ('96caadf9-13cd-409c-8024-944316873e18', '080b354f-26ff-4989-9db2-316419706812'),
--- admin: 38 permissions (same as super_admin minus manage_roles, manage_status)
+-- admin: 36 permissions (same as super_admin minus manage_roles, manage_status)
 ('d9f84b19-17ec-4711-b6e7-3552ac13071f', '29800588-ec53-439d-bf10-23b244c6fbb6'),
 ('d9f84b19-17ec-4711-b6e7-3552ac13071f', '5ba4aa5c-8b25-46fa-82e2-2f463f632646'),
 ('d9f84b19-17ec-4711-b6e7-3552ac13071f', '23dafb6e-571a-4acc-867e-29913527d7d3'),
@@ -826,8 +836,6 @@ INSERT INTO public.role_permissions (role_id, permission_id) VALUES
 ('d9f84b19-17ec-4711-b6e7-3552ac13071f', 'aa3baddf-e4d4-4854-b27a-0be95212bb99'),
 ('d9f84b19-17ec-4711-b6e7-3552ac13071f', '02f9f26a-694a-42aa-9143-c53456f43b21'),
 ('d9f84b19-17ec-4711-b6e7-3552ac13071f', 'b1b6025a-db18-4cc7-a3bd-4b05d7129eaf'),
-('d9f84b19-17ec-4711-b6e7-3552ac13071f', '825835e6-b7d0-412e-ac85-c8122ba83ba2'),
-('d9f84b19-17ec-4711-b6e7-3552ac13071f', '423d0968-4cf4-416d-a306-d4f2dbb7b811'),
 ('d9f84b19-17ec-4711-b6e7-3552ac13071f', 'fe296719-75af-4145-b56c-e2be6388e138'),
 ('d9f84b19-17ec-4711-b6e7-3552ac13071f', '1f96ea79-5f45-4d8b-984b-919a63d939ec'),
 ('d9f84b19-17ec-4711-b6e7-3552ac13071f', '080b354f-26ff-4989-9db2-316419706812'),
@@ -854,7 +862,6 @@ INSERT INTO public.role_permissions (role_id, permission_id) VALUES
 ('c237a9bc-a05c-41d7-acf2-a5ea6a9daac6', 'e3d4f910-b537-42bd-b9b6-7e39a6d2263b'),
 ('c237a9bc-a05c-41d7-acf2-a5ea6a9daac6', 'aa3baddf-e4d4-4854-b27a-0be95212bb99'),
 ('c237a9bc-a05c-41d7-acf2-a5ea6a9daac6', 'b1b6025a-db18-4cc7-a3bd-4b05d7129eaf'),
-('c237a9bc-a05c-41d7-acf2-a5ea6a9daac6', '423d0968-4cf4-416d-a306-d4f2dbb7b811'),
 -- moderator
 ('aad5d25b-2015-413c-800f-4c6d29ece6df', '3769cf11-3913-4ebc-9edf-88f61691c38b'),
 ('aad5d25b-2015-413c-800f-4c6d29ece6df', '4f18b8a9-c373-4ad9-befb-1d6cf9a3f9a8'),
@@ -927,7 +934,7 @@ INSERT INTO public.site_settings (id, key, value, value_json, category, display_
 ('ace23947-3311-4a75-a532-409984c0fe23', 'logo_dark_url', 'https://aocnsmmsddvnmrbnneds.supabase.co/storage/v1/object/public/uploads/media/1781697794154-4euhcg.svg', null, 'branding', 'Dark Logo URL', 'URL to your dark mode logo', 'image', 2, true),
 ('44701c23-e203-46a2-9b1d-ae288fd8f84c', 'favicon_url', 'https://aocnsmmsddvnmrbnneds.supabase.co/storage/v1/object/public/uploads/media/1781697794154-4euhcg.svg', null, 'branding', 'Favicon URL', 'URL to your favicon', 'image', 3, true),
 ('56187762-4ac1-4773-b2c2-c8648644e307', 'og_image_url', 'https://aocnsmmsddvnmrbnneds.supabase.co/storage/v1/object/public/uploads/media/1781697794154-4euhcg.svg', null, 'branding', 'Default OG Image', 'Default Open Graph image for social sharing', 'image', 4, true),
-('9fe8235b-dfe3-4ef7-a836-5f7e0be5d133', 'theme_preset', 'default', '{"options":[{"value":"default","label":"Default Dark Cyan"},{"value":"earth","label":"Earth Green"},{"value":"apple","label":"Apple Minimal"},{"value":"editorial","label":"Editorial Magazine"},{"value":"studio","label":"Warm Studio"},{"value":"midnight","label":"Midnight Prism"},{"value":"aurora","label":"Aurora Signal"},{"value":"graphite","label":"Graphite Pro"},{"value":"custom","label":"Custom Unsaved"}]}'::jsonb, 'branding', 'Theme Preset', 'Changes the global color system for the whole website', 'select', 5, true),
+('9fe8235b-dfe3-4ef7-a836-5f7e0be5d133', 'theme_preset', 'default', '{"options":[{"value":"default","label":"Default Dark Cyan"},{"value":"earth","label":"Earth Green"},{"value":"apple","label":"Apple Minimal"},{"value":"editorial","label":"Editorial Magazine"},{"value":"studio","label":"Warm Studio"},{"value":"midnight","label":"Midnight Prism"},{"value":"aurora","label":"Aurora Signal"},{"value":"graphite","label":"Graphite Pro"},{"value":"custom","label":"Custom Unsaved"}]}'::jsonb, 'branding', 'Theme Preset', 'Choose a built-in preset, adjust one into a custom theme, or select a saved custom theme.', 'select', 5, true),
 ('4c6ab483-d25e-4f88-a3cb-f232a9c2b11f', 'active_custom_theme_id', '', null, 'branding', 'Active Custom Theme ID', 'Internal reference for the active saved custom theme', 'text', 6, true),
 ('4a1b1c47-31f2-49dd-a8d8-e43e3394764b', 'active_custom_theme_name', '', null, 'branding', 'Active Custom Theme Name', 'Display name for the active saved custom theme', 'text', 7, true),
 ('aa910835-d9a5-4808-8ea0-3894dd1de457', 'contact_email', 'AIMEMATIANE@GMAIL.COM', null, 'contact', 'Contact Email', 'Primary contact email address', 'email', 1, true),
@@ -972,7 +979,6 @@ INSERT INTO public.theme_settings (id, key, value, category, display_name, css_v
 ('62f05f4f-1449-4d84-b4be-4c5af86b6832', 'font_heading_weight', '600', 'typography', 'Heading Weight', '--font-heading-weight', 51),
 ('1078a013-94ea-4a36-bbe0-21b4417d8ff1', 'font_body', 'Inter', 'typography', 'Body Font', '--font-body', 52),
 ('c28342de-3265-48c9-a31a-4e2e20df2d34', 'font_body_weight', '400', 'typography', 'Body Weight', '--font-body-weight', 53),
-('870cbe3a-f819-4299-81fe-5b46b94bcc2d', 'radius_sm', '76px', 'layout', 'Small Radius', '--radius-sm', 60),
 ('0e23a6af-cacb-49b6-a829-f9ddd7ee5b7f', 'radius_md', '8px', 'layout', 'Medium Radius', '--radius-md', 61),
 ('4805e3e0-4f63-4aa0-9d14-1c21d34feeb0', 'radius_lg', '12px', 'layout', 'Large Radius', '--radius-lg', 62),
 ('9622a1a9-0e36-4857-b0a9-242d084586b2', 'radius_xl', '16px', 'layout', 'Extra Large Radius', '--radius-xl', 63),

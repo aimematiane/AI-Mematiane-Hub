@@ -34,7 +34,9 @@
 </a>
 
 <div class="min-h-screen flex flex-col">
-  <Nav navPages={data.navPages} user={data.user} profile={data.profile} site={data.site} />
+  {#if !isAdminRoute}
+    <Nav navPages={data.navPages} user={data.user} profile={data.profile} site={data.site} />
+  {/if}
   <main id="main-content" class="flex-1">
     {@render children()}
   </main>

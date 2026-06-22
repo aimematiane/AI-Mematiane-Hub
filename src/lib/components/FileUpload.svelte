@@ -112,8 +112,6 @@
 					const { error } = await client.storage.from('uploads').remove([filePath]);
 					if (error) {
 						console.error('Failed to delete file from storage:', error);
-					} else {
-						console.log('Successfully deleted file from storage:', filePath);
 					}
 				} catch (err) {
 					console.error('Error deleting file:', err);

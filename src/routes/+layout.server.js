@@ -30,6 +30,18 @@ export async function load({ cookies, url }) {
 		profile = profileData;
 	}
 
+	// Admin has its own shell and data loader, so skip public chrome queries.
+	if (isAdminRoute) {
+		return {
+			user,
+			profile,
+			navPages: [],
+			site: {},
+			footer: { settings: {}, columns: [], socialLinks: [] },
+			theme: {}
+		};
+	}
+
 	let navPages = [];
 	let siteSettings = [];
 
@@ -60,18 +72,6 @@ export async function load({ cookies, url }) {
 	}
 
 	const site = settingsToMap(siteSettings || []);
-
-	// Admin routes skip heavy global chrome data — admin has its own layout
-	if (isAdminRoute) {
-		return {
-			user,
-			profile,
-			navPages: navPages || [],
-			site,
-			footer: { settings: {}, columns: [], socialLinks: [] },
-			theme: {}
-		};
-	}
 
 	let footerSettingsResult = { data: [] };
 	let footerColumnsResult = { data: [] };

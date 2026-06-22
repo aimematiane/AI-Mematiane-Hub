@@ -2,9 +2,9 @@
 	import { page } from '$app/stores';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import {
-		LayoutDashboard, Brain, BookOpen, Newspaper, Settings, Palette, Menu,
+		LayoutDashboard, Brain, BookOpen, Newspaper, Settings, Menu,
 		Navigation, FileText, Users, Shield, FolderOpen, Image, BarChart3, LogOut,
-		ChevronLeft, Search, Bell, Moon, Sun, Layers, Link as LinkIcon
+		ChevronLeft, Layers, Link as LinkIcon
 	} from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { getSupabaseBrowserClient } from '$lib/supabase/client';
@@ -25,7 +25,6 @@
 		{ spacer: true },
 		{ section: 'System' },
 		{ href: '/admin/settings', label: 'Site Settings', icon: Settings },
-		{ href: '/admin/theme', label: 'Theme', icon: Palette },
 		{ href: '/admin/footer', label: 'Footer', icon: Layers },
 		{ href: '/admin/seo', label: 'SEO', icon: BarChart3 },
 		{ spacer: true },

@@ -169,7 +169,7 @@
 						<Shield size={24} class="text-surface-700 mx-auto mb-2" />
 						<p class="text-sm text-surface-500 mb-3">No roles found. Create one to get started.</p>
 						<p class="text-xs text-surface-600 mb-4">
-							If you're seeing this and expect roles to exist, check your database connection and ensure migrations have run.
+							If you're seeing this and expect roles to exist, check your database connection and ensure database_init.sql has been applied.
 						</p>
 						<button
 							onclick={() => showCreateModal = true}
