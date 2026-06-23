@@ -1,13 +1,15 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import SeoHead from '$lib/components/SeoHead.svelte';
-	import { BarChart3, AlertCircle, Check, Edit, ExternalLink, X, Save } from '@lucide/svelte';
+	import { SITE_URL } from '$lib/config/site.js';
+	import { BarChart3, Check, Edit, ExternalLink, X, Save, AlertTriangle, Image, Link, Search, ShieldCheck, ListChecks } from '@lucide/svelte';
 	import { submitAction } from '$lib/utils/adminFetch.js';
 
 	let { data } = $props();
 
 	let activeTab = $state('posts');
 	let searchQuery = $state('');
+	let detailItem = $state(null);
 	let editingItem = $state(null);
 	let editForm = $state({ meta_title: '', meta_description: '' });
 	let saving = $state(false);
@@ -30,8 +32,80 @@
 		});
 	});
 
+	const selectedItem = $derived(detailItem || filteredItems[0] || null);
+
 	function itemTitle(item) {
 		return item.title || item.name || 'Untitled';
+	}
+
+	function selectTab(tabId) {
+		activeTab = tabId;
+		detailItem = null;
+		searchQuery = '';
+	}
+
+	function metaTitle(item) {
+		return item?.meta_title || itemTitle(item);
+	}
+
+	function metaDescription(item) {
+		return item?.meta_description || '';
+	}
+
+	function imageUrl(item) {
+		return item?.cover_image_url || item?.image_url || '';
+	}
+
+	function isIndexable(item) {
+		if (!item) return false;
+		return activeTab === 'tools' || item.is_published === true;
+	}
+
+	function isInSitemap(item) {
+		return isIndexable(item);
+	}
+
+	function canonicalUrl(item) {
+		return `${SITE_URL}${publicUrl(item)}`;
+	}
+
+	function checklist(item) {
+		if (!item) return [];
+		const title = metaTitle(item);
+		const description = metaDescription(item);
+		const image = imageUrl(item);
+		return [
+			{
+				label: isIndexable(item) ? 'Indexable' : 'Noindex / unpublished',
+				ok: isIndexable(item),
+				help: isIndexable(item) ? 'Public pages can be crawled.' : 'Publish this item before expecting search traffic.'
+			},
+			{
+				label: isInSitemap(item) ? 'In sitemap' : 'Missing from sitemap',
+				ok: isInSitemap(item),
+				help: isInSitemap(item) ? 'This URL is included in sitemap.xml.' : 'Unpublished content is excluded from sitemap.xml.'
+			},
+			{
+				label: `Title length ${title.length}/60`,
+				ok: title.length > 0 && title.length <= 60,
+				help: title.length ? 'Recommended maximum is 60 characters.' : 'Add a title.'
+			},
+			{
+				label: `Description length ${description.length}/160`,
+				ok: description.length >= 70 && description.length <= 160,
+				help: description.length ? 'Aim for 70 to 160 characters.' : 'Add a meta description.'
+			},
+			{
+				label: image ? 'Open Graph image set' : 'Missing OG image',
+				ok: !!image,
+				help: image ? 'Shares can use a rich preview image.' : 'Add a cover/image for stronger social previews.'
+			},
+			{
+				label: 'Canonical URL ready',
+				ok: !!item.slug,
+				help: canonicalUrl(item)
+			}
+		];
 	}
 
 	function checkSeoStatus(item) {
@@ -44,13 +118,16 @@
 	}
 
 	function getSeoScore(item) {
-		const issues = checkSeoStatus(item);
-		if (issues.length === 0) return { score: 100, color: 'emerald' };
-		if (issues.length === 1) return { score: 70, color: 'amber' };
-		return { score: 40, color: 'rose' };
+		const checks = checklist(item);
+		const passed = checks.filter(check => check.ok).length;
+		const score = checks.length ? Math.round((passed / checks.length) * 100) : 0;
+		if (score >= 85) return { score, color: 'emerald' };
+		if (score >= 60) return { score, color: 'amber' };
+		return { score, color: 'rose' };
 	}
 
 	function openEdit(item) {
+		detailItem = item;
 		editingItem = item;
 		editForm = {
 			meta_title: item.meta_title || '',
@@ -104,7 +181,7 @@
 	<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 		{#each tabs as tab}
 			{@const missing = tab.data.filter(item => !item.meta_title || !item.meta_description).length}
-			<button type="button" onclick={() => activeTab = tab.id} class="p-4 rounded-xl border text-left transition-all {activeTab === tab.id ? 'bg-surface-800 border-surface-600' : 'bg-surface-900 border-surface-800 hover:border-surface-700'}">
+			<button type="button" onclick={() => selectTab(tab.id)} class="p-4 rounded-xl border text-left transition-all {activeTab === tab.id ? 'bg-surface-800 border-surface-600' : 'bg-surface-900 border-surface-800 hover:border-surface-700'}">
 				<p class="text-sm text-surface-400">{tab.label}</p>
 				<p class="text-2xl font-bold text-white mt-1">{tab.data.length}</p>
 				{#if missing > 0}
@@ -119,7 +196,7 @@
 	<div class="flex flex-col sm:flex-row gap-4 mb-6">
 		<div class="flex gap-2 flex-wrap">
 			{#each tabs as tab}
-				<button type="button" onclick={() => activeTab = tab.id} class="px-4 py-2 rounded-xl text-sm font-medium {activeTab === tab.id ? 'bg-accent-500 text-white' : 'bg-surface-900 text-surface-400 hover:text-white'}">
+				<button type="button" onclick={() => selectTab(tab.id)} class="px-4 py-2 rounded-xl text-sm font-medium {activeTab === tab.id ? 'bg-accent-500 text-white' : 'bg-surface-900 text-surface-400 hover:text-white'}">
 					{tab.label}
 				</button>
 			{/each}
@@ -127,9 +204,11 @@
 		<input type="text" bind:value={searchQuery} placeholder="Search..." class="flex-1 px-4 py-2 rounded-xl bg-surface-900 border border-surface-800 text-white text-sm" />
 	</div>
 
-	<div class="bg-surface-900 border border-surface-800 rounded-2xl overflow-hidden">
-		{#if filteredItems.length > 0}
-			<table class="w-full">
+	<div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px] gap-6 items-start">
+		<div class="bg-surface-900 border border-surface-800 rounded-2xl overflow-hidden">
+			{#if filteredItems.length > 0}
+			<div class="overflow-x-auto">
+			<table class="w-full min-w-[820px]">
 				<thead class="bg-surface-800">
 					<tr>
 						<th class="text-left px-6 py-3 text-xs font-medium text-surface-400 uppercase">Title</th>
@@ -142,12 +221,12 @@
 				<tbody class="divide-y divide-surface-800">
 					{#each filteredItems as item}
 						{@const seo = getSeoScore(item)}
-						<tr class="hover:bg-surface-800/50">
+						<tr class="hover:bg-surface-800/50 {selectedItem?.id === item.id ? 'bg-surface-800/70' : ''}">
 							<td class="px-6 py-4">
 								<p class="font-medium text-white">{itemTitle(item)}</p>
 								<p class="text-xs text-surface-500">{publicUrl(item)}</p>
 							</td>
-							<td class="px-6 py-4 text-sm text-surface-300">{item.meta_title || '—'}</td>
+							<td class="px-6 py-4 text-sm text-surface-300">{metaTitle(item) || '—'}</td>
 							<td class="px-6 py-4 text-sm text-surface-300 line-clamp-2">{item.meta_description || '—'}</td>
 							<td class="px-6 py-4 text-center">
 								<span class="inline-flex w-10 h-10 items-center justify-center rounded-full font-bold
@@ -157,10 +236,13 @@
 							</td>
 							<td class="px-6 py-4">
 								<div class="flex items-center justify-end gap-2">
+									<button type="button" onclick={() => detailItem = item} class="p-2 rounded-lg hover:bg-surface-700 text-surface-400 hover:text-white" aria-label="View SEO checklist">
+										<ListChecks size={16} />
+									</button>
 									<button type="button" onclick={() => openEdit(item)} class="p-2 rounded-lg hover:bg-surface-700 text-surface-400 hover:text-white" aria-label="Edit SEO">
 										<Edit size={16} />
 									</button>
-									<a href={publicUrl(item)} target="_blank" class="p-2 rounded-lg hover:bg-surface-700 text-surface-400 hover:text-white">
+									<a href={publicUrl(item)} target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg hover:bg-surface-700 text-surface-400 hover:text-white" aria-label="Open public page">
 										<ExternalLink size={16} />
 									</a>
 								</div>
@@ -169,9 +251,104 @@
 					{/each}
 				</tbody>
 			</table>
-		{:else}
-			<div class="p-12 text-center text-surface-400">No content found</div>
-		{/if}
+			</div>
+			{:else}
+				<div class="p-12 text-center text-surface-400">No content found</div>
+			{/if}
+		</div>
+
+		<aside class="bg-surface-900 border border-surface-800 rounded-2xl p-5 xl:sticky xl:top-6">
+			{#if selectedItem}
+				{@const checks = checklist(selectedItem)}
+				{@const seo = getSeoScore(selectedItem)}
+				<div class="flex items-start justify-between gap-4 mb-5">
+					<div class="min-w-0">
+						<p class="text-xs uppercase tracking-wide text-surface-500 mb-1">SEO checklist</p>
+						<h2 class="text-lg font-semibold text-white truncate">{itemTitle(selectedItem)}</h2>
+						<p class="text-xs text-surface-500 truncate">{publicUrl(selectedItem)}</p>
+					</div>
+					<span class="inline-flex w-12 h-12 shrink-0 items-center justify-center rounded-full font-bold
+						{seo.score >= 85 ? 'text-emerald-400 bg-emerald-500/20' : seo.score >= 60 ? 'text-amber-400 bg-amber-500/20' : 'text-rose-400 bg-rose-500/20'}">
+						{seo.score}
+					</span>
+				</div>
+
+				<div class="space-y-3 mb-6">
+					{#each checks as check}
+						<div class="flex items-start gap-3 rounded-xl border {check.ok ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-amber-500/20 bg-amber-500/5'} p-3">
+							<span class="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full {check.ok ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+								{#if check.ok}
+									<Check size={13} />
+								{:else}
+									<AlertTriangle size={13} />
+								{/if}
+							</span>
+							<div class="min-w-0">
+								<p class="text-sm font-medium {check.ok ? 'text-emerald-300' : 'text-amber-300'}">{check.label}</p>
+								<p class="text-xs text-surface-500 break-words">{check.help}</p>
+							</div>
+						</div>
+					{/each}
+				</div>
+
+				<div class="space-y-4">
+					<div>
+						<div class="flex items-center gap-2 text-sm font-medium text-white mb-2">
+							<Link size={15} class="text-accent-400" />
+							Canonical URL
+						</div>
+						<a href={publicUrl(selectedItem)} target="_blank" rel="noopener noreferrer" class="block rounded-xl bg-surface-950 border border-surface-800 px-3 py-2 text-xs text-accent-300 break-all hover:text-accent-200">
+							{canonicalUrl(selectedItem)}
+						</a>
+					</div>
+
+					<div>
+						<div class="flex items-center gap-2 text-sm font-medium text-white mb-2">
+							<Image size={15} class="text-accent-400" />
+							Open Graph image
+						</div>
+						{#if imageUrl(selectedItem)}
+							<div class="aspect-[16/9] overflow-hidden rounded-xl border border-surface-800 bg-surface-950">
+								<img src={imageUrl(selectedItem)} alt="" class="h-full w-full object-cover" loading="lazy" />
+							</div>
+						{:else}
+							<div class="rounded-xl border border-dashed border-surface-700 bg-surface-950 px-4 py-6 text-center text-sm text-surface-500">
+								No image configured
+							</div>
+						{/if}
+					</div>
+
+					<div>
+						<div class="flex items-center gap-2 text-sm font-medium text-white mb-2">
+							<Search size={15} class="text-accent-400" />
+							Google snippet preview
+						</div>
+						<div class="rounded-xl bg-white px-4 py-3 text-left">
+							<p class="text-xs text-[#202124] truncate">{canonicalUrl(selectedItem)}</p>
+							<p class="text-lg leading-snug text-[#1a0dab] truncate">{metaTitle(selectedItem)}</p>
+							<p class="text-sm leading-relaxed text-[#4d5156] line-clamp-3">
+								{metaDescription(selectedItem) || 'Add a meta description to control this preview text.'}
+							</p>
+						</div>
+					</div>
+
+					<div class="flex gap-2">
+						<button type="button" onclick={() => openEdit(selectedItem)} class="flex flex-1 items-center justify-center gap-2 px-4 py-2 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm">
+							<Edit size={15} />
+							Edit SEO
+						</button>
+						<a href={publicUrl(selectedItem)} target="_blank" rel="noopener noreferrer" class="flex items-center justify-center px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-surface-200">
+							<ExternalLink size={15} />
+						</a>
+					</div>
+				</div>
+			{:else}
+				<div class="py-12 text-center text-surface-500">
+					<ShieldCheck size={32} class="mx-auto mb-3 text-surface-600" />
+					<p class="text-sm">Select content to review its SEO checklist.</p>
+				</div>
+			{/if}
+		</aside>
 	</div>
 </div>
 
